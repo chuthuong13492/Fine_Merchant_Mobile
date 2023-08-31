@@ -1,7 +1,7 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     package="com.example.fine_merchant_mobile">
    <application
-        android:label="fine_merchant_mobile"
+        android:label="Fine Merchant"
         android:name="${applicationName}"
         android:icon="@mipmap/ic_launcher">
         <activity

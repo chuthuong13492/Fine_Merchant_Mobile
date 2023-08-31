@@ -38,7 +38,7 @@ class MyApp extends StatelessWidget {
     return GetMaterialApp(
       debugShowCheckedModeBanner: false,
       navigatorKey: Get.key,
-      title: 'Fine Delivery',
+      title: 'Fine Merchant Delivery',
       onGenerateRoute: (settings) {
         switch (settings.name) {
           case RouteHandler.WELCOME_SCREEN:
