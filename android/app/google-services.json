@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "762441361635",
+    "project_id": "fine-merchant",
+    "storage_bucket": "fine-merchant.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:762441361635:android:1f85a66858f2f3eb64fdd6",
+        "android_client_info": {
+          "package_name": "com.example.fine_merchant_mobile"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "762441361635-314a0ef2ht8ehh0creh9domc0cn2b60u.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCv0VOVZXmqiYb6nU6hUPjEQV5-WpcdsSw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "762441361635-314a0ef2ht8ehh0creh9domc0cn2b60u.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
