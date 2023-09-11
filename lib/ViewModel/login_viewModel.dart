@@ -22,8 +22,6 @@ class LoginViewModel extends BaseModel {
   late AnalyticsService _analyticsService;
   final FirebaseAuth _auth = FirebaseAuth.instance;
 
-  AccountDTO? userInfo;
-
   LoginViewModel() {
     _dao = AccountDAO();
     _analyticsService = AnalyticsService.getInstance()!;
@@ -31,56 +29,56 @@ class LoginViewModel extends BaseModel {
 
   Future<void> signInWithGoogle() async {
     try {
-      setState(ViewStatus.Loading);
+      // setState(ViewStatus.Loading);
 
-      final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
-      if (googleUser == null) {
-        return null;
-      }
-      final GoogleSignInAuthentication? googleAuth =
-          await googleUser.authentication;
+      // final GoogleSignInAccount? googleUser = await GoogleSignIn().signIn();
+      // if (googleUser == null) {
+      //   return null;
+      // }
+      // final GoogleSignInAuthentication? googleAuth =
+      //     await googleUser.authentication;
 
-      if (googleAuth?.accessToken != null && googleAuth?.idToken != null) {
-        final credential = GoogleAuthProvider.credential(
-          accessToken: googleAuth?.accessToken,
-          idToken: googleAuth?.idToken,
-        );
-        await _auth.signInWithCredential(credential);
+      // if (googleAuth?.accessToken != null && googleAuth?.idToken != null) {
+      //   final credential = GoogleAuthProvider.credential(
+      //     accessToken: googleAuth?.accessToken,
+      //     idToken: googleAuth?.idToken,
+      //   );
+      //   await _auth.signInWithCredential(credential);
 
-        User userToken = FirebaseAuth.instance.currentUser!;
-        final idToken = await userToken.getIdToken();
-        final fcmToken = await FirebaseMessaging.instance.getToken();
-        // print('idToken: ' + idToken);
-        log('idToken: ' + idToken!);
-        log('fcmToken: ' + fcmToken.toString());
+      //   User userToken = FirebaseAuth.instance.currentUser!;
+      //   final idToken = await userToken.getIdToken();
+      //   final fcmToken = await FirebaseMessaging.instance.getToken();
+      //   // print('idToken: ' + idToken);
+      //   log('idToken: ' + idToken!);
+      //   log('fcmToken: ' + fcmToken.toString());
 
-        userInfo = await _dao?.login(idToken, fcmToken!);
-        if (userInfo == null) {
-          await showStatusDialog("assets/images/error.png", 'Éc éc ⚠️',
-              'Bạn vui lòng đăng nhập bằng mail trường nhé 🥰');
-        } else {
-          showLoadingDialog();
-          await _analyticsService.setUserProperties(userInfo!);
-          await Get.find<RootViewModel>().startUp();
-          // Get.rawSnackbar(
-          //     message: "Đăng nhập thành công!!",
-          //     duration: Duration(seconds: 2),
-          //     snackPosition: SnackPosition.BOTTOM,
-          //     margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
-          //     borderRadius: 8);
-          hideDialog();
-          await Get.offAllNamed(RouteHandler.NAV);
-        }
-        // AccountViewModel accountViewModel = Get.find<AccountViewModel>();
-        // accountViewModel.currentUser = userInfo;
+      //   userInfo = await _dao?.isUserLoggedIn(idToken, fcmToken!);
+      //   if (userInfo == null) {
+      //     await showStatusDialog("assets/images/error.png", 'Éc éc ⚠️',
+      //         'Bạn vui lòng đăng nhập bằng mail trường nhé 🥰');
+      //   } else {
+      //     showLoadingDialog();
+      //     await _analyticsService.setUserProperties(userInfo!);
+      //     await Get.find<RootViewModel>().startUp();
+      // Get.rawSnackbar(
+      //     message: "Đăng nhập thành công!!",
+      //     duration: Duration(seconds: 2),
+      //     snackPosition: SnackPosition.BOTTOM,
+      //     margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
+      //     borderRadius: 8);
+      // hideDialog();
+      // await Get.offAllNamed(RouteHandler.NAV);
+      // }
+      // AccountViewModel accountViewModel = Get.find<AccountViewModel>();
+      // accountViewModel.currentUser = userInfo;
 
-        // if (userInfo != null) {
+      // if (userInfo != null) {
 
-        // }
-        // await Get.offAllNamed(RoutHandler.NAV);
-      }
-      await Future.delayed(const Duration(microseconds: 500));
-      setState(ViewStatus.Completed);
+      // }
+      // await Get.offAllNamed(RoutHandler.NAV);
+      // }
+      // await Future.delayed(const Duration(microseconds: 500));
+      // setState(ViewStatus.Completed);
     } on FirebaseAuthException catch (e) {
       log(e.message!);
       // });
@@ -88,9 +86,41 @@ class LoginViewModel extends BaseModel {
     }
   }
 
+  Future<void> signInWithAccount(String userName, String password) async {
+    setState(ViewStatus.Loading);
+
+    if (userName != '' && password != '') {
+      showLoadingDialog();
+      var accessToken = await _dao?.loginByAccount(userName, password);
+      if (accessToken == null) {
+        await showStatusDialog("assets/images/error.png", '⚠️',
+            'Sai tài khoản hoặc mật khẩu, bạn vui lòng kiểm tra lại!');
+      } else {
+        Get.rawSnackbar(
+            message: "Đăng nhập thành công!!",
+            duration: Duration(seconds: 2),
+            snackPosition: SnackPosition.BOTTOM,
+            margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
+            borderRadius: 8);
+        await Get.find<RootViewModel>().startUp();
+        await Get.offAllNamed(RouteHandler.NAV);
+      }
+      hideDialog();
+    } else {
+      Get.rawSnackbar(
+          message: "Vui lòng nhập tài khoản và mật khẩu!!",
+          duration: Duration(seconds: 2),
+          snackPosition: SnackPosition.BOTTOM,
+          margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
+          borderRadius: 8);
+    }
+
+    setState(ViewStatus.Completed);
+  }
+
   Future<void> signOut() async {
-    await FirebaseAuth.instance.signOut();
-    await GoogleSignIn().signOut();
-    Get.offAllNamed(RouteHandler.LOGIN);
+    // await FirebaseAuth.instance.signOut();
+    // await GoogleSignIn().signOut();
+    // Get.offAllNamed(RouteHandler.LOGIN);
   }
 }

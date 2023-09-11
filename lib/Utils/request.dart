@@ -77,14 +77,14 @@ class CustomInterceptors extends Interceptor {
 // or new Dio with a BaseOptions instance.
 
 class MyRequest {
-  static BaseOptions options = new BaseOptions(
-      baseUrl: 'https://prod.fine-api.smjle.vn/api/',
+  static BaseOptions options = BaseOptions(
+      baseUrl: 'https://dev.fine-api.smjle.vn/api/',
       // baseUrl: 'https://localhost:7058/api/',
       headers: {
         Headers.contentTypeHeader: "application/json",
       },
-      sendTimeout: Duration(microseconds: 15000),
-      receiveTimeout: Duration(microseconds: 5000));
+      sendTimeout: const Duration(milliseconds: 30000),
+      receiveTimeout: const Duration(milliseconds: 30000));
   late Dio _inner;
   MyRequest() {
     _inner = new Dio(options);

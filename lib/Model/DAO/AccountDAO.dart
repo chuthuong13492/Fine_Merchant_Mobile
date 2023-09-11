@@ -21,13 +21,34 @@ class AccountDAO extends BaseDAO {
           data: {"idToken": idToken, 'fcmToken': fcmToken});
       final user = response.data['data'];
       final userDTO = AccountDTO.fromJson(user['customer']);
-      final accessToken = user["access_token"] as String;
+
+      // final accessToken = user["access_token"] as String;
 
       // set access token
-      requestObj.setToken = accessToken;
-      setToken(accessToken);
+      // requestObj.setToken = accessToken;
+      // setToken(accessToken);
       return userDTO;
-    } catch (e) {}
+    } catch (e) {
+      rethrow;
+    }
+  }
+
+  Future<String?> loginByAccount(String userName, String password) async {
+    try {
+      Response response = await request.post("staff/login",
+          data: {"userName": userName, "password": password});
+      final user = response.data['data'];
+      if (user != null) {
+        // set access token
+
+        final accessToken = user["accessToken"] as String;
+        requestObj.setToken = accessToken;
+        await setToken(accessToken);
+        return accessToken;
+      }
+    } catch (e) {
+      rethrow;
+    }
     return null;
   }
 
@@ -35,30 +56,30 @@ class AccountDAO extends BaseDAO {
     final isExpireToken = await expireToken();
     final token = await getToken();
     if (isExpireToken) return false;
-    if (token != null) requestObj.setToken = token;
+    if (token != null) {
+      requestObj.setToken = token;
+    }
     return token != null;
   }
 
   Future<AccountDTO> getUser() async {
-    Response response = await request.get("/customer/authorization");
-    // set access token
+    Response response = await request.get("/admin/staff/authorization");
     final user = response.data['data'];
     return AccountDTO.fromJson(user);
-    // return AccountDTO(uid: idToken, name: "Default Name");
   }
 
-  Future<String> getRefferalMessage(String refferalCode) async {
-    try {
-      Response response =
-          await request.post("/me/refferal", data: "'$refferalCode'");
-      // set access token
-      return response.data['message'];
-    } catch (e) {
-      throw e;
-    }
+  // Future<String> getRefferalMessage(String refferalCode) async {
+  //   try {
+  //     Response response =
+  //         await request.post("/me/refferal", data: "'$refferalCode'");
+  //     // set access token
+  //     return response.data['message'];
+  //   } catch (e) {
+  //     rethrow;
+  //   }
 
-    // return AccountDTO(uid: idToken, name: "Default Name");
-  }
+  // return AccountDTO(uid: idToken, name: "Default Name");
+  // }
 
   // Future<void> sendFeedback(String feedBack) async {
   //   await request.post("/me/feedback", data: "'$feedBack'");
@@ -72,10 +93,10 @@ class AccountDAO extends BaseDAO {
   }
 
   Future<void> logOut() async {
-    await AuthService().signOut();
-    String? fcmToken =
-        await PushNotificationService.getInstance()!.getFcmToken();
-    await request.post("/customer/logout", data: {"fcmToken": fcmToken});
+    // await AuthService().signOut();
+    // String? fcmToken =
+    //     await PushNotificationService.getInstance()!.getFcmToken();
+    // await request.post("/customer/logout", data: {"fcmToken": fcmToken});
   }
 
   // Future<AccountDTO> updateUser(AccountDTO updateUser) async {

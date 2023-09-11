@@ -1,3 +1,4 @@
+// ignore: file_names
 import 'index.dart';
 
 // class CampusDTO extends StoreDTO {

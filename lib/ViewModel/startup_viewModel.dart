@@ -5,7 +5,6 @@ import 'package:fine_merchant_mobile/Model/DAO/AccountDAO.dart';
 import 'package:fine_merchant_mobile/Utils/shared_pref.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 
 import 'root_viewModel.dart';
 
@@ -14,9 +13,9 @@ class StartUpViewModel extends BaseModel {
     handleStartUpLogic();
   }
   Future handleStartUpLogic() async {
-    AccountDAO _accountDAO = AccountDAO();
-    await Future.delayed(const Duration(seconds: 3));
-    var hasLoggedInUser = await _accountDAO.isUserLoggedIn();
+    AccountDAO accountDAO = AccountDAO();
+    await Future.delayed(const Duration(seconds: 1));
+    var hasLoggedInUser = await accountDAO.isUserLoggedIn();
     bool isFirstOnBoard = await getIsFirstOnboard() ?? true;
     if (isFirstOnBoard) {
       // await Get.find<RootViewModel>().startUp();

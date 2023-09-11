@@ -1,18 +1,27 @@
 import 'dart:async';
 import 'dart:ui';
 
+import 'package:fine_merchant_mobile/Constant/enum.dart';
+import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
+import 'package:fine_merchant_mobile/View/delivery_list.dart';
+import 'package:fine_merchant_mobile/View/station.dart';
+import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/root_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
 import 'package:fine_merchant_mobile/theme/color.dart';
 import 'package:fine_merchant_mobile/widgets/bottom_bar_item.dart';
 import 'package:fine_merchant_mobile/widgets/cruved_navigation_bar.dart';
+import 'package:fine_merchant_mobile/View/order_list.dart';
+import 'package:fine_merchant_mobile/View/home.dart';
+import 'package:fine_merchant_mobile/View/profile.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:get/get.dart';
 
 class RootScreen extends StatefulWidget {
   final int initScreenIndex;
+
   const RootScreen({Key? key, required this.initScreenIndex}) : super(key: key);
 
   @override
@@ -21,32 +30,61 @@ class RootScreen extends StatefulWidget {
 
 class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
   RootViewModel? _rootViewModel;
+  AccountDTO? currentUser;
+  bool isStaff = true;
   final navigationKey = GlobalKey<CurvedNavigationBarState>();
   int activeTab = 0;
-  List barItems = [
-    // {
-    //   "icon": "assets/icons/Home.svg",
-    //   "active_icon": "assets/icons/Home_fill.svg",
-    //   "page": HomeScreen(),
-    // },
-    // {
-    //   "icon": "assets/icons/Order.svg",
-    //   "active_icon": "assets/icons/Order_fill.svg",
-    //   "page": OrderHistoryScreen(),
-    // },
-    // {
-    //   "icon": "assets/icons/Profile.svg",
-    //   "active_icon": "assets/icons/Profile_fill.svg",
-    //   "page": ProfileScreen(),
-    // },
+  List staffBarItems = [
+    {
+      "icon": "assets/icons/Home.svg",
+      "active_icon": "assets/icons/Home_fill.svg",
+      "page": const HomeScreen(),
+    },
+    {
+      "icon": "assets/icons/Order.svg",
+      "active_icon": "assets/icons/Order_fill.svg",
+      "page": const OrderListScreen(),
+    },
+    {
+      "icon": "assets/icons/Profile.svg",
+      "active_icon": "assets/icons/Profile_fill.svg",
+      "page": const ProfileScreen(),
+    },
   ];
-  final screens = [
-    // const HomeScreen(),
-    // const OrderHistoryScreen(),
-
-    // const ProfileScreen()
+  List driverBarItems = [
+    {
+      "icon": "assets/icons/Home.svg",
+      "active_icon": "assets/icons/Home_fill.svg",
+      "page": const HomeScreen(),
+    },
+    {
+      "icon": "assets/icons/Order.svg",
+      "active_icon": "assets/icons/Order_fill.svg",
+      "page": const DeliveryListScreen(),
+    },
+    {
+      "icon": "assets/icons/Box.svg",
+      "active_icon": "assets/icons/Box.svg",
+      "page": const StationScreen(),
+    },
+    {
+      "icon": "assets/icons/Profile.svg",
+      "active_icon": "assets/icons/Profile_fill.svg",
+      "page": const ProfileScreen(),
+    },
   ];
-  final items = <Widget>[
+  final staffScreens = [
+    const HomeScreen(),
+    const OrderListScreen(),
+    const ProfileScreen()
+  ];
+  final driverScreens = [
+    const HomeScreen(),
+    const DeliveryListScreen(),
+    const StationScreen(),
+    const ProfileScreen()
+  ];
+  final staffItems = <Widget>[
     SvgPicture.asset(
       "assets/icons/Home.svg",
       width: 32,
@@ -57,16 +95,28 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
       width: 32,
       height: 32,
     ),
-    // SvgPicture.asset(
-    //   "assets/icons/Scan.svg",
-    //   width: 32,
-    //   height: 32,
-    // ),
-    // SvgPicture.asset(
-    //   "assets/icons/Box.svg",
-    //   width: 32,
-    //   height: 32,
-    // ),
+    SvgPicture.asset(
+      "assets/icons/Profile.svg",
+      width: 32,
+      height: 32,
+    ),
+  ];
+  final driverItems = <Widget>[
+    SvgPicture.asset(
+      "assets/icons/Home.svg",
+      width: 32,
+      height: 32,
+    ),
+    SvgPicture.asset(
+      "assets/icons/Order.svg",
+      width: 32,
+      height: 32,
+    ),
+    SvgPicture.asset(
+      "assets/icons/Box.svg",
+      width: 32,
+      height: 32,
+    ),
     SvgPicture.asset(
       "assets/icons/Profile.svg",
       width: 32,
@@ -86,10 +136,8 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
   @override
   void initState() {
     super.initState();
-    // _rootViewModel = Get.find<RootViewModel>();
-    // Timer.periodic(const Duration(milliseconds: 500), (_) {
-    //   _rootViewModel!.liveLocation();
-    // });
+    currentUser = Get.find<AccountViewModel>().currentUser;
+    isStaff = currentUser?.roleType == AccountTypeEnum.STAFF;
     activeTab = widget.initScreenIndex;
     _controller.forward();
   }
@@ -127,7 +175,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
         bottomNavigationBar: CurvedNavigationBar(
           color: FineTheme.palettes.primary100,
           backgroundColor: Colors.transparent,
-          items: items,
+          items: isStaff ? staffItems : driverItems,
           index: activeTab,
           animationCurve: Curves.easeInOut,
           animationDuration: const Duration(milliseconds: 500),
@@ -138,14 +186,17 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
           },
         ),
         // body: getBarPage());
-        body: screens[activeTab]);
+        body: isStaff ? staffScreens[activeTab] : driverScreens[activeTab]);
   }
 
   Widget getBarPage() {
     return IndexedStack(
         index: activeTab,
-        children: List.generate(
-            barItems.length, (index) => animatedPage(barItems[index]["page"])));
+        children: isStaff
+            ? List.generate(staffBarItems.length,
+                (index) => animatedPage(staffBarItems[index]["page"]))
+            : List.generate(driverBarItems.length,
+                (index) => animatedPage(driverBarItems[index]["page"])));
   }
 
   Widget getBottomBar() {
@@ -213,17 +264,29 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
               ),
               child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: List.generate(
-                      barItems.length,
-                      (index) => BottomBarItem(
-                            barItems[index]["active_icon"],
-                            barItems[index]["icon"],
-                            isActive: activeTab == index,
-                            activeColor: primary,
-                            onTap: () {
-                              onPageChanged(index);
-                            },
-                          ))))
+                  children: isStaff
+                      ? List.generate(
+                          staffBarItems.length,
+                          (index) => BottomBarItem(
+                                staffBarItems[index]["active_icon"],
+                                staffBarItems[index]["icon"],
+                                isActive: activeTab == index,
+                                activeColor: primary,
+                                onTap: () {
+                                  onPageChanged(index);
+                                },
+                              ))
+                      : List.generate(
+                          driverBarItems.length,
+                          (index) => BottomBarItem(
+                                driverBarItems[index]["active_icon"],
+                                driverBarItems[index]["icon"],
+                                isActive: activeTab == index,
+                                activeColor: primary,
+                                onTap: () {
+                                  onPageChanged(index);
+                                },
+                              ))))
         ],
       ),
     );

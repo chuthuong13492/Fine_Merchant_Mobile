@@ -1,3 +1,10 @@
 export 'AccountDTO.dart';
-
+export 'TimeSlotDTO.dart';
 export 'DestinationDTO.dart';
+export 'OrderDTO.dart';
+export 'StoreDTO.dart';
+export 'BoxDTO.dart';
+export 'StationDTO.dart';
+export 'SplitOrderDTO.dart';
+export 'DeliveryPackageDTO.dart';
+export 'PackageViewDTO.dart';

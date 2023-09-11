@@ -1,7 +1,6 @@
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_icons/flutter_icons.dart';
 import 'package:get/get.dart';
 
 Future<void> showStatusDialog(
@@ -91,27 +90,28 @@ void showLoadingDialog() {
   bool shouldPop = false;
   hideDialog();
   Get.defaultDialog(
-      barrierDismissible: true,
-      title: "Chờ mình xý nha...",
-      content: WillPopScope(
-        onWillPop: () async {
-          return shouldPop;
-        },
-        child: Container(
-          padding: const EdgeInsets.all(8),
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: const <Widget>[
-              Image(
-                width: 120,
-                height: 120,
-                image: AssetImage("assets/images/loading_fine.gif"),
-              ),
-            ],
-          ),
+    barrierDismissible: true,
+    title: "Chờ mình xý nha...",
+    content: WillPopScope(
+      onWillPop: () async {
+        return shouldPop;
+      },
+      child: Container(
+        padding: const EdgeInsets.all(8),
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: const <Widget>[
+            Image(
+              width: 120,
+              height: 120,
+              image: AssetImage("assets/images/loading_fine.gif"),
+            ),
+          ],
         ),
       ),
-      titleStyle: FineTheme.typograhpy.h2);
+    ),
+    titleStyle: FineTheme.typograhpy.h2,
+  );
 }
 
 Future<bool> showErrorDialog(
@@ -127,32 +127,29 @@ Future<bool> showErrorDialog(
         child: Column(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Align(
-              alignment: Alignment.topRight,
-              child: IconButton(
-                icon: const Icon(
-                  AntDesign.closecircleo,
-                  color: Colors.red,
-                ),
-                onPressed: () {
-                  hideDialog();
-                },
-              ),
-            ),
+            // Align(
+            //   alignment: Alignment.topRight,
+            //   child: IconButton(
+            //     icon: const Icon(
+            //       AntDesign.closecircleo,
+            //       color: Colors.red,
+            //     ),
+            //     onPressed: () {
+            //       hideDialog();
+            //     },
+            //   ),
+            // ),
             Padding(
-              padding: const EdgeInsets.fromLTRB(1, 0, 1, 0),
+              padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
               child: Text(
                 errorTitle,
                 textAlign: TextAlign.center,
-                style: FineTheme.typograhpy.h2,
+                style: FineTheme.typograhpy.body1,
               ),
             ),
-            const SizedBox(
-              height: 8,
-            ),
             const Image(
-              width: 96,
-              height: 96,
+              width: 64,
+              height: 64,
               image: AssetImage("assets/images/error.png"),
             ),
             const SizedBox(
@@ -211,19 +208,19 @@ Future<int> showOptionDialog(String text,
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                Align(
-                  alignment: Alignment.topLeft,
-                  child: IconButton(
-                    icon: const Icon(
-                      AntDesign.closecircleo,
-                      color: Colors.red,
-                    ),
-                    onPressed: () {
-                      option = 0;
-                      hideDialog();
-                    },
-                  ),
-                ),
+                // Align(
+                //   alignment: Alignment.topLeft,
+                //   child: IconButton(
+                //     icon: const Icon(
+                //       AntDesign.closecircleo,
+                //       color: Colors.red,
+                //     ),
+                //     onPressed: () {
+                //       option = 0;
+                //       hideDialog();
+                //     },
+                //   ),
+                // ),
                 const SizedBox(
                   height: 54,
                 ),
@@ -314,12 +311,12 @@ Future<int> showOptionDialog(String text,
               ],
             ),
             const Positioned(
-              top: -30,
-              right: 95,
+              top: -50,
+              right: 100,
               child: Image(
                 image: AssetImage("assets/images/logo.png"),
-                width: 160,
-                height: 160,
+                width: 130,
+                height: 130,
               ),
             )
           ],

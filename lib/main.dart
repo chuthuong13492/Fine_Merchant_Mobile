@@ -3,14 +3,22 @@ import 'dart:io';
 
 import 'package:fine_merchant_mobile/Accessories/theme_data.dart';
 import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
+import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
+import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/Utils/pageNavigation.dart';
 import 'package:fine_merchant_mobile/Utils/request.dart';
+import 'package:fine_merchant_mobile/View/delivery_list.dart';
 import 'package:fine_merchant_mobile/View/nav_screen.dart';
 import 'package:fine_merchant_mobile/View/notFoundScreen.dart';
 import 'package:fine_merchant_mobile/View/onboard.dart';
+import 'package:fine_merchant_mobile/View/order_list.dart';
+import 'package:fine_merchant_mobile/View/packageDetail_screen.dart';
+import 'package:fine_merchant_mobile/View/profile.dart';
+import 'package:fine_merchant_mobile/View/qr_screen.dart';
 import 'package:fine_merchant_mobile/View/sign_in.dart';
 import 'package:fine_merchant_mobile/View/start_up.dart';
 import 'package:fine_merchant_mobile/View/welcome_screen.dart';
+import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/setup.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -26,9 +34,7 @@ Future<void> main() async {
 
   await setup();
   createRouteBindings();
-  // Timer.periodic(const Duration(milliseconds: 500), (_) {
-  //   Get.find<RootViewModel>().liveLocation();
-  // });
+
   runApp(MyApp());
 }
 
@@ -45,7 +51,7 @@ class MyApp extends StatelessWidget {
             return ScaleRoute(page: const WelcomeScreen());
           case RouteHandler.LOGIN:
             return CupertinoPageRoute(
-                builder: (context) => const SignIn(), settings: settings);
+                builder: (context) => loginWithAccount(), settings: settings);
           case RouteHandler.ONBOARD:
             return ScaleRoute(page: const OnBoardScreen());
           case RouteHandler.LOADING:
@@ -58,8 +64,32 @@ class MyApp extends StatelessWidget {
           case RouteHandler.NAV:
             return CupertinoPageRoute(
                 builder: (context) => RootScreen(
-                      initScreenIndex: settings.arguments as int ?? 0,
+                      initScreenIndex: settings.arguments != null
+                          ? settings.arguments as int
+                          : 0,
                     ),
+                settings: settings);
+          case RouteHandler.PROFILE:
+            return CupertinoPageRoute(
+                builder: (context) => const ProfileScreen(),
+                settings: settings);
+          case RouteHandler.ORDER_LIST:
+            return CupertinoPageRoute(
+                builder: (context) => const OrderListScreen(),
+                settings: settings);
+          case RouteHandler.DELIVERY_LIST:
+            return CupertinoPageRoute(
+                builder: (context) => const DeliveryListScreen(),
+                settings: settings);
+          case RouteHandler.QRCODE_SCREEN:
+            return CupertinoPageRoute<bool>(
+                builder: (context) =>
+                    QRCodeScreen(box: settings.arguments as BoxDTO),
+                settings: settings);
+          case RouteHandler.PACKAGE_DETAIL:
+            return CupertinoPageRoute<bool>(
+                builder: (context) => PackageDetailScreen(
+                    package: settings.arguments as PackageViewDTO),
                 settings: settings);
           default:
             return CupertinoPageRoute(

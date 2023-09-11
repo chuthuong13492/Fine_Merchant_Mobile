@@ -37,7 +37,7 @@ class WelcomeScreen extends StatelessWidget {
                   ),
                   Center(
                     child: Text(
-                      "Fine",
+                      "Fine Merchant",
                       style: FineTheme.typograhpy.h1.copyWith(
                           color: FineTheme.palettes.primary100, fontSize: 30),
                     ),

@@ -8,11 +8,27 @@ import 'package:flutter/material.dart';
 
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 
 import 'package:scoped_model/scoped_model.dart';
 
-class SignIn extends StatelessWidget {
-  const SignIn({Key? key}) : super(key: key);
+class loginWithAccount extends StatefulWidget {
+  loginWithAccount({Key? key}) : super(key: key);
+
+  @override
+  SignIn createState() => SignIn();
+}
+
+class SignIn extends State<loginWithAccount> {
+  final TextEditingController usernameController = TextEditingController();
+  final TextEditingController passwordController = TextEditingController();
+
+  void submitForm() {
+    var loginViewModel = Get.find<LoginViewModel>();
+    String username = usernameController.text;
+    String password = passwordController.text;
+    loginViewModel.signInWithAccount(username, password);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +89,7 @@ class SignIn extends StatelessWidget {
                   topRight: Radius.circular(50),
                 ),
               ),
-              padding: const EdgeInsets.fromLTRB(16, 100, 16, 16),
+              padding: const EdgeInsets.fromLTRB(16, 50, 16, 8),
               height: screenHeight * 0.5,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -81,12 +97,29 @@ class SignIn extends StatelessWidget {
                 children: [
                   const Center(
                     child: Text(
-                      'Dùng mail trường để đăng nhập nhé!',
+                      'Vui lòng đăng nhập để tiếp tục',
                       style: TextStyle(
                           fontFamily: 'Montserrat',
                           fontSize: 16,
                           fontWeight: FontWeight.w700,
-                          color: Colors.white),
+                          color: Colors.teal),
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  TextField(
+                    controller: usernameController,
+                    decoration: const InputDecoration(
+                      labelText: 'Tài khoản',
+                      border: OutlineInputBorder(),
+                    ),
+                  ),
+                  const SizedBox(height: 8.0),
+                  TextField(
+                    obscureText: true,
+                    controller: passwordController,
+                    decoration: const InputDecoration(
+                      labelText: 'Mật khẩu',
+                      border: OutlineInputBorder(),
                     ),
                   ),
                   const SizedBox(
@@ -94,7 +127,7 @@ class SignIn extends StatelessWidget {
                   ),
                   InkWell(
                     onTap: () {
-                      // model.signInWithGoogle();
+                      submitForm();
                     },
                     child: Container(
                       alignment: Alignment.center,
@@ -107,19 +140,19 @@ class SignIn extends StatelessWidget {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
-                          Center(
-                            child: Image.asset(
-                              "assets/icons/google.png",
-                              width: 32,
-                              height: 32,
-                            ),
-                          ),
-                          const SizedBox(
-                            width: 8,
-                          ),
+                          // Center(
+                          //   child: Image.asset(
+                          //     "assets/icons/google.png",
+                          //     width: 32,
+                          //     height: 32,
+                          //   ),
+                          // ),
+                          // const SizedBox(
+                          //   width: 8,
+                          // ),
                           Center(
                             child: Text(
-                              'Đăng nhập bằng email',
+                              'Đăng nhập',
                               style: FineTheme.typograhpy.body1,
                             ),
                           ),
@@ -128,31 +161,31 @@ class SignIn extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(
-                    height: 24,
+                    height: 16,
                   ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        "Didn't have an account?",
-                        style: FineTheme.typograhpy.body2
-                            .copyWith(color: Colors.white),
-                      ),
-                      const SizedBox(
-                        width: 8,
-                      ),
-                      InkWell(
-                        onTap: () {},
-                        child: Text(
-                          'Sign Up',
-                          style: FineTheme.typograhpy.body1
-                              .copyWith(color: Colors.white),
-                        ),
-                      )
-                    ],
-                  ),
+                  // Row(
+                  //   mainAxisAlignment: MainAxisAlignment.center,
+                  //   children: [
+                  //     Text(
+                  //       "Chưa có tài khoản?",
+                  //       style: FineTheme.typograhpy.body2
+                  //           .copyWith(color: Colors.white),
+                  //     ),
+                  //     const SizedBox(
+                  //       width: 8,
+                  //     ),
+                  //     InkWell(
+                  //       onTap: () {},
+                  //       child: Text(
+                  //         'Đăng ký ngay',
+                  //         style: FineTheme.typograhpy.body1
+                  //             .copyWith(color: Colors.white),
+                  //       ),
+                  //     )
+                  //   ],
+                  // ),
                   const SizedBox(
-                    height: 48,
+                    height: 24,
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -160,7 +193,7 @@ class SignIn extends StatelessWidget {
                     children: [
                       Center(
                         child: Text(
-                          "By continue you agree to our",
+                          "Bằng việc tiếp tục, bạn đã đồng ý với",
                           style: FineTheme.typograhpy.body2,
                         ),
                       ),
@@ -168,10 +201,17 @@ class SignIn extends StatelessWidget {
                         child: InkWell(
                           onTap: () {},
                           child: Text(
-                            "Terms & Privacy Policy",
+                            // "Terms & Privacy Policy",
+                            "Điều khoản và Chính sách",
                             style: FineTheme.typograhpy.buttonLg
                                 .copyWith(color: Colors.black),
                           ),
+                        ),
+                      ),
+                      Center(
+                        child: Text(
+                          "của chúng tôi",
+                          style: FineTheme.typograhpy.body2,
                         ),
                       ),
                     ],

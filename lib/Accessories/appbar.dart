@@ -6,13 +6,18 @@ import 'package:get/get.dart';
 class DefaultAppBar extends StatefulWidget implements PreferredSizeWidget {
   final String? title;
   Widget? backButton;
+  PreferredSizeWidget? bottom;
   List<Widget>? actionButton;
   DefaultAppBar(
-      {Key? key, @required this.title, this.backButton, this.actionButton})
+      {Key? key,
+      @required this.title,
+      this.backButton,
+      this.actionButton,
+      this.bottom})
       : super(key: key);
 
   @override
-  Size get preferredSize => Size.fromHeight(56);
+  Size get preferredSize => Size.fromHeight(80);
 
   @override
   _AppBarSate createState() {
@@ -51,6 +56,7 @@ class _AppBarSate extends State<DefaultAppBar> {
           style: FineTheme.typograhpy.h2
               .copyWith(color: FineTheme.palettes.primary100)),
       actions: widget.actionButton ?? [],
+      bottom: widget.bottom,
     );
   }
 }
