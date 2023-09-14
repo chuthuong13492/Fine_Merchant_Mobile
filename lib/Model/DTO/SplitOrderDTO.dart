@@ -6,7 +6,8 @@ class SplitOrderDTO {
   String? timeSlotId;
   bool? isChecked;
 
-  SplitOrderDTO({this.productName, this.quantity, this.timeSlotId});
+  SplitOrderDTO(
+      {this.productName, this.quantity, this.timeSlotId, this.isChecked});
 
   SplitOrderDTO.fromJson(Map<String, dynamic> json) {
     productName = json['productName'];

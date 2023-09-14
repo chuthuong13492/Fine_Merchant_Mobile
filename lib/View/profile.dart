@@ -107,8 +107,15 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 account(model),
                 userAccount(model),
                 const SizedBox(
-                  height: 4,
+                  height: 32,
                 ),
+                Image(
+                  image: AssetImage(model.currentUser?.roleType == 2
+                      ? "assets/images/check_task.png"
+                      : "assets/images/shipper.png"),
+                  width: 350,
+                  height: 350,
+                )
                 // systemInfo(model)
               ],
             ),

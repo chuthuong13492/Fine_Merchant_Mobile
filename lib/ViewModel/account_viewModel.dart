@@ -6,6 +6,7 @@ import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/Utils/shared_pref.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
@@ -61,6 +62,14 @@ class AccountViewModel extends BaseModel {
         showLoadingDialog();
         await _dao.logOut();
         await removeALL();
+        currentUser = null;
+        Get.rawSnackbar(
+            message: "Đăng xuất thành công!!",
+            duration: Duration(seconds: 2),
+            snackPosition: SnackPosition.BOTTOM,
+            margin: const EdgeInsets.only(left: 8, right: 8, bottom: 32),
+            borderRadius: 8);
+
         // await FirebaseAuth.instance.signOut();
         // await GoogleSignIn().signOut();
         // Get.testMode = true;
@@ -72,7 +81,8 @@ class AccountViewModel extends BaseModel {
         // }
         // await Get.find<RootViewModel>().startUp();
         hideDialog();
-        Get.toNamed(RouteHandler.LOGIN);
+        notifyListeners();
+        Get.offAllNamed(RouteHandler.LOGIN);
       }
     } catch (e) {
       print(e);

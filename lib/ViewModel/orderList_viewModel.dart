@@ -14,8 +14,8 @@ class OrderListViewModel extends BaseModel {
   // constant
   List<int> staffOrderStatuses = [
     OrderStatusEnum.PROCESSING,
-    OrderStatusEnum.PREPARED,
-    OrderStatusEnum.DELIVERING,
+    // OrderStatusEnum.PREPARED,
+    // OrderStatusEnum.DELIVERING,
   ];
   List<int> driverOrderStatuses = [
     OrderStatusEnum.PREPARED,
@@ -147,7 +147,8 @@ class OrderListViewModel extends BaseModel {
       final data = await _stationDAO?.getStationsByDestination(
           destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
       if (data != null) {
-        stationList = data;
+        stationList =
+            data.where((station) => station.isActive == true).toList();
         stationSelections = stationList
             .map((e) => e.name == stationList.first.name ? true : false)
             .toList();
@@ -223,7 +224,7 @@ class OrderListViewModel extends BaseModel {
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
-        await getOrders();
+        await getSplitOrders();
       } else {
         setState(ViewStatus.Error);
       }
@@ -268,32 +269,6 @@ class OrderListViewModel extends BaseModel {
     }
   }
 
-  // Future<void> getNewOrder() async {
-  //   try {
-  //     setState(ViewStatus.Loading);
-  //     final data = await _orderDAO?.getOrders();
-  //     final currentDateData = data?.firstWhere(
-  //         (orderSummary) =>
-  //             DateTime.parse(orderSummary.checkInDate!)
-  //                 .difference(DateTime.now())
-  //                 .inDays ==
-  //             0,
-  //         orElse: () => null as dynamic);
-  //     if (currentDateData != null) {
-  //       orderThumbnail.add(currentDateData);
-  //       newTodayOrders = currentDateData;
-  //     }
-  //     setState(ViewStatus.Completed);
-  //   } catch (e) {
-  //     bool result = await showErrorDialog();
-  //     if (result) {
-  //       await getNewOrder();
-  //     } else {
-  //       setState(ViewStatus.Error);
-  //     }
-  //   } finally {}
-  // }
-
   Future<void> confirmOrder(int orderStatus) async {
     try {
       var currentUser = Get.find<AccountViewModel>().currentUser;
@@ -323,8 +298,8 @@ class OrderListViewModel extends BaseModel {
             //     orderList.where((e) => e.orderId != orderId).toList();
             // orderList = newOrderList;
             // Refresh
-            getOrders();
-            getSplitOrders();
+            await getOrders();
+            await getSplitOrders();
             numsOfChecked = 0;
             notifyListeners();
             await showStatusDialog(
@@ -381,8 +356,8 @@ class OrderListViewModel extends BaseModel {
             //     orderList.where((e) => e.orderId != orderId).toList();
             // orderList = newOrderList;
             // Refresh
-            getOrders();
-            getSplitOrders();
+            await getOrders();
+            await getSplitOrders();
             numsOfChecked = 0;
             notifyListeners();
             await showStatusDialog(

@@ -42,16 +42,15 @@ class OrderDAO extends BaseDAO {
   }
 
   Future<List<DeliveryPackageDTO>?> getSplitOrderListByStoreForDriver(
-      {required String storeId,
-      String? stationId,
-      String? timeSlotId,
+      {String? storeId,
+      required String stationId,
+      required String timeSlotId,
       int? orderStatus}) async {
     final res = await request.get(
-      '/admin/orderDetail/shipper/splitOrder/${storeId}',
+      '/admin/orderDetail/shipper/splitOrder/${timeSlotId}/${stationId}',
       queryParameters: {
-        // "timeSlotId": timeSlotId,
-        // "status": orderStatus,
-        // "stationId": stationId,
+        "status": orderStatus,
+        "storeId": storeId,
         // "size": size ?? DEFAULT_SIZE,
         // "page": page ?? 1,
       },
@@ -84,6 +83,27 @@ class OrderDAO extends BaseDAO {
       metaDataDTO = MetaDataDTO.fromJson(res.data["metadata"]);
       // orderSummaryList = OrderDTO.fromList(res.data['data']);
       return listJson.map((e) => OrderDTO.fromJson(e)).toList();
+    }
+    return null;
+  }
+
+  Future<List<ShipperOrderBoxDTO>?> getShipperOrderBox({
+    String? stationId,
+    String? timeSlotId,
+  }) async {
+    final res = await request.get(
+      '/admin/orderDetail/orderBox/${timeSlotId}/${stationId}',
+      queryParameters: {
+        // "timeSlotId": timeSlotId,
+        // "size": size ?? DEFAULT_SIZE,
+        // "page": page ?? 1,
+      },
+    );
+    if (res.data['data'] != null) {
+      var listJson = res.data['data'] as List;
+      metaDataDTO = MetaDataDTO.fromJson(res.data["metadata"]);
+      // orderSummaryList = OrderDTO.fromList(res.data['data']);
+      return listJson.map((e) => ShipperOrderBoxDTO.fromJson(e)).toList();
     }
     return null;
   }
@@ -139,7 +159,7 @@ class OrderDAO extends BaseDAO {
   Future<int?> confirmStoreOrderDetail(
       {required UpdateOrderStatusRequestModel orders}) async {
     final res = await request.put('admin/orderDetail/status/storeId/orderId',
-        data: orders);
+        data: orders.toJson());
 
     return res.statusCode;
   }

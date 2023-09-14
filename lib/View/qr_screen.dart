@@ -1,6 +1,8 @@
 import 'package:fine_merchant_mobile/Accessories/appbar.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Model/DTO/BoxDTO.dart';
+import 'package:fine_merchant_mobile/Model/DTO/OrderDTO.dart';
+import 'package:fine_merchant_mobile/ViewModel/qrScreen_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
 import 'package:flutter/material.dart';
@@ -10,25 +12,33 @@ import 'package:get/get.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class QRCodeScreen extends StatefulWidget {
-  final BoxDTO box;
+  final ShipperOrderBoxDTO orderBox;
 
-  const QRCodeScreen({super.key, required this.box});
+  const QRCodeScreen({super.key, required this.orderBox});
 
   @override
   State<QRCodeScreen> createState() => _QRCodeScreenState();
 }
 
 class _QRCodeScreenState extends State<QRCodeScreen> {
+  QrScreenViewModel model = Get.put(QrScreenViewModel());
+  List<OrderDetail> orderBoxDetails = [];
+
   @override
   void initState() {
     super.initState();
+    model.boxList = Get.find<StationViewModel>().boxList;
+    orderBoxDetails = widget.orderBox.orderDetails!;
+    model.getBoxQrCode();
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FineTheme.palettes.primary100,
-      appBar: DefaultAppBar(title: "Box QR Code"),
+      appBar: DefaultAppBar(
+          title:
+              "Chi tiết tủ ${model.boxList.firstWhere((box) => box.id == widget.orderBox.boxId).code}"),
       body: ScopedModel(
           model: Get.find<StationViewModel>(),
           child: ScopedModelDescendant<StationViewModel>(
@@ -65,8 +75,19 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
             String? stationName = model.stationList
                 .firstWhere((station) => station.id == model.selectedStationId)
                 .name;
+
             return Column(
               children: [
+                Center(
+                  child: Text(
+                    'Thông tin:',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontStyle: FontStyle.normal,
+                        color: FineTheme.palettes.shades200),
+                  ),
+                ),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -81,17 +102,21 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                     Text(
                       '${stationName}',
                       style: TextStyle(
+                          color: FineTheme.palettes.emerald25,
                           fontSize: 16,
-                          fontWeight: FontWeight.w400,
+                          fontWeight: FontWeight.w500,
                           fontStyle: FontStyle.normal),
                       overflow: TextOverflow.ellipsis,
                       textAlign: TextAlign.right,
                     ),
                   ],
                 ),
+                SizedBox(
+                  height: 16,
+                ),
                 Center(
                   child: Text(
-                    'Các món hàng trong tủ:',
+                    'Số món cần đặt: ${orderBoxDetails.length}',
                     style: TextStyle(
                         fontWeight: FontWeight.w600,
                         fontSize: 16,
@@ -102,78 +127,8 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                 Expanded(
                   child: ListView(
                     children: [
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Cà phê',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  fontStyle: FontStyle.normal,
-                                  color: FineTheme.palettes.shades200),
-                            ),
-                            Text(
-                              'x 3',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Trà sữa',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  fontStyle: FontStyle.normal,
-                                  color: FineTheme.palettes.shades200),
-                            ),
-                            Text(
-                              'x 3',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
-                      Padding(
-                        padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                        child: Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              'Bánh mì',
-                              style: TextStyle(
-                                  fontWeight: FontWeight.w600,
-                                  fontSize: 16,
-                                  fontStyle: FontStyle.normal,
-                                  color: FineTheme.palettes.shades200),
-                            ),
-                            Text(
-                              'x 3',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ],
-                        ),
-                      ),
+                      ...orderBoxDetails
+                          .map((detail) => buildOrderDetail(detail))
                     ],
                   ),
                 )
@@ -185,8 +140,8 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
 
   Widget _buildQrCodeSection() {
     return ScopedModel(
-        model: Get.find<StationViewModel>(),
-        child: ScopedModelDescendant<StationViewModel>(
+        model: Get.find<QrScreenViewModel>(),
+        child: ScopedModelDescendant<QrScreenViewModel>(
           builder: (context, child, model) {
             if (model.status == ViewStatus.Loading) {
               return Container(
@@ -207,26 +162,8 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
                           Text(
-                            'QR Code mở tủ',
+                            'Đang lấy mã QR...',
                             style: FineTheme.typograhpy.h2,
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'Hãy quét mã QR code có tại station',
-                            style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                fontStyle: FontStyle.normal),
-                          ),
-                          const SizedBox(height: 8),
-                          const Text(
-                            'FINE sẽ giúp bạn mở chiếc tủ bạn cần nha',
-                            style: TextStyle(
-                                fontFamily: 'Montserrat',
-                                fontSize: 16,
-                                fontWeight: FontWeight.w400,
-                                fontStyle: FontStyle.normal),
                           ),
                         ],
                       ),
@@ -254,22 +191,12 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'QR Code của tủ ${widget.box.code}',
+                          'QR Code để mở tủ',
                           style: FineTheme.typograhpy.h2,
-                        ),
-                        const SizedBox(height: 2),
-                        const Text(
-                          'Hãy quét mã QR Code để mở',
-                          style: TextStyle(
-                              fontFamily: 'Montserrat',
-                              fontSize: 16,
-                              fontWeight: FontWeight.w400,
-                              fontStyle: FontStyle.normal),
                         ),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 50),
                   model.imageBytes != null
                       ? Container(
                           height: 300,
@@ -280,10 +207,49 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                           ),
                         )
                       : SizedBox.shrink(),
+                  const Text(
+                    'Hãy đưa mã để mở tủ!',
+                    style: TextStyle(
+                        fontFamily: 'Montserrat',
+                        fontSize: 16,
+                        fontWeight: FontWeight.w400,
+                        fontStyle: FontStyle.normal),
+                  ),
                 ],
               ),
             );
           },
         ));
+  }
+
+  Widget buildOrderDetail(OrderDetail orderDetail) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+      child: Column(
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                '${orderDetail.productName}',
+                style: TextStyle(
+                    fontWeight: FontWeight.w600,
+                    fontSize: 16,
+                    fontStyle: FontStyle.normal,
+                    color: FineTheme.palettes.shades200),
+              ),
+              Text(
+                'x ${orderDetail.quantity}',
+                style: TextStyle(
+                    fontSize: 16,
+                    fontWeight: FontWeight.w400,
+                    fontStyle: FontStyle.normal),
+                overflow: TextOverflow.ellipsis,
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 }

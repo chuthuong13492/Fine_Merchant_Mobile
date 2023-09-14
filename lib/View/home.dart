@@ -1,22 +1,20 @@
 // ignore_for_file: avoid_unnecessary_containers
 
-import 'package:cached_network_image/cached_network_image.dart';
+import 'dart:async';
+
+import 'package:fine_merchant_mobile/Accessories/index.dart';
+import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
+import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
-import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
-import 'package:fine_merchant_mobile/ViewModel/root_viewModel.dart';
-import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
-import 'package:fine_merchant_mobile/widgets/fixed_app_bar.dart';
-import 'package:fine_merchant_mobile/widgets/shimmer_block.dart';
-import 'package:flutter/material.dart';
-import 'package:flutter/src/foundation/key.dart';
-import 'package:flutter/src/widgets/framework.dart';
 
+import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
+
+import 'package:fine_merchant_mobile/widgets/skeleton_list.dart';
+import 'package:flutter/material.dart';
 import 'package:get/get.dart';
-import 'package:get/get_core/src/get_main.dart';
 import 'package:scoped_model/scoped_model.dart';
-import 'package:shimmer/shimmer.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({Key? key}) : super(key: key);
@@ -29,159 +27,154 @@ class _HomeScreenState extends State<HomeScreen> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
   final double HEIGHT = 48;
+  late Timer periodicTimer;
+  bool isDelivering = false;
+  PackageViewDTO? currentPackage;
+  HomeViewModel model = Get.put(HomeViewModel());
   final ValueNotifier<double> notifier = ValueNotifier(0);
   final PageController controller = PageController();
-  Future<void> _refresh() async {
-    await Get.find<RootViewModel>().startUp();
-  }
 
   @override
   void initState() {
     super.initState();
+    // periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+    //   model.getSplitOrdersForDriver();
+    // });
+  }
+
+  Future<void> refreshFetchOrder() async {
+    await model.getSplitOrdersForDriver();
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      backgroundColor: FineTheme.palettes.shades100,
-      body: SafeArea(
-        // ignore: sized_box_for_whitespace
-        child: Container(
-          // color: FineTheme.palettes.primary100,
-          height: Get.height,
-          child: ScopedModel(
-            model: Get.find<HomeViewModel>(),
-            child: Stack(
-              children: [
-                Column(
-                  children: [
-                    FixedAppBar(
-                      // notifier: notifier,
-                      height: HEIGHT,
+    return ScopedModel(
+      model: Get.find<HomeViewModel>(),
+      child: Scaffold(
+        appBar: DefaultAppBar(
+            title: "Gói hàng ${model.isDelivering ? "Đang giao" : "Chờ giao"}",
+            backButton: const SizedBox.shrink(),
+            bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(120),
+              child: model.isDelivering
+                  ? const SizedBox.shrink()
+                  : DropdownButton<String>(
+                      value: model.selectedStationId,
+                      onChanged: (String? value) {
+                        model.onChangeStation(value!);
+                        setState(() {});
+                      },
+                      items: model.stationList
+                          .map<DropdownMenuItem<String>>((StationDTO station) {
+                        return DropdownMenuItem<String>(
+                          value: station.id,
+                          child: Text(
+                            "${station.name}",
+                            style: FineTheme.typograhpy.h2.copyWith(
+                              color: FineTheme.palettes.emerald25,
+                            ),
+                          ),
+                        );
+                      }).toList(),
                     ),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.only(top: 0),
-                        child: RefreshIndicator(
-                          key: _refreshIndicatorKey,
-                          onRefresh: _refresh,
-                          child: ScopedModelDescendant<HomeViewModel>(
-                              builder: (context, child, model) {
-                            if (model.status == ViewStatus.Error) {
-                              return Column(
-                                crossAxisAlignment: CrossAxisAlignment.center,
-                                children: [
-                                  const Center(
-                                    child: Text(
-                                      "Fine đã cố gắng hết sức ..\nNhưng vẫn bị con quỷ Bug đánh bại.",
-                                      textAlign: TextAlign.center,
-                                      style: TextStyle(
-                                          fontStyle: FontStyle.normal,
-                                          fontFamily: 'Montserrat',
-                                          fontWeight: FontWeight.w500,
-                                          fontSize: 14),
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  // ignore: sized_box_for_whitespace
-                                  Container(
-                                    width: 300,
-                                    height: 300,
-                                    child: Image.asset(
-                                      'assets/images/error.png',
-                                      fit: BoxFit.contain,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Center(
-                                    child: Text(
-                                      "Bạn vui lòng thử một số cách sau nhé!",
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Center(
-                                    child: Text(
-                                      "1. Tắt ứng dụng và mở lại",
-                                      textAlign: TextAlign.center,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 8),
-                                  const Center(
-                                    child: InkWell(
-                                      child: Text(
-                                        "2. Đặt hàng qua Fanpage ",
-                                        textAlign: TextAlign.center,
-                                      ),
-                                      // onTap: () =>
-                                      //     launch('fb://page/103238875095890'),
-                                    ),
-                                  ),
-                                ],
-                              );
-                            } else {
-                              return Container(
-                                // color: FineTheme.palettes.neutral200,
-                                child: NotificationListener<ScrollNotification>(
-                                  onNotification: (n) {
-                                    if (n.metrics.pixels <= HEIGHT) {
-                                      notifier.value = n.metrics.pixels;
-                                    }
-                                    return false;
-                                  },
-                                  child: SingleChildScrollView(
-                                    child: Column(
-                                      // addAutomaticKeepAlives: true,
-                                      children: [
-                                        ...renderHomeSections().toList(),
-                                      ],
-                                    ),
-                                  ),
-                                ),
-                              );
-                            }
-                          }),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-                // Positioned(
-                //   left: 0,
-                //   bottom: 0,
-                //   child: buildNewOrder(),
-                // ),
-              ],
+            )),
+        body: Column(
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            Expanded(
+              child: Container(
+                // ignore: sort_child_properties_last
+                child: _buildPackageList(),
+                color: const Color(0xffefefef),
+              ),
             ),
-          ),
+            const SizedBox(height: 16),
+          ],
         ),
       ),
     );
   }
 
-  List<Widget> renderHomeSections() {
-    var currentUser = Get.find<AccountViewModel>().currentUser;
-
-    return [
-      // banner(),
-      const SizedBox(height: 18),
-      buildWelcomeSection(),
-      buildStatisticSection(),
-      const SizedBox(height: 18),
-      Image(
-        image: AssetImage(currentUser?.roleType == 2
-            ? "assets/images/check_task.png"
-            : "assets/images/shipper.png"),
-        width: 350,
-        height: 350,
-      )
-    ];
+  Widget _buildPackageInfo(
+      String? stationName, TimeSlotDTO? timeSlot, String? storeName) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      width: Get.width,
+      height: 180,
+      decoration: const BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.all(
+          Radius.circular(15),
+        ),
+      ),
+      child: Column(
+        children: [
+          Center(
+            child: Text(
+              'Thông tin:',
+              style: TextStyle(
+                  fontWeight: FontWeight.w600,
+                  fontSize: 16,
+                  fontStyle: FontStyle.normal,
+                  color: FineTheme.palettes.shades200),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Trạm:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontStyle: FontStyle.normal,
+                      color: FineTheme.palettes.shades200),
+                ),
+                Text(
+                  '$stationName',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal),
+                  overflow: TextOverflow.ellipsis,
+                  textAlign: TextAlign.right,
+                ),
+              ],
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text(
+                  'Vào lúc:',
+                  style: TextStyle(
+                      fontWeight: FontWeight.w600,
+                      fontSize: 16,
+                      fontStyle: FontStyle.normal,
+                      color: FineTheme.palettes.shades200),
+                ),
+                Text(
+                  '${timeSlot?.checkoutTime}',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal),
+                  overflow: TextOverflow.ellipsis,
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget buildWelcomeSection() {
     var currentUser = Get.find<AccountViewModel>().currentUser;
-
     return ScopedModel(
         model: Get.find<HomeViewModel>(),
         child: ScopedModelDescendant<HomeViewModel>(
@@ -221,93 +214,348 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
   }
 
-  Widget buildStatisticSection() {
-    var currentUser = Get.find<AccountViewModel>().currentUser;
-    var currentOrderList = Get.find<OrderListViewModel>().orderList;
-    return ScopedModel(
-        model: Get.find<HomeViewModel>(),
-        child: ScopedModelDescendant<HomeViewModel>(
-          builder: (context, child, model) {
-            ViewStatus status = model.status;
-            if (status == ViewStatus.Loading) {
-              return const SizedBox.shrink();
-            }
-            return InkWell(
-              onTap: () {},
-              child: Container(
-                padding: const EdgeInsets.only(top: 10, bottom: 10),
-                color: FineTheme.palettes.emerald100,
-                height: 200,
-                width: Get.width,
-                child: Container(
-                  height: 50,
-                  padding: const EdgeInsets.only(top: 17, bottom: 17),
-                  color: FineTheme.palettes.neutral200,
-                  child: Center(
-                    child: Column(
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Text(
-                              "Tình hình hôm nay",
-                              style: FineTheme.typograhpy.h2.copyWith(
-                                  color: FineTheme.palettes.neutral900),
-                            ),
-                          ],
-                        ),
-                        const SizedBox(
-                          height: 24,
-                        ),
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            Image.asset(
-                              "assets/icons/box_icon.png",
-                              width: 20,
-                              height: 16,
-                            ),
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            Text(
-                              "Đang có",
-                              style: FineTheme.typograhpy.subtitle2.copyWith(
-                                  color: FineTheme.palettes.neutral900),
-                            ),
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            Text(
-                              "${currentOrderList.length} đơn",
-                              style: FineTheme.typograhpy.subtitle2.copyWith(
-                                  color: FineTheme.palettes.emerald25),
-                            ),
-                            const SizedBox(
-                              width: 4,
-                            ),
-                            Text(
-                              "đang chờ bạn ${currentUser?.roleType == 2 ? 'duyệt' : 'giao'} đó!",
-                              style: FineTheme.typograhpy.subtitle2.copyWith(
-                                  color: FineTheme.palettes.neutral900),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
+  Widget _buildPackageList() {
+    return ScopedModelDescendant<HomeViewModel>(
+        builder: (context, child, model) {
+      final status = model.status;
+      List<PackageViewDTO> packageList = model.packageViewList;
+      List<PackageViewDTO> deliveredPackageList = model.deliveredPackageList;
+      bool isDelivering = model.isDelivering;
+      PackageViewDTO? currentPackage = model.currentDeliveryPackage;
+      if (status == ViewStatus.Loading) {
+        return const Center(
+          // child: SkeletonListItem(itemCount: 8),
+          child: LoadingFine(),
+        );
+      } else if (status == ViewStatus.Empty || packageList.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: InkWell(
+                  onTap: () async {
+                    showLoadingDialog();
+                    await model.getSplitOrdersForDriver();
+                    await model.getDeliveredOrdersForDriver();
+                    hideDialog();
+                  },
+                  child: Icon(
+                    Icons.replay,
+                    color: FineTheme.palettes.primary300,
+                    size: 26,
                   ),
                 ),
               ),
-            );
-          },
-        ));
+              Text(
+                'Hiện tại các món cần lấy ở ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name} đã hết!',
+                style: FineTheme.typograhpy.body1,
+              ),
+              deliveredPackageList.isNotEmpty
+                  ? Column(
+                      children: [
+                        const SizedBox(
+                          height: 16,
+                        ),
+                        Text(
+                            '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này!',
+                            style: FineTheme.typograhpy.body1),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                          child: Center(
+                            child: ElevatedButton(
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: Colors.white,
+                                shape: const RoundedRectangleBorder(
+                                    borderRadius:
+                                        // BorderRadius.only(
+                                        //     bottomRight: Radius.circular(16),
+                                        //     bottomLeft: Radius.circular(16))
+                                        BorderRadius.all(Radius.circular(8))),
+                              ),
+                              onPressed: () {
+                                _onTapDetail();
+                                // setState(() {
+                                //   isDelivering = !isDelivering;
+                                // });
+                              },
+                              child: Text(
+                                "Xem thông tin giao hàng!",
+                                style: FineTheme.typograhpy.subtitle2.copyWith(
+                                    color: FineTheme.palettes.emerald25),
+                              ),
+                            ),
+                          ),
+                        )
+                      ],
+                    )
+                  : SizedBox.shrink(),
+            ],
+          ),
+        );
+      }
+
+      if (status == ViewStatus.Error) {
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 1 / 4,
+            child: Image.asset(
+              'assets/images/error.png',
+              width: 24,
+            ),
+          ),
+        );
+      }
+
+      if (isDelivering && currentPackage != null) {
+        return Column(
+          children: [
+            Center(
+              child: _buildOrderPackage(currentPackage),
+            ),
+            Image.asset(
+              "assets/images/package_delivery.png",
+              width: 400,
+              height: 400,
+            ),
+          ],
+        );
+      }
+
+      return RefreshIndicator(
+        key: _refreshIndicatorKey,
+        onRefresh: refreshFetchOrder,
+        child: ListView(
+          physics: const AlwaysScrollableScrollPhysics(),
+          controller: Get.find<HomeViewModel>().scrollController,
+          padding: const EdgeInsets.all(8),
+          children: [
+            Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Center(
+                //   child: Text(
+                //       'Số gói hàng đã lấy: ${deliveredPackageList.length}/${packageList.length} ',
+                //       style: FineTheme.typograhpy.h2.copyWith(
+                //         color: FineTheme.palettes.emerald25,
+                //       )),
+                // ),
+                ...packageList
+                    .map((package) => _buildOrderPackage(package))
+                    .toList(),
+                loadMoreIcon(),
+                const SizedBox(
+                  height: 80,
+                ),
+              ],
+            )
+          ],
+        ),
+      );
+    });
   }
 
-  void _onTapOrderHistory(order) async {
+  Widget _buildOrderPackage(PackageViewDTO package) {
+    // final isToday = DateTime.parse(orderSummary.checkInDate!)
+    //         .difference(DateTime.now())
+    //         .inDays ==
+    //     0;
+    TimeSlotDTO? timeSlot = model.timeSlotList
+        .firstWhere((timeSlot) => timeSlot.id == package.timeSlotId);
+    String? storeName = model.storeList
+        .firstWhere((store) => store.id == package.storeId)
+        .storeName;
+    return Column(
+      children: [
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text('${storeName}',
+                  style: FineTheme.typograhpy.h2.copyWith(
+                    color: FineTheme.palettes.emerald25,
+                    fontWeight: FontWeight.bold,
+                  )),
+            ],
+          ),
+        ),
+        const SizedBox(
+          height: 8,
+        ),
+        Container(
+            // height: 80,
+            margin: const EdgeInsets.all(8),
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(8),
+              color: Colors.white,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Material(
+                  color: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8.0),
+                    // side: BorderSide(color: Colors.red),
+                  ),
+                  child: Column(
+                    children: [
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Số món:',
+                              style: FineTheme.typograhpy.body1.copyWith(
+                                  color: FineTheme.palettes.neutral900,
+                                  fontWeight: FontWeight.bold)),
+                          OutlinedButton(
+                            onPressed: () => {
+                              currentPackage = package,
+                              _dialogBuilder(context)
+                            },
+                            child: Text(
+                              'Xem chi tiết (${package.listProducts?.length})',
+                              style: TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w400,
+                                  fontStyle: FontStyle.normal,
+                                  color: FineTheme.palettes.emerald25),
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 8,
+                      ),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        children: [
+                          Text('Vào lúc:',
+                              style: FineTheme.typograhpy.body1.copyWith(
+                                  color: FineTheme.palettes.neutral900,
+                                  fontWeight: FontWeight.bold)),
+                          Text('${timeSlot.checkoutTime}',
+                              style: FineTheme.typograhpy.body1),
+                        ],
+                      ),
+                      const SizedBox(
+                        height: 24,
+                      ),
+                    ],
+                  )),
+            )),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+          child: Center(
+            child: ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(
+                    borderRadius:
+                        // BorderRadius.only(
+                        //     bottomRight: Radius.circular(16),
+                        //     bottomLeft: Radius.circular(16))
+                        BorderRadius.all(Radius.circular(8))),
+              ),
+              onPressed: () async {
+                await model.confirmDelivery(package);
+                await model.getDeliveredOrdersForDriver();
+                setState(() {});
+              },
+              child: Text(
+                "${"Đã lấy hàng"}",
+                style: FineTheme.typograhpy.subtitle2
+                    .copyWith(color: FineTheme.palettes.emerald25),
+              ),
+            ),
+          ),
+        )
+      ],
+    );
+  }
+
+  void _onTapDetail() async {
     // get orderDetail
-    // await Get.find<OrderHistoryViewModel>().getOrders();
-    // await Get.toNamed(RouteHandler.ORDER_HISTORY_DETAIL, arguments: order);
+    await model.getShipperOrderBoxes();
+    await Get.toNamed(RouteHandler.PACKAGE_DETAIL);
+    // model.getOrders();
+  }
+
+  Future<void> _dialogBuilder(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return AlertDialog(
+          title: Text('Chi tiết gói hàng', style: FineTheme.typograhpy.h2),
+          content: SizedBox(
+              height: 180,
+              width: 200,
+              child: ListView(
+                children: [
+                  const SizedBox(height: 8),
+                  ...?currentPackage?.listProducts
+                      ?.map((product) => _buildPackageProducts(product)),
+                ],
+              )),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: Text(
+                'Đóng',
+                style: FineTheme.typograhpy.body1
+                    .copyWith(color: FineTheme.palettes.emerald25),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  Widget _buildPackageProducts(ListProduct product) {
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(
+            '${product.productName}',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.normal),
+          ),
+          Text(
+            'x ${product.quantity}',
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.normal),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget loadMoreIcon() {
+    return ScopedModelDescendant<HomeViewModel>(
+      builder: (context, child, model) {
+        switch (model.status) {
+          case ViewStatus.LoadMore:
+            return const Padding(
+              padding: EdgeInsets.all(8.0),
+              child: Center(child: CircularProgressIndicator()),
+            );
+          default:
+            return const SizedBox.shrink();
+        }
+      },
+    );
   }
 }

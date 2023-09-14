@@ -11,7 +11,7 @@ class RouteHandler {
   static const String PACKAGE_DETAIL = "/package_detail";
   static const String DELIVERY_LIST = "/delivery_list";
   static const String WELCOME_SCREEN = "/welcome_screen";
-  static const String STATION_PICKER_SCREEN = "/station_picker_screen";
+  static const String STATION_SCREEN = "/station_screen";
   static const String PARTY_ORDER_SCREEN = "/party_order_screen";
   static const String CONFIRM_ORDER_SCREEN = "/confirm_order_screen";
   static const String QRCODE_SCREEN = "/qrcode_screen";

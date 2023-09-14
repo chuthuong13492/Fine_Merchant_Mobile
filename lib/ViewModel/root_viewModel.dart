@@ -59,11 +59,12 @@ class RootViewModel extends BaseModel {
       await Get.find<OrderListViewModel>().getOrders();
       await Get.find<OrderListViewModel>().getSplitOrders();
     } else {
-      await Get.find<DeliveryListViewModel>().getStationList();
-      await Get.find<DeliveryListViewModel>().getTimeSlotList();
-      await Get.find<DeliveryListViewModel>().getStoreList();
-      await Get.find<DeliveryListViewModel>().getSplitOrdersForDriver();
+      await Get.find<HomeViewModel>().getStationList();
+      await Get.find<HomeViewModel>().getTimeSlotList();
+      await Get.find<HomeViewModel>().getStoreList();
+      await Get.find<HomeViewModel>().getDeliveredOrdersForDriver();
+      await Get.find<HomeViewModel>().getSplitOrdersForDriver();
+      // await Get.find<StationViewModel>().getShipperOrderBoxes();
     }
-    await Get.find<StationViewModel>().getStationList();
   }
 }

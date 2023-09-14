@@ -1,11 +1,13 @@
 import 'dart:typed_data';
 
+import 'package:collection/collection.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
+import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -16,13 +18,14 @@ class StationViewModel extends BaseModel {
   // constant
 
   // local properties
+  List<ShipperOrderBoxDTO> orderBoxList = [];
   List<StationDTO> stationList = [];
   List<BoxDTO> boxList = [];
   List<TimeSlotDTO> timeSlotList = [];
+  String? selectedStationId = '';
   // Data Object Model
-  OrderDAO? _orderDAO;
   StationDAO? _stationDAO;
-  TimeSlotDAO? _timeSlotDAO;
+  OrderDAO? _orderDAO;
   dynamic error;
   OrderDTO? orderDTO;
   // Widget
@@ -30,43 +33,13 @@ class StationViewModel extends BaseModel {
   ScrollController? scrollController;
   int numsOfChecked = 0;
   int selectedOrderStatus = 4;
-  String selectedStationId = '';
-  String selectedTimeSlotId = '';
-  String selectedStoreId = '';
-  List<bool> stationSelections = [];
+
   StoreDTO? staffStore;
 
   StationViewModel() {
-    // orderDTO = dto;
     _orderDAO = OrderDAO();
     _stationDAO = StationDAO();
-    _timeSlotDAO = TimeSlotDAO();
     scrollController = ScrollController();
-  }
-
-  void onCheck(int index, bool isChecked) {
-    // splitOrderList[index].isChecked = isChecked;
-    // if (isChecked) {
-    //   numsOfChecked++;
-    // } else {
-    //   numsOfChecked--;
-    // }
-    notifyListeners();
-  }
-
-  void onCheckAll(bool isSelectAll) {
-    // if (isSelectAll) {
-    //   for (final item in splitOrderList) {
-    //     item.isChecked = true;
-    //   }
-    //   numsOfChecked = splitOrderList.length;
-    // } else {
-    //   for (final item in splitOrderList) {
-    //     item.isChecked = false;
-    //   }
-    //   numsOfChecked = 0;
-    // }
-    notifyListeners();
   }
 
   void onChangeStation(String value) {
@@ -75,57 +48,10 @@ class StationViewModel extends BaseModel {
     notifyListeners();
   }
 
-  // void onChangeSelectStation(int index) {
-  //   stationSelections = stationSelections.map((e) => false).toList();
-  //   stationSelections[index] = true;
-  //   selectedStation = stationList[index];
-
-  //   getOrders();
-  //   getSplitOrders();
-  //   notifyListeners();
-  // }
-
-  Future<void> getTimeSlotList() async {
-    try {
-      setState(ViewStatus.Loading);
-      final data = await _timeSlotDAO?.getTimeSlots(
-          destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
-      if (data != null) {
-        timeSlotList = data;
-        selectedTimeSlotId = data.first.id!;
-      }
-      setState(ViewStatus.Completed);
-      notifyListeners();
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getOrders();
-      } else {
-        setState(ViewStatus.Error);
-      }
-    }
-  }
-
-  Future<void> getBoxQrCode(String? boxId) async {
-    try {
-      setState(ViewStatus.Loading);
-      final qrcode = await _stationDAO!.getQrCodeByListBoxId(listBoxId: boxId);
-      imageBytes = qrcode;
-      await Future.delayed(const Duration(milliseconds: 200));
-      setState(ViewStatus.Completed);
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getBoxQrCode(boxId);
-      } else {
-        setState(ViewStatus.Error);
-      }
-    } finally {}
-  }
-
   Future<void> getBoxListByStation() async {
     try {
       setState(ViewStatus.Loading);
+      selectedStationId = Get.find<HomeViewModel>().selectedStationId;
       final data =
           await _stationDAO?.getAllBoxByStation(stationId: selectedStationId);
       if (data != null) {
@@ -143,61 +69,19 @@ class StationViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> getStationList() async {
+  Future<void> getShipperOrderBoxes() async {
     try {
       setState(ViewStatus.Loading);
-      final data = await _stationDAO?.getStationsByDestination(
-          destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
-      if (data != null) {
-        stationList = data;
-        stationSelections = stationList
-            .map((e) => e.name == stationList.first.name ? true : false)
-            .toList();
-        selectedStationId = data.first.id!;
-      }
-      setState(ViewStatus.Completed);
-      notifyListeners();
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getOrders();
-      } else {
-        setState(ViewStatus.Error);
-      }
-    } finally {}
-  }
-
-  Future<void> getSplitOrders() async {
-    try {
-      setState(ViewStatus.Loading);
-      numsOfChecked = 0;
-      print('selectedTimeSlotId: $selectedTimeSlotId');
       var currentUser = Get.find<AccountViewModel>().currentUser;
-      staffStore = Get.find<AccountViewModel>().currentStore;
-      if (currentUser != null && currentUser.storeId != null) {
-        final data = await _orderDAO?.getSplitOrderListByStoreAndStation(
-            storeId: currentUser.storeId!,
-            stationId: selectedStationId,
-            timeSlotId: selectedTimeSlotId,
-            orderStatus: selectedOrderStatus);
+      String selectedStationId = Get.find<HomeViewModel>().selectedStationId;
+      String selectedTimeSlotId = Get.find<HomeViewModel>().selectedTimeSlotId;
+      if (currentUser != null) {
+        final data = await _orderDAO?.getShipperOrderBox(
+          stationId: selectedStationId,
+          timeSlotId: selectedTimeSlotId,
+        );
         if (data != null) {
-          // splitOrderList = data;
-        }
-      } else {
-        final data = await _orderDAO?.getSplitOrderListByStoreAndStation(
-            storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
-            stationId: selectedStationId,
-            timeSlotId: selectedTimeSlotId,
-            orderStatus: selectedOrderStatus);
-        if (data != null) {
-          // splitOrderList = data
-          // .where((e) =>
-          //     (e.orderDetailStoreStatus != OrderStatusEnum.PROCESSING &&
-          //         e.orderDetailStoreStatus !=
-          //             OrderStatusEnum.STAFF_CONFIRM) &&
-          //     e.orderDetailStoreStatus != OrderStatusEnum.FINISHED)
-          // .toList();
-          ;
+          orderBoxList = data;
         }
       }
       setState(ViewStatus.Completed);
@@ -205,91 +89,67 @@ class StationViewModel extends BaseModel {
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
-        await getOrders();
+        await getShipperOrderBoxes();
       } else {
         setState(ViewStatus.Error);
       }
     } finally {}
   }
 
-  Future<void> getOrders() async {
+  Future<void> confirmAllBoxStored() async {
     try {
-      setState(ViewStatus.Loading);
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      staffStore = Get.find<AccountViewModel>().currentStore;
-      if (currentUser != null && currentUser.storeId != null) {
-        final data = await _orderDAO?.getOrderListByStoreAndStation(
-            storeId: currentUser.storeId!, stationId: selectedStationId);
-        if (data != null) {
-          // orderList = data;
-        }
-      } else {
-        final data = await _orderDAO?.getOrderListByStoreAndStation(
-            storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
-            stationId: selectedStationId);
-        if (data != null) {
-          // orderList = data
-          // .where((e) =>
-          //     (e.orderDetailStoreStatus != OrderStatusEnum.PROCESSING &&
-          //         e.orderDetailStoreStatus !=
-          //             OrderStatusEnum.STAFF_CONFIRM) &&
-          //     e.orderDetailStoreStatus != OrderStatusEnum.FINISHED)
-          // .toList();
-          ;
-        }
-      }
-      setState(ViewStatus.Completed);
-      notifyListeners();
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getOrders();
-      } else {
-        setState(ViewStatus.Error);
-      }
-    } finally {}
-  }
+      List<ListStoreAndOrder> updateListStoreAndOrders = [];
+      List<UpdateOrderStatusRequestModel> updatedOrders = [];
 
-  Future<void> confirmOrder(int orderStatus) async {
-    try {
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      int option = await showOptionDialog(
-          orderStatus == OrderStatusEnum.PROCESSING
-              ? "Xác nhận những món này?"
-              : "Đã chuẩn bị xong những món này?");
+      int option = await showOptionDialog("Xác nhận đã bỏ đủ hàng vào các tủ?");
       if (option == 1) {
-        showLoadingDialog();
-        var newOrderStatus = orderStatus == OrderStatusEnum.PROCESSING
-            ? OrderStatusEnum.STAFF_CONFIRM
-            : orderStatus == OrderStatusEnum.STAFF_CONFIRM
-                ? OrderStatusEnum.PREPARED
-                : OrderStatusEnum.PREPARED;
-        // if (orderList.isNotEmpty) {
-        // for (final order in orderList) {
-        //   final statusCode = await _orderDAO?.confirmStoreOrderDetail(
-        //       currentUser?.storeId, order.orderId, newOrderStatus);
-        //   if (statusCode == 200) {
-        //     // var newOrderList =
-        //     //     orderList.where((e) => e.orderId != orderId).toList();
-        //     // orderList = newOrderList;
-        //     // Refresh
-        //     getOrders();
-        //     numsOfChecked = 0;
-        //     notifyListeners();
-        //     await showStatusDialog(
-        //         "assets/images/icon-success.png", "Thành công", "");
-        //     Get.back();
-        //   } else {
-        //     await showStatusDialog(
-        //       "assets/images/error.png",
-        //       "Thất bại",
-        //       "",
-        //     );
-        //   }
-        // }
-        // } else {
-        //   Get.back();
-        // }
+        // showLoadingDialog();
+        int newOrderStatus = OrderStatusEnum.BOX_STORED;
+
+        if (orderBoxList.isNotEmpty) {
+          for (ShipperOrderBoxDTO orderBox in orderBoxList) {
+            List<OrderDetail>? orderDetails = orderBox.orderDetails;
+            for (OrderDetail detail in orderDetails!) {
+              if (updateListStoreAndOrders.isEmpty) {
+                ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
+                    orderId: detail.orderId, storeId: detail.storeId);
+                updateListStoreAndOrders.add(updateListStoreAndOrder);
+              } else {
+                if (updateListStoreAndOrders.firstWhereOrNull((item) =>
+                        item.storeId == detail.storeId &&
+                        item.orderId == detail.orderId) ==
+                    null) {
+                  ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
+                      orderId: detail.orderId, storeId: detail.storeId);
+                  updateListStoreAndOrders.add(updateListStoreAndOrder);
+                }
+              }
+            }
+          }
+          UpdateOrderStatusRequestModel updatedOrders =
+              UpdateOrderStatusRequestModel(
+                  orderDetailStoreStatus: newOrderStatus,
+                  listStoreAndOrder: updateListStoreAndOrders);
+
+          final statusCode =
+              await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
+          if (statusCode == 200) {
+            await getShipperOrderBoxes();
+
+            notifyListeners();
+            await showStatusDialog(
+                "assets/images/icon-success.png", "Thành công", "");
+            Get.back();
+          } else {
+            await showStatusDialog(
+              "assets/images/error.png",
+              "Thất bại",
+              "",
+            );
+          }
+        } else {
+          Get.back();
+        }
       }
     } catch (e) {
       await showStatusDialog(

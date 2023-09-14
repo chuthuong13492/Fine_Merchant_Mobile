@@ -1,8 +1,10 @@
 import 'package:fine_merchant_mobile/Accessories/appbar.dart';
 import 'package:fine_merchant_mobile/Accessories/loading.dart';
+import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/ViewModel/deliveryList_viewModel.dart';
+import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
 import 'package:flutter/material.dart';
@@ -12,71 +14,47 @@ import 'package:get/get.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class PackageDetailScreen extends StatefulWidget {
-  final PackageViewDTO package;
-
-  const PackageDetailScreen({super.key, required this.package});
+  const PackageDetailScreen({super.key});
 
   @override
   State<PackageDetailScreen> createState() => _PackageDetailScreenState();
 }
 
 class _PackageDetailScreenState extends State<PackageDetailScreen> {
+  HomeViewModel model = Get.find<HomeViewModel>();
+
   @override
   void initState() {
     super.initState();
+    model.imageBytes = Get.find<HomeViewModel>().imageBytes;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FineTheme.palettes.primary100,
-      appBar: DefaultAppBar(title: "Chi tiết gói hàng"),
+      appBar: DefaultAppBar(title: "Thông tin giao hàng"),
       body: ScopedModel(
-          model: Get.find<DeliveryListViewModel>(),
-          child: ScopedModelDescendant<DeliveryListViewModel>(
+          model: Get.find<HomeViewModel>(),
+          child: ScopedModelDescendant<HomeViewModel>(
             builder: (context, child, model) {
               TimeSlotDTO? timeSlot = model.timeSlotList.firstWhere(
-                  (timeSlot) => timeSlot.id == widget.package.timeSlotId);
+                  (timeSlot) => timeSlot.id == model.selectedTimeSlotId);
               String? stationName = model.stationList
                   .firstWhere(
-                      (station) => station.id == widget.package.stationId)
+                      (station) => station.id == model.selectedStationId)
                   .name;
-              String? storeName = model.storeList
-                  .firstWhere((store) => store.id == model.selectedStoreId)
-                  .storeName;
-              bool isDelivering = model.isDelivering;
+              // String? storeName = model.storeList
+              //     .firstWhere((store) => store.id == )
+              //     .storeName;
               return Padding(
                 padding: const EdgeInsets.only(right: 16, left: 16),
                 child: ListView(
                   children: [
                     const SizedBox(height: 16),
-                    _buildPackageInfo(stationName, timeSlot, storeName),
-                    const SizedBox(height: 16),
+                    _buildPackageInfo(stationName, timeSlot),
+                    const SizedBox(height: 8),
                     _buildDetailSection(),
-                    Padding(
-                      padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                      child: Center(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    // BorderRadius.only(
-                                    //     bottomRight: Radius.circular(16),
-                                    //     bottomLeft: Radius.circular(16))
-                                    BorderRadius.all(Radius.circular(8))),
-                          ),
-                          onPressed: () async {
-                            model.confirmDelivery(widget.package);
-                          },
-                          child: Text(
-                            "${isDelivering ? "Xác nhận bỏ vào tủ" : "Xác nhận lấy hàng"}",
-                            style: FineTheme.typograhpy.subtitle2
-                                .copyWith(color: FineTheme.palettes.emerald25),
-                          ),
-                        ),
-                      ),
-                    )
                   ],
                 ),
               );
@@ -85,12 +63,11 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     );
   }
 
-  Widget _buildPackageInfo(
-      String? stationName, TimeSlotDTO? timeSlot, String? storeName) {
+  Widget _buildPackageInfo(String? stationName, TimeSlotDTO? timeSlot) {
     return Container(
       padding: const EdgeInsets.all(16),
       width: Get.width,
-      height: 160,
+      height: 250,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(
@@ -101,7 +78,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         children: [
           Center(
             child: Text(
-              'Giao tại:',
+              'Thông tin:',
               style: TextStyle(
                   fontWeight: FontWeight.w600,
                   fontSize: 16,
@@ -158,53 +135,64 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               ],
             ),
           ),
-          Center(
-            child: Text(
-              'Mua tại:',
-              style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  fontStyle: FontStyle.normal,
-                  color: FineTheme.palettes.shades200),
-            ),
-          ),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Text(
-                'Cửa hàng:',
+                'Số gói hàng:',
                 style: TextStyle(
                     fontWeight: FontWeight.w600,
                     fontSize: 16,
                     fontStyle: FontStyle.normal,
                     color: FineTheme.palettes.shades200),
               ),
-              Text(
-                '$storeName',
-                style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.w400,
-                    fontStyle: FontStyle.normal),
-                overflow: TextOverflow.ellipsis,
+              OutlinedButton(
+                onPressed: () => _dialogBuilder(context),
+                child: Text(
+                  'Xem chi tiết (${model.deliveredPackageList.length})',
+                  style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.w400,
+                      fontStyle: FontStyle.normal,
+                      color: FineTheme.palettes.emerald25),
+                  overflow: TextOverflow.ellipsis,
+                ),
               ),
             ],
           ),
+          const SizedBox(
+            height: 16,
+          ),
+          ElevatedButton(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.white,
+                shape: const RoundedRectangleBorder(
+                    borderRadius: BorderRadius.all(Radius.circular(8))),
+              ),
+              onPressed: () {
+                _onTapToBoxList();
+              },
+              child: Text(
+                'Xem danh sách tủ để đặt hàng vào',
+                style: FineTheme.typograhpy.body1.copyWith(
+                  color: FineTheme.palettes.emerald25,
+                ),
+              )),
         ],
       ),
     );
   }
 
   Widget _buildDetailSection() {
-    List<ListProduct>? productList = widget.package.listProducts;
     return ScopedModel(
-        model: Get.find<DeliveryListViewModel>(),
-        child: ScopedModelDescendant<DeliveryListViewModel>(
+        model: Get.find<HomeViewModel>(),
+        child: ScopedModelDescendant<HomeViewModel>(
           builder: (context, child, model) {
             if (model.status == ViewStatus.Loading) {
               return Container(
                 padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
                 width: Get.width,
-                height: 500,
+                height: 460,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.all(
@@ -212,17 +200,28 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                   ),
                 ),
                 child: Column(
-                  children: const [
-                    LoadingFine(),
-                    SizedBox(height: 50),
+                  children: [
+                    SizedBox(
+                      // padding: const EdgeInsets.all(16),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Text(
+                            'Đang lấy mã QR...',
+                            style: FineTheme.typograhpy.h2,
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 50),
                   ],
                 ),
               );
             }
             return Container(
-              padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
+              padding: const EdgeInsets.fromLTRB(12, 32, 12, 32),
               width: Get.width,
-              height: 500,
+              height: 460,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.all(
@@ -237,16 +236,51 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
                         Text(
-                          'Số món: ${productList?.length}',
+                          'QR Code để mở tủ',
                           style: FineTheme.typograhpy.h2,
                         ),
-                        const SizedBox(height: 8),
-                        ...?productList
-                            ?.map((product) => _buildPackageProduct(product)),
                       ],
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  model.imageBytes != null
+                      ? Container(
+                          height: 300,
+                          width: 300,
+                          child: Image.memory(
+                            model.imageBytes!,
+                            fit: BoxFit.contain,
+                          ),
+                        )
+                      : const SizedBox(
+                          height: 300,
+                          width: 300,
+                        ),
+                  const SizedBox(
+                    height: 16,
+                  ),
+                  ElevatedButton(
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: FineTheme.palettes.emerald25,
+                      shape: const RoundedRectangleBorder(
+                          borderRadius:
+                              // BorderRadius.only(
+                              //     bottomRight: Radius.circular(16),
+                              //     bottomLeft: Radius.circular(16))
+                              BorderRadius.all(Radius.circular(8))),
+                    ),
+                    onPressed: () async {
+                      await model.confirmAllBoxStored();
+                      setState(() {});
+                    },
+                    child: Padding(
+                      padding: const EdgeInsets.only(top: 8, bottom: 8),
+                      child: Text(
+                        "Đã đặt đủ hàng vào tủ",
+                        style: FineTheme.typograhpy.subtitle2
+                            .copyWith(color: Colors.white),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             );
@@ -254,7 +288,33 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         ));
   }
 
-  Widget _buildPackageProduct(ListProduct product) {
+  Widget _buildPackageSection(PackageViewDTO package) {
+    String? storeName = model.storeList
+        .firstWhere((store) => store.id == package.storeId)
+        .storeName;
+    return Padding(
+      padding: const EdgeInsets.all(8.0),
+      child: Column(
+        children: [
+          Text(
+            '${storeName}',
+            style: TextStyle(
+                color: FineTheme.palettes.emerald25,
+                fontSize: 16,
+                fontWeight: FontWeight.bold,
+                fontStyle: FontStyle.normal),
+          ),
+          const SizedBox(
+            height: 16,
+          ),
+          ...?package.listProducts
+              ?.map((product) => _buildPackageProducts(product)),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildPackageProducts(ListProduct product) {
     // var campus = Get.find<RootViewModel>().currentStore;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -278,5 +338,51 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         ],
       ),
     );
+  }
+
+  Future<void> _dialogBuilder(BuildContext context) {
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        List<PackageViewDTO>? packageList = model.deliveredPackageList;
+        return AlertDialog(
+          title: Text('Chi tiết các gói hàng', style: FineTheme.typograhpy.h2),
+          content: SizedBox(
+              height: 300,
+              width: 200,
+              child: ListView(
+                children: [
+                  const SizedBox(height: 8),
+                  ...packageList
+                      .map((package) => _buildPackageSection(package)),
+                ],
+              )),
+          actions: <Widget>[
+            TextButton(
+              style: TextButton.styleFrom(
+                textStyle: Theme.of(context).textTheme.labelLarge,
+              ),
+              child: Text(
+                'Đóng',
+                style: FineTheme.typograhpy.body1
+                    .copyWith(color: FineTheme.palettes.emerald25),
+              ),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  void _onTapToBoxList() async {
+    // get orderDetail
+    bool isRouted = true;
+    await Get.find<StationViewModel>().getBoxListByStation();
+    await Future.delayed(const Duration(milliseconds: 300));
+    await Get.toNamed(RouteHandler.STATION_SCREEN, arguments: isRouted);
+    // model.getOrders();
   }
 }

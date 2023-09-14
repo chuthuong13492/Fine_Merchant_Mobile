@@ -1,11 +1,16 @@
 class PackageViewDTO {
   String? timeSlotId;
   String? stationId;
+  String? storeId;
   List<ListProduct>? listProducts;
 
-  PackageViewDTO({this.listProducts, this.timeSlotId, this.stationId});
+  PackageViewDTO(
+      {this.listProducts, this.timeSlotId, this.stationId, this.storeId});
 
   PackageViewDTO.fromJson(Map<String, dynamic> json) {
+    storeId = json['storeId'];
+    timeSlotId = json['timeSlotId'];
+    stationId = json['stationId'];
     listProducts = json['listProducts'];
     if (json['ListProduct'] != null) {
       listProducts = <ListProduct>[];

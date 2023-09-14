@@ -17,6 +17,7 @@ import 'package:fine_merchant_mobile/View/profile.dart';
 import 'package:fine_merchant_mobile/View/qr_screen.dart';
 import 'package:fine_merchant_mobile/View/sign_in.dart';
 import 'package:fine_merchant_mobile/View/start_up.dart';
+import 'package:fine_merchant_mobile/View/station.dart';
 import 'package:fine_merchant_mobile/View/welcome_screen.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/setup.dart';
@@ -81,15 +82,19 @@ class MyApp extends StatelessWidget {
             return CupertinoPageRoute(
                 builder: (context) => const DeliveryListScreen(),
                 settings: settings);
+          case RouteHandler.STATION_SCREEN:
+            return CupertinoPageRoute(
+                builder: (context) =>
+                    StationScreen(isRouted: settings.arguments as bool),
+                settings: settings);
           case RouteHandler.QRCODE_SCREEN:
             return CupertinoPageRoute<bool>(
-                builder: (context) =>
-                    QRCodeScreen(box: settings.arguments as BoxDTO),
+                builder: (context) => QRCodeScreen(
+                    orderBox: settings.arguments as ShipperOrderBoxDTO),
                 settings: settings);
           case RouteHandler.PACKAGE_DETAIL:
             return CupertinoPageRoute<bool>(
-                builder: (context) => PackageDetailScreen(
-                    package: settings.arguments as PackageViewDTO),
+                builder: (context) => const PackageDetailScreen(),
                 settings: settings);
           default:
             return CupertinoPageRoute(

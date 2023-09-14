@@ -36,11 +36,6 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
   int activeTab = 0;
   List staffBarItems = [
     {
-      "icon": "assets/icons/Home.svg",
-      "active_icon": "assets/icons/Home_fill.svg",
-      "page": const HomeScreen(),
-    },
-    {
       "icon": "assets/icons/Order.svg",
       "active_icon": "assets/icons/Order_fill.svg",
       "page": const OrderListScreen(),
@@ -53,19 +48,9 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
   ];
   List driverBarItems = [
     {
-      "icon": "assets/icons/Home.svg",
-      "active_icon": "assets/icons/Home_fill.svg",
-      "page": const HomeScreen(),
-    },
-    {
       "icon": "assets/icons/Order.svg",
       "active_icon": "assets/icons/Order_fill.svg",
-      "page": const DeliveryListScreen(),
-    },
-    {
-      "icon": "assets/icons/Box.svg",
-      "active_icon": "assets/icons/Box.svg",
-      "page": const StationScreen(),
+      "page": const HomeScreen(),
     },
     {
       "icon": "assets/icons/Profile.svg",
@@ -73,23 +58,9 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
       "page": const ProfileScreen(),
     },
   ];
-  final staffScreens = [
-    const HomeScreen(),
-    const OrderListScreen(),
-    const ProfileScreen()
-  ];
-  final driverScreens = [
-    const HomeScreen(),
-    const DeliveryListScreen(),
-    const StationScreen(),
-    const ProfileScreen()
-  ];
+  final staffScreens = [const OrderListScreen(), const ProfileScreen()];
+  final driverScreens = [const HomeScreen(), const ProfileScreen()];
   final staffItems = <Widget>[
-    SvgPicture.asset(
-      "assets/icons/Home.svg",
-      width: 32,
-      height: 32,
-    ),
     SvgPicture.asset(
       "assets/icons/Order.svg",
       width: 32,
@@ -103,17 +74,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
   ];
   final driverItems = <Widget>[
     SvgPicture.asset(
-      "assets/icons/Home.svg",
-      width: 32,
-      height: 32,
-    ),
-    SvgPicture.asset(
       "assets/icons/Order.svg",
-      width: 32,
-      height: 32,
-    ),
-    SvgPicture.asset(
-      "assets/icons/Box.svg",
       width: 32,
       height: 32,
     ),

@@ -43,10 +43,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
-      model.getSplitOrders();
-      model.getOrders();
-    });
+    // periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+    //   model.getSplitOrders();
+    //   model.getOrders();
+    // });
 
     model.filteredOrderList = model.orderList;
     isStaff = currentUser?.roleType == AccountTypeEnum.STAFF ? true : false;
@@ -76,7 +76,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
             title: "Đơn hàng ${isStaff ? "Chờ duyệt" : "Chờ giao"}",
             backButton: const SizedBox.shrink(),
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(100),
+              preferredSize: const Size.fromHeight(120),
               child: isStaff
                   ? Text(
                       '${model.staffStore?.storeName}',
@@ -167,10 +167,16 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   : () async {
                       if (numsOfChecked == model.splitOrderList.length) {
                         print("update all");
-
-                        await model.confirmOrder(model.selectedOrderStatus);
+                        if (model.selectedOrderStatus ==
+                            OrderStatusEnum.PROCESSING) {
+                          await model.confirmOrder(model.selectedOrderStatus);
+                        } else {
+                          await model
+                              .shipperUpdateOrder(model.selectedOrderStatus);
+                        }
                         setState(() {
                           numsOfChecked = model.numsOfChecked;
+                          isSelectAll = false;
                         });
                       } else {
                         print("no update");
@@ -179,7 +185,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
               child: Padding(
                 padding: const EdgeInsets.only(top: 8, bottom: 8),
                 child: Text(
-                  // "${orderSummary.orderDetailStoreStatus == OrderStatusEnum.PROCESSING ? 'Xác nhận' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.STAFF_CONFIRM ? 'Đã chuẩn bị' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.PREPARED ? 'Shipper nhận đơn' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.SHIPPER_ASSIGNED ? 'Đã lấy món' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.SHIPPER_ASSIGNED ? 'Đang giao' : 'Đã vào box'}",
                   "Xác nhận",
                   style: FineTheme.typograhpy.subtitle2
                       .copyWith(color: Colors.white),

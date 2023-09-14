@@ -52,16 +52,16 @@ class SignIn extends State<loginWithAccount> {
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
-                  height: screenHeight * 0.5,
+                  height: screenHeight * 0.4,
                 ),
-                buildLoginButtons(screenHeight, context),
+                buildLoginSection(screenHeight, context),
               ],
             ),
           )),
     );
   }
 
-  Widget buildLoginButtons(double screenHeight, BuildContext context) {
+  Widget buildLoginSection(double screenHeight, BuildContext context) {
     return ScopedModelDescendant<LoginViewModel>(
       builder: (context, child, model) {
         return Stack(
@@ -83,45 +83,64 @@ class SignIn extends State<loginWithAccount> {
             ),
             Container(
               decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.35),
-                borderRadius: const BorderRadius.only(
-                  topLeft: Radius.circular(50),
-                  topRight: Radius.circular(50),
-                ),
+                color: Colors.white.withOpacity(0.2),
+                borderRadius: const BorderRadius.all(Radius.circular(50)),
+                // const BorderRadius.only(
+                //   topLeft: Radius.circular(50),
+                //   topRight: Radius.circular(50),
+                // ),
               ),
-              padding: const EdgeInsets.fromLTRB(16, 50, 16, 8),
-              height: screenHeight * 0.5,
+              padding: const EdgeInsets.fromLTRB(16, 32, 16, 8),
+              height: screenHeight * 0.45,
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  const Center(
+                  Center(
                     child: Text(
                       'Vui lòng đăng nhập để tiếp tục',
                       style: TextStyle(
-                          fontFamily: 'Montserrat',
-                          fontSize: 16,
-                          fontWeight: FontWeight.w700,
-                          color: Colors.teal),
+                        fontSize: 18,
+                        fontWeight: FontWeight.w700,
+                        color: FineTheme.palettes.emerald100,
+                        decorationStyle: TextDecorationStyle.solid,
+                        decorationColor: Colors.white,
+                        decorationThickness: 12,
+                      ),
                     ),
                   ),
                   const SizedBox(height: 8.0),
                   TextField(
+                    style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w500,
+                        color: Colors.white),
                     controller: usernameController,
-                    decoration: const InputDecoration(
+                    decoration: InputDecoration(
+                      focusColor: FineTheme.palettes.emerald25,
+                      fillColor: FineTheme.palettes.emerald25,
                       labelText: 'Tài khoản',
-                      border: OutlineInputBorder(),
+                      border: OutlineInputBorder(
+                          borderSide:
+                              BorderSide(color: FineTheme.palettes.emerald25)),
                     ),
                   ),
                   const SizedBox(height: 8.0),
                   TextField(
-                    obscureText: true,
-                    controller: passwordController,
-                    decoration: const InputDecoration(
-                      labelText: 'Mật khẩu',
-                      border: OutlineInputBorder(),
-                    ),
-                  ),
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w500,
+                          color: Colors.white),
+                      obscureText: true,
+                      controller: passwordController,
+                      decoration: InputDecoration(
+                        border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                                color: FineTheme.palettes.emerald25)),
+                        focusColor: FineTheme.palettes.emerald25,
+                        fillColor: FineTheme.palettes.emerald25,
+                        labelText: 'Mật khẩu',
+                      )),
                   const SizedBox(
                     height: 8,
                   ),
@@ -153,7 +172,8 @@ class SignIn extends State<loginWithAccount> {
                           Center(
                             child: Text(
                               'Đăng nhập',
-                              style: FineTheme.typograhpy.body1,
+                              style: FineTheme.typograhpy.h2.copyWith(
+                                  color: FineTheme.palettes.emerald25),
                             ),
                           ),
                         ],

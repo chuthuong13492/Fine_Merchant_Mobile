@@ -70,7 +70,7 @@ class _LoginPageState extends State<LoginPage> {
           ),
           const Center(
             child: Text(
-              "Fine Deliver",
+              "Fine Delivery",
               style: TextStyle(color: secondary, fontSize: 28),
             ),
           ),

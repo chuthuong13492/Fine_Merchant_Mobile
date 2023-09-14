@@ -42,3 +42,22 @@ class StationDTO {
     return data;
   }
 }
+
+class StationQrCodeRequestModel {
+  String? boxId;
+  String? orderId;
+
+  StationQrCodeRequestModel({this.boxId, this.orderId});
+
+  StationQrCodeRequestModel.fromJson(Map<String, dynamic> json) {
+    boxId = json['boxId'];
+    orderId = json['orderId'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['boxId'] = boxId;
+    data['orderId'] = orderId;
+    return data;
+  }
+}

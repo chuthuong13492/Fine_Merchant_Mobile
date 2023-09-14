@@ -8,6 +8,7 @@ import 'package:fine_merchant_mobile/Utils/format_price.dart';
 import 'package:fine_merchant_mobile/Utils/format_time.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/deliveryList_viewModel.dart';
+import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/root_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
@@ -41,56 +42,35 @@ class _DeliveryListScreenState extends State<DeliveryListScreen> {
   @override
   void initState() {
     super.initState();
-
-    // periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
-    // model.getSplitOrdersForDriver();
-    //   model.getOrders();
-    // });
+    model.stationList = Get.find<HomeViewModel>().stationList;
+    model.timeSlotList = Get.find<HomeViewModel>().timeSlotList;
+    model.storeList = Get.find<HomeViewModel>().storeList;
+    model.deliveredPackageList = Get.find<HomeViewModel>().deliveredPackageList;
   }
 
-  Future<void> refreshFetchOrder() async {
-    // await model.getOrders();
-    await model.getSplitOrdersForDriver();
-    // await model.getMoreOrders();
-  }
+  Future<void> refreshFetchOrder() async {}
 
   @override
   Widget build(BuildContext context) {
+    List<PackageViewDTO> deliveredPackageList = model.deliveredPackageList;
+    String selectedStationId = Get.find<HomeViewModel>().selectedStationId;
     return ScopedModel(
       model: Get.find<DeliveryListViewModel>(),
       child: Scaffold(
         appBar: DefaultAppBar(
-            title: "Đơn hàng ${model.isDelivering ? "Đang giao" : "Chờ giao"}",
-            backButton: const SizedBox.shrink(),
-            bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(100),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  model.isDelivering
-                      ? const SizedBox.shrink()
-                      : DropdownButton<String>(
-                          value: model.selectedStoreId,
-                          onChanged: (String? value) {
-                            model.onChangeStore(value!);
-                            setState(() {});
-                          },
-                          items: model.storeList
-                              .map<DropdownMenuItem<String>>((StoreDTO store) {
-                            return DropdownMenuItem<String>(
-                              value: store.id,
-                              child: Text(
-                                "${store.storeName}",
-                                style: FineTheme.typograhpy.h2.copyWith(
-                                  color: FineTheme.palettes.emerald25,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                ],
-              ),
-            )),
+          title: "Gói hàng đã lấy",
+          backButton: const SizedBox.shrink(),
+          bottom: PreferredSize(
+              preferredSize: const Size.fromHeight(120),
+              child: Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: Text(
+                  'Tại ${model.stationList.firstWhere((station) => station.id == selectedStationId).name}',
+                  style: FineTheme.typograhpy.h2
+                      .copyWith(color: FineTheme.palettes.emerald25),
+                ),
+              )),
+        ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -116,152 +96,40 @@ class _DeliveryListScreenState extends State<DeliveryListScreen> {
                 color: const Color(0xffefefef),
               ),
             ),
-            const SizedBox(height: 16),
-            // ElevatedButton(
-            //   style: ElevatedButton.styleFrom(
-            //     backgroundColor: FineTheme.palettes.emerald25,
-            //     shape: const RoundedRectangleBorder(
-            //         borderRadius:
-            //             // BorderRadius.only(
-            //             //     bottomRight: Radius.circular(16),
-            //             //     bottomLeft: Radius.circular(16))
-            //             BorderRadius.all(Radius.circular(8))),
-            //   ),
-            //   onPressed: () async {},
-            //   child: Padding(
-            //     padding: const EdgeInsets.only(top: 8, bottom: 8),
-            //     child: Text(
-            //       // "${orderSummary.orderDetailStoreStatus == OrderStatusEnum.PROCESSING ? 'Xác nhận' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.STAFF_CONFIRM ? 'Đã chuẩn bị' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.PREPARED ? 'Shipper nhận đơn' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.SHIPPER_ASSIGNED ? 'Đã lấy món' : orderSummary.orderDetailStoreStatus == OrderStatusEnum.SHIPPER_ASSIGNED ? 'Đang giao' : 'Đã vào box'}",
-            //       "Xác nhận",
-            //       style: FineTheme.typograhpy.subtitle2
-            //           .copyWith(color: Colors.white),
-            //     ),
-            //   ),
-            // ),
-            // const SizedBox(height: 100),
+            deliveredPackageList.isNotEmpty
+                ? Column(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: FineTheme.palettes.emerald25,
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  // BorderRadius.only(
+                                  //     bottomRight: Radius.circular(16),
+                                  //     bottomLeft: Radius.circular(16))
+                                  BorderRadius.all(Radius.circular(8))),
+                        ),
+                        onPressed: () async {
+                          await model.confirmAllBoxStored();
+
+                          setState(() {});
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 8),
+                          child: Text(
+                            "Đã đặt đủ hàng vào tủ",
+                            style: FineTheme.typograhpy.subtitle2
+                                .copyWith(color: Colors.white),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 100),
+                    ],
+                  )
+                : const SizedBox.shrink(),
           ],
         ),
       ),
-    );
-  }
-
-////////////////////
-
-  Widget orderFilterSection() {
-    return ScopedModelDescendant<DeliveryListViewModel>(
-      builder: (context, child, model) {
-        return Center(
-          child: Container(
-            // color: Colors.amber,
-            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-            width: double.infinity,
-            decoration: const BoxDecoration(
-              color: Colors.white,
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.grey,
-                  offset: Offset(0.0, 1.0), //(x,y)
-                  blurRadius: 6.0,
-                ),
-              ],
-            ),
-            child: Center(
-              child: Column(
-                children: [
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(formatDateType(DateTime.now().toString()),
-                            style: FineTheme.typograhpy.h2),
-                        DropdownButton<String>(
-                          value: model.selectedTimeSlotId,
-                          onChanged: (String? value) {
-                            setState(() {});
-                          },
-                          items: model.timeSlotList
-                              .map<DropdownMenuItem<String>>(
-                                  (TimeSlotDTO timeSlot) {
-                            return DropdownMenuItem<String>(
-                              value: timeSlot.id,
-                              child: Text(
-                                  '${timeSlot.arriveTime?.substring(0, 5)} - ${timeSlot.checkoutTime?.substring(0, 5)}',
-                                  style: FineTheme.typograhpy.body1),
-                            );
-                          }).toList(),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
-                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Trạng thái:",
-                          style: FineTheme.typograhpy.h2.copyWith(
-                            color: FineTheme.palettes.neutral900,
-                          ),
-                        ),
-                        // DropdownButton<int>(
-                        //   value: model.selectedOrderStatus,
-                        //   onChanged: (int? value) {
-                        //     model.onChangeOrderStatus(value!);
-                        //     setState(() {});
-                        //   },
-                        //   items: model.driverOrderStatuses
-                        //       .map<DropdownMenuItem<int>>((int status) {
-                        //     return DropdownMenuItem<int>(
-                        //       value: status,
-                        //       child: Text(
-                        //         OrderStatusEnum.getOrderStatusName(status),
-                        //         style: FineTheme.typograhpy.body1.copyWith(
-                        //           color: FineTheme.palettes.emerald25,
-                        //         ),
-                        //       ),
-                        //     );
-                        //   }).toList(),
-                        // )
-                      ],
-                    ),
-                  ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                      child: ToggleButtons(
-                          renderBorder: false,
-                          selectedColor: FineTheme.palettes.emerald25,
-                          onPressed: (int index) {
-                            // model.onChangeSelectStation(index);
-                            setState(() {});
-                          },
-                          borderRadius: BorderRadius.circular(24),
-                          isSelected: model.stationSelections,
-                          children: [
-                            ...model.stationList.map(
-                              (e) => SizedBox(
-                                width: MediaQuery.of(context).size.width / 3,
-                                child: Text("${e.name}",
-                                    textAlign: TextAlign.center,
-                                    style: FineTheme.typograhpy.caption1
-                                        .copyWith(
-                                            color:
-                                                FineTheme.palettes.neutral900,
-                                            fontWeight: FontWeight.bold)),
-                              ),
-                            )
-                          ]),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-          ),
-        );
-      },
     );
   }
 
@@ -270,30 +138,26 @@ class _DeliveryListScreenState extends State<DeliveryListScreen> {
     return ScopedModelDescendant<DeliveryListViewModel>(
         builder: (context, child, model) {
       final status = model.status;
-      List<PackageViewDTO> packageList = model.packageViewList;
+      List<PackageViewDTO> packageList = model.deliveredPackageList;
       bool isDelivering = model.isDelivering;
       PackageViewDTO? currentPackage = model.currentDeliveryPackage;
-      // orderList.sort((a, b) {
-      //   DateTime aDate = DateTime.parse(a.checkInDate!);
-      //   DateTime bDate = DateTime.parse(b.checkInDate!);
-      //   return bDate.compareTo(aDate);
-      // });
       if (status == ViewStatus.Loading) {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || false) {
+      } else if (status == ViewStatus.Empty || packageList.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Hiện tại chưa có đơn nào ở ${model.selectedStation?.name}'),
+              Text('Hiện tại chưa lấy gói hàng nào!'),
               Padding(
                 padding: EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
                     showLoadingDialog();
-                    // await model.getOrders();
+                    await Get.find<HomeViewModel>()
+                        .getDeliveredOrdersForDriver();
                     hideDialog();
                   },
                   child: Icon(
@@ -385,77 +249,84 @@ class _DeliveryListScreenState extends State<DeliveryListScreen> {
     //     0;
     TimeSlotDTO? timeSlot = model.timeSlotList
         .firstWhere((timeSlot) => timeSlot.id == package.timeSlotId);
-    String? stationName = model.stationList
-        .firstWhere((station) => station.id == package.stationId)
-        .name;
+    String? storeName = model.storeList
+        .firstWhere((store) => store.id == package.storeId)
+        .storeName;
     return InkWell(
       onTap: () {
         _onTapDetail(package);
       },
-      child: Container(
-          // height: 80,
-          margin: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: Colors.white,
-          ),
-          child: Padding(
+      child: Column(
+        children: [
+          Padding(
             padding: const EdgeInsets.all(8.0),
-            child: Material(
-                color: Colors.transparent,
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(8.0),
-                  // side: BorderSide(color: Colors.red),
-                ),
-                child: Column(
-                  children: [
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Text('${storeName}',
+                    style: FineTheme.typograhpy.h2.copyWith(
+                      color: FineTheme.palettes.emerald25,
+                      fontWeight: FontWeight.bold,
+                    )),
+              ],
+            ),
+          ),
+          const SizedBox(
+            height: 8,
+          ),
+          Container(
+              // height: 80,
+              margin: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(8),
+                color: Colors.white,
+              ),
+              child: Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Material(
+                    color: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8.0),
+                      // side: BorderSide(color: Colors.red),
+                    ),
+                    child: Column(
                       children: [
-                        Text('Trạm: ',
-                            style: FineTheme.typograhpy.body1.copyWith(
-                                color: FineTheme.palettes.neutral900,
-                                fontWeight: FontWeight.bold)),
-                        Text('${stationName}',
-                            style: FineTheme.typograhpy.body1),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Số lượng:',
+                                style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.neutral900,
+                                    fontWeight: FontWeight.bold)),
+                            Text('${package.listProducts?.length} món',
+                                style: FineTheme.typograhpy.body1),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Vào lúc:',
+                                style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.neutral900,
+                                    fontWeight: FontWeight.bold)),
+                            Text('${timeSlot.checkoutTime}',
+                                style: FineTheme.typograhpy.body1),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 24,
+                        ),
+                        Text("Chi tiết",
+                            style:
+                                TextStyle(color: FineTheme.palettes.emerald25)),
                       ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Vào lúc:',
-                            style: FineTheme.typograhpy.body1.copyWith(
-                                color: FineTheme.palettes.neutral900,
-                                fontWeight: FontWeight.bold)),
-                        Text('${timeSlot.checkoutTime}',
-                            style: FineTheme.typograhpy.body1),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 8,
-                    ),
-                    Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text('Số lượng:',
-                            style: FineTheme.typograhpy.body1.copyWith(
-                                color: FineTheme.palettes.neutral900,
-                                fontWeight: FontWeight.bold)),
-                        Text('${package.listProducts?.length} món',
-                            style: FineTheme.typograhpy.body1),
-                      ],
-                    ),
-                    const SizedBox(
-                      height: 24,
-                    ),
-                    Text("Chi tiết",
-                        style: TextStyle(color: FineTheme.palettes.emerald25)),
-                  ],
-                )),
-          )),
+                    )),
+              )),
+        ],
+      ),
     );
   }
 

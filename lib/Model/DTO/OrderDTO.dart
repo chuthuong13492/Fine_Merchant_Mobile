@@ -247,3 +247,29 @@ class ListStoreAndOrder {
     return data;
   }
 }
+
+class ShipperOrderBoxDTO {
+  String? boxId;
+  List<OrderDetail>? orderDetails;
+
+  ShipperOrderBoxDTO({this.boxId, this.orderDetails});
+
+  ShipperOrderBoxDTO.fromJson(Map<String, dynamic> json) {
+    boxId = json['boxId'];
+    if (json['orderDetails'] != null) {
+      orderDetails = <OrderDetail>[];
+      json['orderDetails'].forEach((v) {
+        orderDetails!.add(OrderDetail.fromJson(v));
+      });
+    }
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['boxId'] = boxId;
+    if (orderDetails != null) {
+      data['orderDetails'] = orderDetails!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
