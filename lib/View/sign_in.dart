@@ -37,22 +37,26 @@ class SignIn extends State<loginWithAccount> {
     return ScopedModel(
       model: LoginViewModel(),
       child: Scaffold(
-          backgroundColor: Colors.transparent,
+          backgroundColor: Colors.white,
           resizeToAvoidBottomInset: false,
           body: Container(
             width: MediaQuery.of(context).size.width,
             height: screenHeight,
-            decoration: const BoxDecoration(
-              image: DecorationImage(
-                image: AssetImage("assets/images/food2.png"),
-                fit: BoxFit.cover,
-              ),
-            ),
+
+            // decoration: const BoxDecoration(
+            //   image: DecorationImage(
+            //     image: AssetImage("assets/images/food2.png"),
+            //     fit: BoxFit.cover,
+            //   ),
+            // ),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 SizedBox(
                   height: screenHeight * 0.4,
+                  child: const Image(
+                    image: AssetImage("assets/images/logo.png"),
+                  ),
                 ),
                 buildLoginSection(screenHeight, context),
               ],
@@ -67,82 +71,119 @@ class SignIn extends State<loginWithAccount> {
         return Stack(
           children: [
             Container(
-              height: screenHeight * 0.5,
+              height: screenHeight * 0.6,
               decoration: const BoxDecoration(
-                // color: Colors.white,
+                image: DecorationImage(
+                  image: AssetImage("assets/images/bgLandingPage.jpg"),
+                  fit: BoxFit.cover,
+                ),
                 borderRadius: BorderRadius.only(
                   topLeft: Radius.circular(48),
                   topRight: Radius.circular(48),
                 ),
               ),
-              child: BackdropFilter(
-                  filter: ImageFilter.blur(
-                sigmaX: 5,
-                sigmaY: 5,
-              )),
+              // child: BackdropFilter(
+              //     filter: ImageFilter.blur(
+              //   sigmaX: 5,
+              //   sigmaY: 5,
+              // )),
             ),
-            Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.2),
-                borderRadius: const BorderRadius.all(Radius.circular(50)),
-                // const BorderRadius.only(
-                //   topLeft: Radius.circular(50),
-                //   topRight: Radius.circular(50),
-                // ),
-              ),
-              padding: const EdgeInsets.fromLTRB(16, 32, 16, 8),
-              height: screenHeight * 0.45,
+            Padding(
+              padding: const EdgeInsets.all(32),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 // mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Center(
-                    child: Text(
-                      'Vui lòng đăng nhập để tiếp tục',
-                      style: TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.w700,
-                        color: FineTheme.palettes.emerald100,
-                        decorationStyle: TextDecorationStyle.solid,
-                        decorationColor: Colors.white,
-                        decorationThickness: 12,
+                  const Padding(
+                    padding: EdgeInsets.only(bottom: 32),
+                    child: Center(
+                      child: Text(
+                        'Vui lòng đăng nhập để tiếp tục',
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.w700,
+                          color: Colors.white,
+                          decorationStyle: TextDecorationStyle.solid,
+                          decorationColor: Colors.black,
+                          decorationThickness: 12,
+                        ),
                       ),
                     ),
                   ),
-                  const SizedBox(height: 8.0),
                   TextField(
-                    style: TextStyle(
+                    style: const TextStyle(
                         fontSize: 16,
                         fontWeight: FontWeight.w500,
                         color: Colors.white),
                     controller: usernameController,
                     decoration: InputDecoration(
-                      focusColor: FineTheme.palettes.emerald25,
-                      fillColor: FineTheme.palettes.emerald25,
+                      floatingLabelStyle: const TextStyle(
+                          fontWeight: FontWeight.w500, color: Colors.white),
+                      focusColor: Colors.white,
+                      fillColor: Colors.white,
+                      hoverColor: Colors.white,
+                      prefixIcon: const Icon(Icons.person),
+                      prefixIconColor: MaterialStateColor.resolveWith(
+                          (Set<MaterialState> states) {
+                        if (states.contains(MaterialState.focused)) {
+                          return Colors.white;
+                        }
+                        if (states.contains(MaterialState.error)) {
+                          return Colors.red;
+                        }
+                        return Colors.grey;
+                      }),
                       labelText: 'Tài khoản',
-                      border: OutlineInputBorder(
-                          borderSide:
-                              BorderSide(color: FineTheme.palettes.emerald25)),
+                      focusedBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide:
+                            const BorderSide(color: Colors.white, width: 2),
+                      ),
+                      enabledBorder: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide:
+                            const BorderSide(color: Colors.white, width: 1),
+                      ),
                     ),
                   ),
-                  const SizedBox(height: 8.0),
+                  const SizedBox(height: 16),
                   TextField(
-                      style: TextStyle(
+                      style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w500,
                           color: Colors.white),
                       obscureText: true,
                       controller: passwordController,
                       decoration: InputDecoration(
-                        border: OutlineInputBorder(
-                            borderSide: BorderSide(
-                                color: FineTheme.palettes.emerald25)),
-                        focusColor: FineTheme.palettes.emerald25,
-                        fillColor: FineTheme.palettes.emerald25,
+                        floatingLabelStyle: const TextStyle(
+                            fontWeight: FontWeight.w500, color: Colors.white),
+                        prefixIcon: const Icon(Icons.password_rounded),
+                        prefixIconColor: MaterialStateColor.resolveWith(
+                            (Set<MaterialState> states) {
+                          if (states.contains(MaterialState.focused)) {
+                            return Colors.white;
+                          }
+                          if (states.contains(MaterialState.error)) {
+                            return Colors.red;
+                          }
+                          return Colors.grey;
+                        }),
+                        focusColor: Colors.white,
+                        fillColor: Colors.white,
                         labelText: 'Mật khẩu',
+                        focusedBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide:
+                              const BorderSide(color: Colors.white, width: 2),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderRadius: BorderRadius.circular(16),
+                          borderSide:
+                              const BorderSide(color: Colors.white, width: 1),
+                        ),
                       )),
                   const SizedBox(
-                    height: 8,
+                    height: 32,
                   ),
                   InkWell(
                     onTap: () {
@@ -166,9 +207,7 @@ class SignIn extends State<loginWithAccount> {
                           //     height: 32,
                           //   ),
                           // ),
-                          // const SizedBox(
-                          //   width: 8,
-                          // ),
+
                           Center(
                             child: Text(
                               'Đăng nhập',
@@ -179,9 +218,6 @@ class SignIn extends State<loginWithAccount> {
                         ],
                       ),
                     ),
-                  ),
-                  const SizedBox(
-                    height: 16,
                   ),
                   // Row(
                   //   mainAxisAlignment: MainAxisAlignment.center,
@@ -205,7 +241,7 @@ class SignIn extends State<loginWithAccount> {
                   //   ],
                   // ),
                   const SizedBox(
-                    height: 24,
+                    height: 32,
                   ),
                   Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
@@ -214,8 +250,12 @@ class SignIn extends State<loginWithAccount> {
                       Center(
                         child: Text(
                           "Bằng việc tiếp tục, bạn đã đồng ý với",
-                          style: FineTheme.typograhpy.body2,
+                          style: FineTheme.typograhpy.body2
+                              .copyWith(color: Colors.white),
                         ),
+                      ),
+                      const SizedBox(
+                        height: 8,
                       ),
                       Center(
                         child: InkWell(
@@ -224,14 +264,18 @@ class SignIn extends State<loginWithAccount> {
                             // "Terms & Privacy Policy",
                             "Điều khoản và Chính sách",
                             style: FineTheme.typograhpy.buttonLg
-                                .copyWith(color: Colors.black),
+                                .copyWith(color: Colors.white),
                           ),
                         ),
+                      ),
+                      const SizedBox(
+                        height: 8,
                       ),
                       Center(
                         child: Text(
                           "của chúng tôi",
-                          style: FineTheme.typograhpy.body2,
+                          style: FineTheme.typograhpy.body2
+                              .copyWith(color: Colors.white),
                         ),
                       ),
                     ],

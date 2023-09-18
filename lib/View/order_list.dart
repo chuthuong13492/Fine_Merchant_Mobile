@@ -40,14 +40,22 @@ class _OrderListScreenState extends State<OrderListScreen> {
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
+  Future<void> refreshFetchOrder() async {
+    await model.getOrders();
+    await model.getSplitOrders();
+    setState(() {
+      isSelectAll = false;
+      numsOfChecked = 0;
+    });
+    // await model.getMoreOrders();
+  }
+
   @override
   void initState() {
     super.initState();
-    // periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
-    //   model.getSplitOrders();
-    //   model.getOrders();
-    // });
-
+    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+      refreshFetchOrder();
+    });
     model.filteredOrderList = model.orderList;
     isStaff = currentUser?.roleType == AccountTypeEnum.STAFF ? true : false;
     if (isStaff) {
@@ -57,14 +65,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
     }
   }
 
-  Future<void> refreshFetchOrder() async {
-    await model.getOrders();
-    await model.getSplitOrders();
-    setState(() {
-      isSelectAll = false;
-      numsOfChecked = 0;
-    });
-    // await model.getMoreOrders();
+  @override
+  void dispose() {
+    super.dispose();
+    periodicTimer.cancel();
   }
 
   @override

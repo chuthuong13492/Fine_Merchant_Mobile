@@ -37,12 +37,18 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
-    //   model.getSplitOrdersForDriver();
-    // });
+    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+      refreshFetchData();
+    });
   }
 
-  Future<void> refreshFetchOrder() async {
+  @override
+  void dispose() {
+    super.dispose();
+    periodicTimer.cancel();
+  }
+
+  Future<void> refreshFetchData() async {
     await model.getSplitOrdersForDriver();
   }
 
@@ -325,7 +331,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
       return RefreshIndicator(
         key: _refreshIndicatorKey,
-        onRefresh: refreshFetchOrder,
+        onRefresh: refreshFetchData,
         child: ListView(
           physics: const AlwaysScrollableScrollPhysics(),
           controller: Get.find<HomeViewModel>().scrollController,

@@ -91,7 +91,7 @@ void showLoadingDialog() {
   hideDialog();
   Get.defaultDialog(
     barrierDismissible: true,
-    title: "Chờ mình xý nha...",
+    title: "Chờ mình tí xíu nha...",
     content: WillPopScope(
       onWillPop: () async {
         return shouldPop;
