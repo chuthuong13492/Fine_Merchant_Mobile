@@ -65,14 +65,26 @@ class HomeViewModel extends BaseModel {
     notifyListeners();
   }
 
+  Future<void> onChangeTimeSlot(String value) async {
+    selectedTimeSlotId = value;
+    await getDeliveredOrdersForDriver();
+    await getSplitOrdersForDriver();
+    notifyListeners();
+  }
+
   Future<void> getTimeSlotList() async {
     try {
       setState(ViewStatus.Loading);
       final data = await _timeSlotDAO?.getTimeSlots(
           destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
       if (data != null) {
-        timeSlotList = data;
-        // selectedTimeSlotId = data.first.id!;
+        timeSlotList = data
+            .where((slot) => (int.parse(slot.arriveTime!.substring(0, 2)) -
+                    DateTime.now().hour >=
+                1))
+            .toList();
+        ;
+        selectedTimeSlotId = timeSlotList.first.id!;
       }
       setState(ViewStatus.Completed);
       notifyListeners();

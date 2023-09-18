@@ -41,8 +41,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
       GlobalKey<RefreshIndicatorState>();
 
   Future<void> refreshFetchOrder() async {
+    await model.getTimeSlotList();
     await model.getOrders();
     await model.getSplitOrders();
+
     setState(() {
       isSelectAll = false;
       numsOfChecked = 0;

@@ -54,6 +54,8 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
+    TimeSlotDTO currentTimeSlot = model.timeSlotList
+        .firstWhere((slot) => slot.id == model.selectedTimeSlotId);
     return ScopedModel(
       model: Get.find<HomeViewModel>(),
       child: Scaffold(
@@ -64,29 +66,62 @@ class _HomeScreenState extends State<HomeScreen> {
               preferredSize: const Size.fromHeight(120),
               child: model.isDelivering
                   ? const SizedBox.shrink()
-                  : DropdownButton<String>(
-                      value: model.selectedStationId,
-                      onChanged: (String? value) {
-                        model.onChangeStation(value!);
-                        setState(() {});
-                      },
-                      items: model.stationList
-                          .map<DropdownMenuItem<String>>((StationDTO station) {
-                        return DropdownMenuItem<String>(
-                          value: station.id,
-                          child: Text(
-                            "${station.name}",
-                            style: FineTheme.typograhpy.h2.copyWith(
-                              color: FineTheme.palettes.emerald25,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                  : Column(
+                      children: [
+                        DropdownButton<String>(
+                          value: model.selectedStationId,
+                          onChanged: (String? value) {
+                            model.onChangeStation(value!);
+                            setState(() {});
+                          },
+                          items: model.stationList
+                              .map<DropdownMenuItem<String>>(
+                                  (StationDTO station) {
+                            return DropdownMenuItem<String>(
+                              value: station.id,
+                              child: Text(
+                                "${station.name}",
+                                style: FineTheme.typograhpy.h2.copyWith(
+                                  color: FineTheme.palettes.emerald25,
+                                ),
+                              ),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
             )),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text('Khung giờ:', style: FineTheme.typograhpy.h2),
+                  DropdownButton<String>(
+                    value: model.selectedTimeSlotId,
+                    onChanged: (String? value) {
+                      model.onChangeTimeSlot(value!);
+                      setState(() {});
+                    },
+                    items: model.timeSlotList
+                        .map<DropdownMenuItem<String>>((TimeSlotDTO timeSlot) {
+                      return DropdownMenuItem<String>(
+                        value: timeSlot.id,
+                        child: Text(
+                            '${timeSlot.arriveTime?.substring(0, 5)} - ${timeSlot.checkoutTime?.substring(0, 5)}',
+                            style: FineTheme.typograhpy.body1),
+                      );
+                    }).toList(),
+                  ),
+                  // Text(
+                  // '${currentTimeSlot.arriveTime?.substring(0, 5)} - ${currentTimeSlot.checkoutTime?.substring(0, 5)}',
+                  // style: FineTheme.typograhpy.body1)
+                ],
+              ),
+            ),
             Expanded(
               child: Container(
                 // ignore: sort_child_properties_last
