@@ -117,7 +117,7 @@ class _DeliveryListScreenState extends State<DeliveryListScreen> {
                         child: Padding(
                           padding: const EdgeInsets.only(top: 8, bottom: 8),
                           child: Text(
-                            "Đã đặt đủ hàng vào tủ",
+                            "Đã đặt đủ hàng vào các tủ",
                             style: FineTheme.typograhpy.subtitle2
                                 .copyWith(color: Colors.white),
                           ),
@@ -155,10 +155,8 @@ class _DeliveryListScreenState extends State<DeliveryListScreen> {
                 padding: EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
-                    showLoadingDialog();
                     await Get.find<HomeViewModel>()
                         .getDeliveredOrdersForDriver();
-                    hideDialog();
                   },
                   child: Icon(
                     Icons.replay,

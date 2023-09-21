@@ -13,7 +13,7 @@ class LoadingFine extends StatelessWidget {
             height: 200,
             image: AssetImage("assets/images/loading_fine.gif"),
           ),
-          Text('Chờ xíu...')
+          Text('Đang tải...')
         ],
       ),
     );

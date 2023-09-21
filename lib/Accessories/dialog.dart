@@ -48,9 +48,6 @@ Future<void> showStatusDialog(
                 textAlign: TextAlign.center,
               ),
             ),
-            const SizedBox(
-              height: 16,
-            ),
             Container(
               width: double.infinity,
               child: ElevatedButton(
@@ -72,7 +69,7 @@ Future<void> showStatusDialog(
                 child: Padding(
                   padding: const EdgeInsets.only(top: 16, bottom: 16),
                   child: Text(
-                    "Đồng ý",
+                    "Đóng",
                     style: FineTheme.typograhpy.subtitle2
                         .copyWith(color: Colors.white),
                   ),
@@ -91,7 +88,7 @@ void showLoadingDialog() {
   hideDialog();
   Get.defaultDialog(
     barrierDismissible: true,
-    title: "Chờ mình tí xíu nha...",
+    title: "Đang xử lý...",
     content: WillPopScope(
       onWillPop: () async {
         return shouldPop;

@@ -277,10 +277,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
-                    showLoadingDialog();
                     await model.getSplitOrdersForDriver();
                     await model.getDeliveredOrdersForDriver();
-                    hideDialog();
                   },
                   child: Icon(
                     Icons.replay,

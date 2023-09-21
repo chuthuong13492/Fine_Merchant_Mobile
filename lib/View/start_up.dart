@@ -27,29 +27,29 @@ class StartUpView extends StatelessWidget {
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
                       children: [
-                        const LoadingFine(),
-                        const SizedBox(height: 16),
                         Text(
                           "FINE",
                           style: FineTheme.typograhpy.h1
                               .copyWith(color: FineTheme.palettes.primary100),
-                        )
+                        ),
+                        const SizedBox(height: 16),
+                        const LoadingFine(),
                       ],
                     ),
                   ),
                 ),
               ),
-              Align(
-                alignment: Alignment.bottomCenter,
-                child: Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Text(
-                    'Đặt ngay chờ chi 😎',
-                    style: FineTheme.typograhpy.buttonLg
-                        .copyWith(color: Colors.black),
-                  ),
-                ),
-              ),
+              // Align(
+              //   alignment: Alignment.bottomCenter,
+              //   child: Padding(
+              //     padding: const EdgeInsets.all(16.0),
+              //     child: Text(
+              //       'Đặt ngay chờ chi 😎',
+              //       style: FineTheme.typograhpy.buttonLg
+              //           .copyWith(color: Colors.black),
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         );

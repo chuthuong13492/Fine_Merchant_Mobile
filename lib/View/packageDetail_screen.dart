@@ -219,7 +219,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               );
             }
             return Container(
-              padding: const EdgeInsets.fromLTRB(12, 32, 12, 32),
+              padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
               width: Get.width,
               height: 460,
               decoration: const BoxDecoration(
@@ -255,31 +255,32 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                           height: 300,
                           width: 300,
                         ),
-                  const SizedBox(
-                    height: 16,
-                  ),
-                  ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: FineTheme.palettes.emerald25,
-                      shape: const RoundedRectangleBorder(
-                          borderRadius:
-                              // BorderRadius.only(
-                              //     bottomRight: Radius.circular(16),
-                              //     bottomLeft: Radius.circular(16))
-                              BorderRadius.all(Radius.circular(8))),
-                    ),
-                    onPressed: () async {
-                      await model.confirmAllBoxStored();
-                      setState(() {});
-                    },
-                    child: Padding(
-                      padding: const EdgeInsets.only(top: 8, bottom: 8),
-                      child: Text(
-                        "Đã đặt đủ hàng vào tủ",
-                        style: FineTheme.typograhpy.subtitle2
-                            .copyWith(color: Colors.white),
+                  Column(
+                    children: [
+                      ElevatedButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: FineTheme.palettes.emerald25,
+                          shape: const RoundedRectangleBorder(
+                              borderRadius:
+                                  // BorderRadius.only(
+                                  //     bottomRight: Radius.circular(16),
+                                  //     bottomLeft: Radius.circular(16))
+                                  BorderRadius.all(Radius.circular(8))),
+                        ),
+                        onPressed: () async {
+                          await model.confirmAllBoxStored();
+                          setState(() {});
+                        },
+                        child: Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 8),
+                          child: Text(
+                            "Đã đặt đủ hàng vào các tủ",
+                            style: FineTheme.typograhpy.subtitle2
+                                .copyWith(color: Colors.white),
+                          ),
+                        ),
                       ),
-                    ),
+                    ],
                   ),
                 ],
               ),

@@ -315,7 +315,7 @@ class HomeViewModel extends BaseModel {
 
             notifyListeners();
             await showStatusDialog(
-                "assets/images/icon-success.png", "Thành công", "");
+                "assets/images/icon-success.png", "Xác nhận thành công", "");
             Get.back();
           } else {
             await showStatusDialog(
@@ -404,8 +404,8 @@ class HomeViewModel extends BaseModel {
             await getShipperOrderBoxes();
             await getDeliveredOrdersForDriver();
             notifyListeners();
-            await showStatusDialog(
-                "assets/images/icon-success.png", "Thành công", "");
+            await showStatusDialog("assets/images/icon-success.png",
+                "Xác nhận giao thành công", "");
             Get.back();
           } else {
             await showStatusDialog(

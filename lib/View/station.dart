@@ -44,6 +44,7 @@ class _StationScreenState extends State<StationScreen> {
   void initState() {
     super.initState();
     model.stationList = Get.find<HomeViewModel>().stationList;
+    model.timeSlotList = Get.find<HomeViewModel>().timeSlotList;
     model.getShipperOrderBoxes();
   }
 
@@ -58,7 +59,7 @@ class _StationScreenState extends State<StationScreen> {
       resizeToAvoidBottomInset: false,
       backgroundColor: FineTheme.palettes.shades100,
       appBar: DefaultAppBar(
-          title: "Danh sách món cần đặt",
+          title: "Danh sách món cần giao",
           backButton: widget.isRouted ? null : SizedBox.shrink()),
       body: SafeArea(
         // ignore: sized_box_for_whitespace
@@ -112,9 +113,39 @@ class _StationScreenState extends State<StationScreen> {
                                   },
                                   child: SingleChildScrollView(
                                     child: Column(
-                                      // addAutomaticKeepAlives: true,
                                       children: [
                                         ...renderHomeSections().toList(),
+                                        const SizedBox(
+                                          height: 8,
+                                        ),
+                                        Center(
+                                          child: ElevatedButton(
+                                            style: ElevatedButton.styleFrom(
+                                              backgroundColor: Colors.white,
+                                              shape: RoundedRectangleBorder(
+                                                  side: BorderSide(
+                                                      color: FineTheme
+                                                          .palettes.emerald25),
+                                                  borderRadius:
+                                                      // BorderRadius.only(
+                                                      //     bottomRight: Radius.circular(16),
+                                                      //     bottomLeft: Radius.circular(16))
+                                                      BorderRadius.all(
+                                                          Radius.circular(8))),
+                                            ),
+                                            onPressed: () async {
+                                              setState(() {});
+                                            },
+                                            child: Text(
+                                              "Báo cáo thiếu món",
+                                              style: FineTheme
+                                                  .typograhpy.subtitle2
+                                                  .copyWith(
+                                                      color: FineTheme
+                                                          .palettes.emerald25),
+                                            ),
+                                          ),
+                                        ),
                                       ],
                                     ),
                                   ),
@@ -150,8 +181,12 @@ class _StationScreenState extends State<StationScreen> {
   }
 
   Widget _buildStationSection() {
-    var currentUser = Get.find<AccountViewModel>().currentUser;
-
+    TimeSlotDTO? timeSlot = model.timeSlotList.firstWhere((timeSlot) =>
+        timeSlot.id == Get.find<HomeViewModel>().selectedTimeSlotId);
+    String? stationName = model.stationList
+        .firstWhere((station) =>
+            station.id == Get.find<HomeViewModel>().selectedStationId)
+        .name;
     return ScopedModel(
         model: Get.find<StationViewModel>(),
         child: ScopedModelDescendant<StationViewModel>(
@@ -160,9 +195,8 @@ class _StationScreenState extends State<StationScreen> {
             if (status == ViewStatus.Loading) {
               return const SizedBox.shrink();
             }
-            return Container(
-              height: 80,
-              padding: const EdgeInsets.only(top: 17, bottom: 17),
+            return SizedBox(
+              height: 50,
               child: Column(
                 children: [
                   Row(
@@ -194,7 +228,7 @@ class _StationScreenState extends State<StationScreen> {
                       //   }).toList(),
                       // ),
                       Text(
-                        "${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name}",
+                        "$stationName",
                         style: FineTheme.typograhpy.subtitle1
                             .copyWith(color: FineTheme.palettes.neutral900),
                       ),
@@ -208,7 +242,8 @@ class _StationScreenState extends State<StationScreen> {
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
-                      Text('01:00', style: FineTheme.typograhpy.body1),
+                      Text('${timeSlot.checkoutTime?.substring(0, 5)}',
+                          style: FineTheme.typograhpy.body1),
                     ],
                   ),
                 ],
@@ -231,7 +266,7 @@ class _StationScreenState extends State<StationScreen> {
             return Container(
               padding: const EdgeInsets.only(top: 10, bottom: 10),
               color: FineTheme.palettes.emerald25,
-              height: 500,
+              height: 480,
               width: Get.width,
               child: Container(
                 // height: 300,

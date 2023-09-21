@@ -307,7 +307,7 @@ class OrderListViewModel extends BaseModel {
             numsOfChecked = 0;
             notifyListeners();
             await showStatusDialog(
-                "assets/images/icon-success.png", "Thành công", "");
+                "assets/images/icon-success.png", "Xác nhận thành công", "");
             Get.back();
           } else {
             await showStatusDialog(
@@ -364,8 +364,8 @@ class OrderListViewModel extends BaseModel {
             await getSplitOrders();
             numsOfChecked = 0;
             notifyListeners();
-            await showStatusDialog(
-                "assets/images/icon-success.png", "Thành công", "");
+            await showStatusDialog("assets/images/icon-success.png",
+                "Xác nhận giao thành công", "");
             Get.back();
           } else {
             await showStatusDialog(
