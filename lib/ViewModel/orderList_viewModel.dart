@@ -12,6 +12,7 @@ import '../Model/DTO/index.dart';
 
 class OrderListViewModel extends BaseModel {
   // constant
+  static String selectedDestinationId = '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB';
   List<int> staffOrderStatuses = [
     OrderStatusEnum.PROCESSING,
     // OrderStatusEnum.PREPARED,
@@ -124,14 +125,19 @@ class OrderListViewModel extends BaseModel {
     try {
       setState(ViewStatus.Loading);
       final data = await _timeSlotDAO?.getTimeSlots(
-          destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
+          destinationId: selectedDestinationId);
       if (data != null) {
         timeSlotList = data
             .where((slot) => (int.parse(slot.arriveTime!.substring(0, 2)) -
                     DateTime.now().hour >=
                 1))
             .toList();
-        selectedTimeSlotId = timeSlotList.first.id!;
+        if (timeSlotList.isEmpty) {
+          timeSlotList.add(data.last);
+        }
+        if (selectedTimeSlotId == '') {
+          selectedTimeSlotId = timeSlotList.first.id!;
+        }
       }
       setState(ViewStatus.Completed);
       notifyListeners();
@@ -149,7 +155,7 @@ class OrderListViewModel extends BaseModel {
     try {
       setState(ViewStatus.Loading);
       final data = await _stationDAO?.getStationsByDestination(
-          destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
+          destinationId: selectedDestinationId);
       if (data != null) {
         stationList =
             data.where((station) => station.isActive == true).toList();
@@ -324,7 +330,7 @@ class OrderListViewModel extends BaseModel {
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
-        "Có lỗi xảy ra, vui lòng liên hệ admin 😓",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
       );
     } finally {}
   }
@@ -382,7 +388,7 @@ class OrderListViewModel extends BaseModel {
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
-        "Có lỗi xảy ra, vui lòng liên hệ admin 😓",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
       );
     } finally {}
   }

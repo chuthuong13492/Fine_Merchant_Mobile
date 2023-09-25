@@ -6,7 +6,6 @@ import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
-import 'package:fine_merchant_mobile/ViewModel/deliveryList_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -18,6 +17,7 @@ class HomeViewModel extends BaseModel {
   // constant
 
   // local properties
+  static String selectedDestinationId = '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB';
   List<DeliveryPackageDTO> packageList = [];
   List<PackageViewDTO> packageViewList = [];
   List<PackageViewDTO> deliveredPackageList = [];
@@ -76,14 +76,16 @@ class HomeViewModel extends BaseModel {
     try {
       setState(ViewStatus.Loading);
       final data = await _timeSlotDAO?.getTimeSlots(
-          destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
+          destinationId: selectedDestinationId);
       if (data != null) {
         timeSlotList = data
             .where((slot) => (int.parse(slot.arriveTime!.substring(0, 2)) -
                     DateTime.now().hour >=
                 1))
             .toList();
-        ;
+        if (timeSlotList.isEmpty) {
+          timeSlotList.add(data.last);
+        }
         selectedTimeSlotId = timeSlotList.first.id!;
       }
       setState(ViewStatus.Completed);
@@ -102,7 +104,7 @@ class HomeViewModel extends BaseModel {
     try {
       setState(ViewStatus.Loading);
       final data = await _stationDAO?.getStationsByDestination(
-          destinationId: '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB');
+          destinationId: selectedDestinationId);
       if (data != null) {
         stationList = data;
         if (selectedStationId == '') {
@@ -332,7 +334,7 @@ class HomeViewModel extends BaseModel {
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
-        "Có lỗi xảy ra, vui lòng liên hệ admin 😓",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
       );
     } finally {}
   }
@@ -340,6 +342,7 @@ class HomeViewModel extends BaseModel {
   Future<void> getShipperOrderBoxes() async {
     try {
       setState(ViewStatus.Loading);
+      imageBytes = null;
       var currentUser = Get.find<AccountViewModel>().currentUser;
       if (currentUser != null) {
         final data = await _orderDAO?.getShipperOrderBox(
@@ -422,7 +425,7 @@ class HomeViewModel extends BaseModel {
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
-        "Có lỗi xảy ra, vui lòng liên hệ admin 😓",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
       );
     } finally {}
   }

@@ -7,7 +7,6 @@ import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
-import 'package:fine_merchant_mobile/ViewModel/deliveryList_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';

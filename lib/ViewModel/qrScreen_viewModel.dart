@@ -32,6 +32,7 @@ class QrScreenViewModel extends BaseModel {
   Future<void> getBoxQrCode() async {
     try {
       setState(ViewStatus.Loading);
+      imageBytes = null;
       orderBoxList = Get.find<StationViewModel>().orderBoxList;
       List<StationQrCodeRequestModel> requestData = [];
       for (ShipperOrderBoxDTO orderBox in orderBoxList) {

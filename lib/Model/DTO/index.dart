@@ -8,3 +8,4 @@ export 'StationDTO.dart';
 export 'SplitOrderDTO.dart';
 export 'DeliveryPackageDTO.dart';
 export 'PackageViewDTO.dart';
+export 'ReportDTO.dart';

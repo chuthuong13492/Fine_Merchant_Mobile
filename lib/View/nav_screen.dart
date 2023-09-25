@@ -4,8 +4,7 @@ import 'dart:ui';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
-import 'package:fine_merchant_mobile/View/delivery_list.dart';
-import 'package:fine_merchant_mobile/View/station.dart';
+import 'package:fine_merchant_mobile/View/report_list.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/root_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
@@ -41,12 +40,17 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
       "page": const OrderListScreen(),
     },
     {
+      "icon": "assets/icons/Form.svg",
+      "active_icon": "assets/icons/Form_white.svg",
+      "page": const ReportListScreen(),
+    },
+    {
       "icon": "assets/icons/Profile.svg",
       "active_icon": "assets/icons/Profile_fill.svg",
       "page": const ProfileScreen(),
     },
   ];
-  List driverBarItems = [
+  List shipperBarItems = [
     {
       "icon": "assets/icons/Order.svg",
       "active_icon": "assets/icons/Order_fill.svg",
@@ -58,11 +62,20 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
       "page": const ProfileScreen(),
     },
   ];
-  final staffScreens = [const OrderListScreen(), const ProfileScreen()];
-  final driverScreens = [const HomeScreen(), const ProfileScreen()];
+  final staffScreens = [
+    const OrderListScreen(),
+    const ReportListScreen(),
+    const ProfileScreen()
+  ];
+  final shipperScreens = [const HomeScreen(), const ProfileScreen()];
   final staffItems = <Widget>[
     SvgPicture.asset(
       "assets/icons/Order.svg",
+      width: 32,
+      height: 32,
+    ),
+    SvgPicture.asset(
+      "assets/icons/Form_white.svg",
       width: 32,
       height: 32,
     ),
@@ -72,7 +85,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
       height: 32,
     ),
   ];
-  final driverItems = <Widget>[
+  final shipperItems = <Widget>[
     SvgPicture.asset(
       "assets/icons/Order.svg",
       width: 32,
@@ -136,7 +149,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
         bottomNavigationBar: CurvedNavigationBar(
           color: FineTheme.palettes.primary100,
           backgroundColor: Colors.transparent,
-          items: isStaff ? staffItems : driverItems,
+          items: isStaff ? staffItems : shipperItems,
           index: activeTab,
           animationCurve: Curves.easeInOut,
           animationDuration: const Duration(milliseconds: 500),
@@ -147,7 +160,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
           },
         ),
         // body: getBarPage());
-        body: isStaff ? staffScreens[activeTab] : driverScreens[activeTab]);
+        body: isStaff ? staffScreens[activeTab] : shipperScreens[activeTab]);
   }
 
   Widget getBarPage() {
@@ -156,8 +169,8 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
         children: isStaff
             ? List.generate(staffBarItems.length,
                 (index) => animatedPage(staffBarItems[index]["page"]))
-            : List.generate(driverBarItems.length,
-                (index) => animatedPage(driverBarItems[index]["page"])));
+            : List.generate(shipperBarItems.length,
+                (index) => animatedPage(shipperBarItems[index]["page"])));
   }
 
   Widget getBottomBar() {
@@ -238,10 +251,10 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
                                 },
                               ))
                       : List.generate(
-                          driverBarItems.length,
+                          shipperBarItems.length,
                           (index) => BottomBarItem(
-                                driverBarItems[index]["active_icon"],
-                                driverBarItems[index]["icon"],
+                                shipperBarItems[index]["active_icon"],
+                                shipperBarItems[index]["icon"],
                                 isActive: activeTab == index,
                                 activeColor: primary,
                                 onTap: () {

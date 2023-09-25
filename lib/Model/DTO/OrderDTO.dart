@@ -116,6 +116,8 @@ class OrderDetail {
   double? discount;
   double? finalAmount;
   String? note;
+  bool? isChecked;
+  int? missing;
 
   OrderDetail(
       {this.id,
@@ -130,7 +132,9 @@ class OrderDetail {
       this.totalAmount,
       this.discount,
       this.finalAmount,
-      this.note});
+      this.note,
+      this.isChecked,
+      this.missing});
 
   OrderDetail.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -146,6 +150,8 @@ class OrderDetail {
     discount = json['discount'];
     finalAmount = json['finalAmount'];
     note = json['note'];
+    isChecked = false;
+    missing = 0;
   }
 
   static List<OrderDetail> fromList(List<Map<String, dynamic>> list) {
@@ -167,6 +173,7 @@ class OrderDetail {
     data['discount'] = discount;
     data['finalAmount'] = finalAmount;
     data['note'] = note;
+
     return data;
   }
 }

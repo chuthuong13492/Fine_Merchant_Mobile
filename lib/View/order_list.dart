@@ -41,21 +41,20 @@ class _OrderListScreenState extends State<OrderListScreen> {
       GlobalKey<RefreshIndicatorState>();
 
   Future<void> refreshFetchOrder() async {
-    await model.getTimeSlotList();
-    await model.getOrders();
-    await model.getSplitOrders();
-
     setState(() {
       isSelectAll = false;
       numsOfChecked = 0;
     });
+    await model.getTimeSlotList();
+    await model.getOrders();
+    await model.getSplitOrders();
     // await model.getMoreOrders();
   }
 
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 30), (Timer timer) {
       refreshFetchOrder();
     });
     model.filteredOrderList = model.orderList;
@@ -75,6 +74,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    final status = model.status;
     return ScopedModel(
       model: Get.find<OrderListViewModel>(),
       child: Scaffold(
@@ -82,33 +82,16 @@ class _OrderListScreenState extends State<OrderListScreen> {
             title: "Đơn hàng ${isStaff ? "Chờ duyệt" : "Chờ giao"}",
             backButton: const SizedBox.shrink(),
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(120),
-              child: isStaff
-                  ? Text(
-                      '${model.staffStore?.storeName}',
-                      style: FineTheme.typograhpy.h2.copyWith(
-                        color: FineTheme.palettes.emerald25,
-                      ),
-                    )
-                  : DropdownButton<String>(
-                      value: model.selectedStoreId,
-                      onChanged: (String? value) {
-                        model.onChangeStore(value!, currentUser?.roleType ?? 2);
-                      },
-                      items: model.storeList
-                          .map<DropdownMenuItem<String>>((StoreDTO store) {
-                        return DropdownMenuItem<String>(
-                          value: store.id,
-                          child: Text(
-                            store.storeName ?? '',
-                            style: FineTheme.typograhpy.h2.copyWith(
-                              color: FineTheme.palettes.emerald25,
-                            ),
-                          ),
-                        );
-                      }).toList(),
+                preferredSize: const Size.fromHeight(120),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    '${model.staffStore?.storeName}',
+                    style: FineTheme.typograhpy.h2.copyWith(
+                      color: FineTheme.palettes.emerald25,
                     ),
-            )),
+                  ),
+                ))),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -168,11 +151,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         //     bottomLeft: Radius.circular(16))
                         BorderRadius.all(Radius.circular(8))),
               ),
-              onPressed: model.numsOfChecked < 1
+              onPressed: model.numsOfChecked < 1 || status == ViewStatus.Loading
                   ? null
                   : () async {
                       if (numsOfChecked == model.splitOrderList.length) {
-                        print("update all");
                         if (model.selectedOrderStatus ==
                             OrderStatusEnum.PROCESSING) {
                           await model.confirmOrder(model.selectedOrderStatus);
@@ -184,8 +166,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           numsOfChecked = model.numsOfChecked;
                           isSelectAll = false;
                         });
-                      } else {
-                        print("no update");
                       }
                     },
               child: Padding(

@@ -37,7 +37,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 30), (Timer timer) {
       refreshFetchData();
     });
   }
@@ -287,9 +287,16 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ),
               ),
-              Text(
-                'Hiện tại các món cần lấy ở ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name} đã hết!',
-                style: FineTheme.typograhpy.body1,
+              Padding(
+                padding: const EdgeInsets.only(left: 48, right: 48),
+                child: Text(
+                  'Hiện tại các món cần giao cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name} đã hết!',
+                  style: FineTheme.typograhpy.body1,
+                  textAlign: TextAlign.center,
+                ),
+              ),
+              const SizedBox(
+                height: 32,
               ),
               deliveredPackageList.isNotEmpty
                   ? Column(
@@ -297,9 +304,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(
                           height: 16,
                         ),
-                        Text(
+                        Padding(
+                          padding: const EdgeInsets.only(left: 48, right: 48),
+                          child: Text(
                             '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này!',
-                            style: FineTheme.typograhpy.body1),
+                            style: FineTheme.typograhpy.body1,
+                            textAlign: TextAlign.center,
+                          ),
+                        ),
                         Padding(
                           padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
                           child: Center(
@@ -517,7 +529,10 @@ class _HomeScreenState extends State<HomeScreen> {
   void _onTapDetail() async {
     // get orderDetail
     await model.getShipperOrderBoxes();
+    // if (model.orderBoxList.isNotEmpty) {
     await Get.toNamed(RouteHandler.PACKAGE_DETAIL);
+    // }
+
     // model.getOrders();
   }
 
@@ -528,14 +543,16 @@ class _HomeScreenState extends State<HomeScreen> {
         return AlertDialog(
           title: Text('Chi tiết gói hàng', style: FineTheme.typograhpy.h2),
           content: SizedBox(
-              height: 180,
-              width: 200,
-              child: ListView(
-                children: [
-                  const SizedBox(height: 8),
-                  ...?currentPackage?.listProducts
-                      ?.map((product) => _buildPackageProducts(product)),
-                ],
+              height: 200,
+              width: 300,
+              child: Scrollbar(
+                child: ListView(
+                  children: [
+                    const SizedBox(height: 8),
+                    ...?currentPackage?.listProducts
+                        ?.map((product) => _buildPackageProducts(product)),
+                  ],
+                ),
               )),
           actions: <Widget>[
             TextButton(
@@ -563,15 +580,20 @@ class _HomeScreenState extends State<HomeScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '${product.productName}',
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.normal),
+          SizedBox(
+            width: 200,
+            child: Text(
+              '${product.productName}',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal),
+            ),
           ),
           Text(
             'x ${product.quantity}',
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,

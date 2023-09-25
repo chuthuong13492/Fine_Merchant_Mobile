@@ -3,7 +3,6 @@ import 'package:fine_merchant_mobile/Accessories/loading.dart';
 import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Model/DTO/index.dart';
-import 'package:fine_merchant_mobile/ViewModel/deliveryList_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
@@ -297,13 +296,15 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          Text(
-            '${storeName}',
-            style: TextStyle(
-                color: FineTheme.palettes.emerald25,
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                fontStyle: FontStyle.normal),
+          SizedBox(
+            child: Text(
+              '${storeName}',
+              style: TextStyle(
+                  color: FineTheme.palettes.emerald25,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                  fontStyle: FontStyle.normal),
+            ),
           ),
           const SizedBox(
             height: 16,
@@ -322,15 +323,20 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          Text(
-            '${product.productName}',
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.normal),
+          SizedBox(
+            width: 200,
+            child: Text(
+              '${product.productName}',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal),
+            ),
           ),
           Text(
             'x ${product.quantity}',
+            overflow: TextOverflow.ellipsis,
             style: TextStyle(
                 fontSize: 16,
                 fontWeight: FontWeight.w400,
@@ -349,15 +355,24 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         return AlertDialog(
           title: Text('Chi tiết các gói hàng', style: FineTheme.typograhpy.h2),
           content: SizedBox(
-              height: 300,
-              width: 200,
-              child: ListView(
-                children: [
-                  const SizedBox(height: 8),
-                  ...packageList
-                      .map((package) => _buildPackageSection(package)),
-                ],
-              )),
+            height: 330,
+            child: Column(
+              children: [
+                SizedBox(
+                    height: 300,
+                    width: 300,
+                    child: Scrollbar(
+                      child: ListView(
+                        children: [
+                          const SizedBox(height: 8),
+                          ...packageList
+                              .map((package) => _buildPackageSection(package)),
+                        ],
+                      ),
+                    )),
+              ],
+            ),
+          ),
           actions: <Widget>[
             TextButton(
               style: TextButton.styleFrom(

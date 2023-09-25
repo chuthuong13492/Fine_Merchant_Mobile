@@ -206,7 +206,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
                             fit: BoxFit.contain,
                           ),
                         )
-                      : SizedBox.shrink(),
+                      : const SizedBox.shrink(),
                   const Text(
                     'Hãy đưa mã để mở tủ!',
                     style: TextStyle(
