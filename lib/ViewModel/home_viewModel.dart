@@ -206,7 +206,7 @@ class HomeViewModel extends BaseModel {
       setState(ViewStatus.Loading);
       var currentUser = Get.find<AccountViewModel>().currentUser;
       if (currentUser != null) {
-        final data = await _orderDAO?.getOrderListByStoreAndStation(
+        final data = await _orderDAO?.getOrderListForUpdating(
             storeId: storeId,
             stationId: stationId,
             timeSlotId: timeSlotId,
@@ -307,13 +307,7 @@ class HomeViewModel extends BaseModel {
               await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
           if (statusCode == 200) {
             await getSplitOrdersForDriver();
-
-            // if (newOrderStatus == OrderStatusEnum.BOX_STORED) {
-            //   isDelivering = false;
-            // } else {
-            //   currentDeliveryPackage = package;
-            //   isDelivering = true;
-            // }
+            await getDeliveredOrdersForDriver();
 
             notifyListeners();
             await showStatusDialog(
@@ -351,7 +345,6 @@ class HomeViewModel extends BaseModel {
         );
         if (data != null) {
           orderBoxList = data;
-          await getBoxQrCode();
         }
       }
       setState(ViewStatus.Completed);
@@ -363,6 +356,35 @@ class HomeViewModel extends BaseModel {
       } else {
         setState(ViewStatus.Error);
       }
+    } finally {}
+  }
+
+  Future<void> addOrdersToBoxes() async {
+    try {
+      var requestModel = AddToBoxesRequestModel(orderId: []);
+      await getOrderDetails(
+          orderStatus: OrderStatusEnum.DELIVERING,
+          stationId: selectedStationId,
+          timeSlotId: selectedTimeSlotId);
+      if (orderDetailList.isNotEmpty) {
+        var orderIdList = requestModel.orderId;
+        for (final order in orderDetailList) {
+          if (orderIdList
+                  ?.firstWhereOrNull((orderId) => orderId == order.orderId) ==
+              null) {
+            requestModel.orderId?.add(order.orderId!);
+          }
+        }
+
+        final status =
+            await _stationDAO?.addOrdersToBoxes(requestData: requestModel);
+        if (status == 200) {
+          print('add orders to boxes successfully');
+        }
+      }
+    } catch (e) {
+      print(e);
+      await showErrorDialog();
     } finally {}
   }
 

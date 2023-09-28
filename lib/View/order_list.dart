@@ -357,7 +357,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 padding: EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
-                    await model.getOrders();
+                    refreshFetchOrder();
                   },
                   child: Icon(
                     Icons.replay,

@@ -247,7 +247,7 @@ class OrderListViewModel extends BaseModel {
       var currentUser = Get.find<AccountViewModel>().currentUser;
       staffStore = Get.find<AccountViewModel>().currentStore;
       if (currentUser != null && currentUser.storeId != null) {
-        final data = await _orderDAO?.getOrderListByStoreAndStation(
+        final data = await _orderDAO?.getOrderListForUpdating(
             storeId: currentUser.storeId!,
             stationId: selectedStation?.id,
             timeSlotId: selectedTimeSlotId,

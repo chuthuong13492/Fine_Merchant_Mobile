@@ -43,9 +43,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                   .firstWhere(
                       (station) => station.id == model.selectedStationId)
                   .name;
-              // String? storeName = model.storeList
-              //     .firstWhere((store) => store.id == )
-              //     .storeName;
+
               return Padding(
                 padding: const EdgeInsets.only(right: 16, left: 16),
                 child: ListView(
@@ -169,10 +167,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                     borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
               onPressed: () {
-                _onTapToBoxList();
+                _onTapToProductBoxes();
               },
               child: Text(
-                'Xem danh sách tủ để đặt hàng vào',
+                'Xem danh sách tủ theo món',
                 style: FineTheme.typograhpy.body1.copyWith(
                   color: FineTheme.palettes.emerald25,
                 ),
@@ -355,7 +353,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         return AlertDialog(
           title: Text('Chi tiết các gói hàng', style: FineTheme.typograhpy.h2),
           content: SizedBox(
-            height: 330,
+            height: 300,
             child: Column(
               children: [
                 SizedBox(
@@ -393,12 +391,10 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     );
   }
 
-  void _onTapToBoxList() async {
-    // get orderDetail
+  void _onTapToProductBoxes() async {
     bool isRouted = true;
     await Get.find<StationViewModel>().getBoxListByStation();
     await Future.delayed(const Duration(milliseconds: 300));
     await Get.toNamed(RouteHandler.STATION_SCREEN, arguments: isRouted);
-    // model.getOrders();
   }
 }

@@ -57,6 +57,12 @@ class _ReportListScreenState extends State<ReportListScreen> {
     });
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    periodicTimer.cancel();
+  }
+
   Future<void> refreshFetchApi() async {
     model.getReportList();
   }
@@ -163,7 +169,6 @@ class _ReportListScreenState extends State<ReportListScreen> {
         builder: (context, child, model) {
       final status = model.status;
       List<MissingProductReportDTO> reportList = model.reportList;
-      bool isDelivering = model.isDelivering;
 
       if (status == ViewStatus.Loading) {
         return const Center(
@@ -179,8 +184,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                 padding: const EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
-                    await Get.find<HomeViewModel>()
-                        .getDeliveredOrdersForDriver();
+                    refreshFetchApi();
                   },
                   child: Icon(
                     Icons.replay,
@@ -252,15 +256,23 @@ class _ReportListScreenState extends State<ReportListScreen> {
     String? stationName = model.stationList
         .firstWhere((station) => station.id == report.stationId)
         .name;
+    int quantity = 0;
+    List<ListBoxAndQuantity>? reportBoxes = report.listBoxAndQuantity;
+    if (reportBoxes != null) {
+      for (ListBoxAndQuantity reportBox in reportBoxes) {
+        quantity = quantity + reportBox.quantity!;
+      }
+    }
+
     return Column(
       children: [
         InkWell(
           onTap: () async {
-            model.selectedStationId = report.stationId;
-            await model.getBoxListByStation();
-            currentReport = report;
-            // ignore: use_build_context_synchronously
-            _dialogBuilder(context);
+            // model.selectedStationId = report.stationId;
+            // await model.getBoxListByStation();
+            // currentReport = report;
+            // // ignore: use_build_context_synchronously
+            // _dialogBuilder(context);
           },
           child: Container(
               // height: 80,
@@ -296,20 +308,61 @@ class _ReportListScreenState extends State<ReportListScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Số món thiếu:',
+                            Text('Món thiếu:',
                                 style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.neutral900,
                                     fontWeight: FontWeight.bold)),
-                            Text('${report.missingProducts!.length} món',
+                            SizedBox(
+                              width: 200,
+                              child: Text('${report.productName}',
+                                  textAlign: TextAlign.end,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: FineTheme.typograhpy.body1),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Số lượng:',
+                                style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.neutral900,
+                                    fontWeight: FontWeight.bold)),
+                            Text('${quantity}',
+                                overflow: TextOverflow.ellipsis,
                                 style: FineTheme.typograhpy.body1),
                           ],
                         ),
                         const SizedBox(
-                          height: 24,
+                          height: 8,
                         ),
-                        Text("Chi tiết",
-                            style:
-                                TextStyle(color: FineTheme.palettes.emerald25)),
+                        // Text("Chi tiết",
+                        //     style:
+                        //         TextStyle(color: FineTheme.palettes.emerald25)),
+                        OutlinedButton(
+                          style: OutlinedButton.styleFrom(
+                            backgroundColor: FineTheme.palettes.emerald25,
+                            shape: RoundedRectangleBorder(
+                              borderRadius: BorderRadius.circular(8.0),
+                            ),
+                            side: BorderSide(
+                              width: 1.0,
+                              color: FineTheme.palettes.emerald25,
+                            ),
+                          ),
+                          onPressed: () async {
+                            model.confirmReportSolved(
+                                reportId: report.reportId);
+                          },
+                          child: Text(
+                            "Đã xử lý",
+                            style: FineTheme.typograhpy.subtitle2
+                                .copyWith(color: Colors.white),
+                          ),
+                        ),
                       ],
                     )),
               )),
@@ -323,36 +376,36 @@ class _ReportListScreenState extends State<ReportListScreen> {
       padding: const EdgeInsets.all(8.0),
       child: Column(
         children: [
-          ...?currentReport?.missingProducts
-              ?.map((product) => _buildReportProducts(product)),
+          ...?currentReport?.listBoxAndQuantity
+              ?.map((reportBox) => _buildReportProducts(reportBox)),
         ],
       ),
     );
   }
 
-  Widget _buildReportProducts(MissingProduct product) {
+  Widget _buildReportProducts(ListBoxAndQuantity? reportBox) {
+    String? boxCode =
+        model.boxList.firstWhere((box) => box.id == reportBox?.boxId).code;
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
-          SizedBox(
-            width: 200,
-            child: Text(
-              '${product.productName}',
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal),
-            ),
-          ),
           Text(
-            'x ${product.quantity}',
+            '$boxCode',
             overflow: TextOverflow.ellipsis,
             style: const TextStyle(
-                fontSize: 16,
+                fontSize: 14,
                 fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.normal),
+          ),
+          Text(
+            '${reportBox?.quantity}',
+            textAlign: TextAlign.end,
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 14,
+                fontWeight: FontWeight.bold,
                 fontStyle: FontStyle.normal),
           ),
         ],
@@ -364,8 +417,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
     String? stationName = model.stationList
         .firstWhere((station) => station.id == currentReport?.stationId)
         .name;
-    String? boxCode =
-        model.boxList.firstWhere((box) => box.id == currentReport?.boxId).code;
+
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -379,44 +431,24 @@ class _ReportListScreenState extends State<ReportListScreen> {
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
                     const Text(
-                      'Trạm:',
+                      'Món đang thiếu:',
                       overflow: TextOverflow.ellipsis,
                       style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 14,
                           fontWeight: FontWeight.bold,
                           fontStyle: FontStyle.normal),
                     ),
-                    Text(
-                      '${stationName}',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          fontStyle: FontStyle.normal),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 8,
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Tủ:',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.normal),
-                    ),
-                    Text(
-                      '${boxCode}',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w400,
-                          fontStyle: FontStyle.normal),
+                    SizedBox(
+                      width: 150,
+                      child: Text(
+                        '${currentReport?.productName}',
+                        textAlign: TextAlign.end,
+                        overflow: TextOverflow.ellipsis,
+                        style: const TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.w400,
+                            fontStyle: FontStyle.normal),
+                      ),
                     ),
                   ],
                 ),
@@ -425,7 +457,7 @@ class _ReportListScreenState extends State<ReportListScreen> {
                 ),
                 Center(
                   child: Text(
-                    'Các món thiếu:',
+                    'Các tủ đang thiếu:',
                     style: FineTheme.typograhpy.body1
                         .copyWith(color: FineTheme.palettes.emerald25),
                   ),

@@ -3,27 +3,27 @@ class MissingProductReportDTO {
   String? timeSlotId;
   String? stationId;
   String? storeId;
-  String? boxId;
-  List<MissingProduct>? missingProducts;
+  String? productName;
+  List<ListBoxAndQuantity>? listBoxAndQuantity;
 
   MissingProductReportDTO(
       {this.reportId,
       this.timeSlotId,
       this.stationId,
       this.storeId,
-      this.boxId,
-      this.missingProducts});
+      this.productName,
+      this.listBoxAndQuantity});
 
   MissingProductReportDTO.fromJson(Map<String, dynamic> json) {
     reportId = json['reportId'];
     timeSlotId = json['timeSlotId'];
     stationId = json['stationId'];
     storeId = json['storeId'];
-    boxId = json['boxId'];
-    if (json['missingProducts'] != null) {
-      missingProducts = <MissingProduct>[];
-      json['missingProducts'].forEach((v) {
-        missingProducts!.add(new MissingProduct.fromJson(v));
+    productName = json['productName'];
+    if (json['listBoxAndQuantity'] != null) {
+      listBoxAndQuantity = <ListBoxAndQuantity>[];
+      json['listBoxAndQuantity'].forEach((v) {
+        listBoxAndQuantity!.add(new ListBoxAndQuantity.fromJson(v));
       });
     }
   }
@@ -34,33 +34,30 @@ class MissingProductReportDTO {
     data['timeSlotId'] = timeSlotId;
     data['stationId'] = stationId;
     data['storeId'] = storeId;
-    data['boxId'] = boxId;
-    if (missingProducts != null) {
-      data['missingProducts'] =
-          missingProducts!.map((v) => v.toJson()).toList();
+    data['productName'] = productName;
+    if (listBoxAndQuantity != null) {
+      data['listBoxAndQuantity'] =
+          listBoxAndQuantity!.map((v) => v.toJson()).toList();
     }
     return data;
   }
 }
 
-class MissingProduct {
-  String? productName;
+class ListBoxAndQuantity {
+  String? boxId;
   int? quantity;
-  String? storeId;
 
-  MissingProduct({this.productName, this.quantity, this.storeId});
+  ListBoxAndQuantity({this.boxId, this.quantity});
 
-  MissingProduct.fromJson(Map<String, dynamic> json) {
-    productName = json['productName'];
+  ListBoxAndQuantity.fromJson(Map<String, dynamic> json) {
+    boxId = json['boxId'];
     quantity = json['quantity'];
-    storeId = json['storeId'];
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
-    data['productName'] = productName;
+    data['boxId'] = boxId;
     data['quantity'] = quantity;
-    data['storeId'] = storeId;
     return data;
   }
 }
@@ -68,26 +65,23 @@ class MissingProduct {
 class MissingProductReportRequestModel {
   String? timeSlotId;
   String? stationId;
-  String? storeId;
-  String? boxId;
-  List<MissingProduct>? missingProducts;
+  String? productName;
+  List<ListBoxAndQuantity>? listBoxAndQuantity;
 
   MissingProductReportRequestModel(
       {this.timeSlotId,
       this.stationId,
-      this.storeId,
-      this.boxId,
-      this.missingProducts});
+      this.productName,
+      this.listBoxAndQuantity});
 
   MissingProductReportRequestModel.fromJson(Map<String, dynamic> json) {
     timeSlotId = json['timeSlotId'];
     stationId = json['stationId'];
-    storeId = json['storeId'];
-    boxId = json['boxId'];
-    if (json['missingProducts'] != null) {
-      missingProducts = <MissingProduct>[];
-      json['missingProducts'].forEach((v) {
-        missingProducts!.add(new MissingProduct.fromJson(v));
+    productName = json['productName'];
+    if (json['listBoxAndQuantity'] != null) {
+      listBoxAndQuantity = <ListBoxAndQuantity>[];
+      json['listBoxAndQuantity'].forEach((v) {
+        listBoxAndQuantity!.add(new ListBoxAndQuantity.fromJson(v));
       });
     }
   }
@@ -96,11 +90,10 @@ class MissingProductReportRequestModel {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['timeSlotId'] = timeSlotId;
     data['stationId'] = stationId;
-    data['storeId'] = storeId;
-    data['boxId'] = boxId;
-    if (missingProducts != null) {
-      data['missingProducts'] =
-          missingProducts!.map((v) => v.toJson()).toList();
+    data['productName'] = productName;
+    if (listBoxAndQuantity != null) {
+      data['listBoxAndQuantity'] =
+          listBoxAndQuantity!.map((v) => v.toJson()).toList();
     }
     return data;
   }

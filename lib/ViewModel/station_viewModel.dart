@@ -38,6 +38,15 @@ class StationViewModel extends BaseModel {
     scrollController = ScrollController();
   }
 
+  void onSelectReportBox(String boxId) {
+    BoxDTO? foundBox = boxList.firstWhereOrNull((box) => box.id == boxId);
+    if (foundBox != null) {
+      bool? isSelected = foundBox.isSelected;
+      foundBox.isSelected = !isSelected!;
+    }
+    notifyListeners();
+  }
+
   void onChangeStation(String value) {
     selectedStationId = value;
     getBoxListByStation();
@@ -95,51 +104,49 @@ class StationViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> reportMissingProduct() async {
+  Future<void> reportMissingProduct({String? productName}) async {
     try {
       int option = await showOptionDialog("Xác nhận gửi báo cáo?");
       if (option == 1) {
         showLoadingDialog();
-        List<MissingProduct> missingProducts = [];
-        List<OrderDetail>? foundOrderDetails = orderBoxList
-            .firstWhere((e) => e.boxId == selectedBoxId)
-            .orderDetails;
-        if (foundOrderDetails!.isNotEmpty) {
-          for (OrderDetail detail in foundOrderDetails) {
-            if (detail.isChecked == true) {
-              missingProducts.add(MissingProduct(
-                  productName: detail.productName, quantity: detail.missing
-                  // ,storeId: detail.storeId
-                  ));
+        List<ListBoxAndQuantity> listBoxAndQuantity = [];
+        for (BoxDTO box in boxList) {
+          if (box.isSelected == true) {
+            listBoxAndQuantity
+                .add(ListBoxAndQuantity(boxId: box.id, quantity: 0));
+          }
+        }
+
+        for (ListBoxAndQuantity reportBox in listBoxAndQuantity) {
+          ShipperOrderBoxDTO? foundOrderBox = orderBoxList.firstWhereOrNull(
+              (orderBox) => orderBox.boxId == reportBox.boxId);
+          if (foundOrderBox != null) {
+            var foundDetail = foundOrderBox.orderDetails?.firstWhereOrNull(
+                (detail) => detail.productName == productName);
+            if (foundDetail != null) {
+              reportBox.quantity = foundDetail.quantity;
             }
           }
         }
 
         var requestModel = MissingProductReportRequestModel(
-            boxId: selectedBoxId,
             stationId: selectedStationId,
-            storeId: selectedStoreId,
             timeSlotId: selectedTimeSlotId,
-            missingProducts: missingProducts);
+            productName: productName,
+            listBoxAndQuantity: listBoxAndQuantity);
 
         final status =
             await _stationDAO?.reportMissingProduct(requestData: requestModel);
         if (status == 200) {
           await showStatusDialog(
-              "assets/images/icon-success.png", "Gửi thành công", "");
+              "assets/images/icon-success.png", "Báo cáo thành công", "");
         }
-        Get.back();
         setState(ViewStatus.Completed);
         notifyListeners();
       }
     } catch (e) {
       print(e);
-      bool result = await showErrorDialog();
-      if (result) {
-        await reportMissingProduct();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      await showErrorDialog();
     } finally {}
   }
 }

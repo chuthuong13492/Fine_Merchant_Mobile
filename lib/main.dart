@@ -7,6 +7,7 @@ import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/Utils/pageNavigation.dart';
 import 'package:fine_merchant_mobile/Utils/request.dart';
+import 'package:fine_merchant_mobile/View/productBoxes_screen.dart.dart';
 import 'package:fine_merchant_mobile/View/report_list.dart';
 import 'package:fine_merchant_mobile/View/nav_screen.dart';
 import 'package:fine_merchant_mobile/View/notFoundScreen.dart';
@@ -95,6 +96,11 @@ class MyApp extends StatelessWidget {
           case RouteHandler.PACKAGE_DETAIL:
             return CupertinoPageRoute<bool>(
                 builder: (context) => const PackageDetailScreen(),
+                settings: settings);
+          case RouteHandler.PRODUCT_BOXES_SCREEN:
+            return CupertinoPageRoute<bool>(
+                builder: (context) => ProductBoxesScreen(
+                    detail: settings.arguments as OrderDetail),
                 settings: settings);
           default:
             return CupertinoPageRoute(

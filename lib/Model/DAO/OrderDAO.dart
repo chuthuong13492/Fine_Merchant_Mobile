@@ -64,17 +64,19 @@ class OrderDAO extends BaseDAO {
     return null;
   }
 
-  Future<List<OrderDTO>?> getOrderListByStoreAndStation(
+  Future<List<OrderDTO>?> getOrderListForUpdating(
       {String? storeId,
       String? stationId,
       String? timeSlotId,
       int? orderStatus}) async {
     final res = await request.get(
-      '/admin/orderDetail/staff/${storeId}/${stationId}',
+      '/admin/orderDetail/staff/splitOrderDetail',
       queryParameters: {
         "timeSlotId": timeSlotId,
         "status": orderStatus,
-        // "size": size ?? DEFAULT_SIZE,
+        "storeId": storeId,
+        "stationId": stationId,
+        "PageSize": 100,
         // "page": page ?? 1,
       },
     );

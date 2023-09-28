@@ -43,7 +43,7 @@ class ReportListViewModel extends BaseModel {
 
   void onChangeTimeSlot(String value) {
     selectedTimeSlotId = value;
-
+    getReportList();
     notifyListeners();
   }
 

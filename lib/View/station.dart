@@ -59,6 +59,12 @@ class _StationScreenState extends State<StationScreen> {
     model.getBoxListByStation();
   }
 
+  void _onTapToBoxList(OrderDetail detail) async {
+    await Get.find<StationViewModel>().getBoxListByStation();
+    await Future.delayed(const Duration(milliseconds: 300));
+    await Get.toNamed(RouteHandler.PRODUCT_BOXES_SCREEN, arguments: detail);
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -78,9 +84,8 @@ class _StationScreenState extends State<StationScreen> {
               children: [
                 Column(
                   children: [
-                    FixedAppBar(
-                      // notifier: notifier,
-                      height: HEIGHT,
+                    const SizedBox(
+                      height: 16,
                     ),
                     Expanded(
                       child: Container(
@@ -122,36 +127,7 @@ class _StationScreenState extends State<StationScreen> {
                                       children: [
                                         ...renderHomeSections().toList(),
                                         const SizedBox(
-                                          height: 8,
-                                        ),
-                                        Center(
-                                          child: ElevatedButton(
-                                            style: ElevatedButton.styleFrom(
-                                              backgroundColor: Colors.white,
-                                              shape: RoundedRectangleBorder(
-                                                  side: BorderSide(
-                                                      color: FineTheme
-                                                          .palettes.error200),
-                                                  borderRadius:
-                                                      // BorderRadius.only(
-                                                      //     bottomRight: Radius.circular(16),
-                                                      //     bottomLeft: Radius.circular(16))
-                                                      const BorderRadius.all(
-                                                          Radius.circular(8))),
-                                            ),
-                                            onPressed: () async {
-                                              _dialogBuilder(context);
-                                              setState(() {});
-                                            },
-                                            child: Text(
-                                              "Báo cáo !",
-                                              style: FineTheme
-                                                  .typograhpy.subtitle2
-                                                  .copyWith(
-                                                      color: FineTheme
-                                                          .palettes.error200),
-                                            ),
-                                          ),
+                                          height: 12,
                                         ),
                                       ],
                                     ),
@@ -198,9 +174,7 @@ class _StationScreenState extends State<StationScreen> {
         child: ScopedModelDescendant<StationViewModel>(
           builder: (context, child, model) {
             ViewStatus status = model.status;
-            if (status == ViewStatus.Loading) {
-              return const SizedBox.shrink();
-            }
+
             return SizedBox(
               height: 50,
               child: Column(
@@ -376,7 +350,7 @@ class _StationScreenState extends State<StationScreen> {
     return Container(
       padding: const EdgeInsets.only(top: 10, bottom: 10),
       color: FineTheme.palettes.emerald25,
-      height: 600,
+      height: 680,
       width: 600,
       child: Scrollbar(
         child: ListView(children: [
@@ -389,8 +363,18 @@ class _StationScreenState extends State<StationScreen> {
 
   Widget _buildProducts(
       OrderDetail detail, List<ShipperOrderBoxDTO> orderBoxList) {
+    int quantity = 0;
+    for (ShipperOrderBoxDTO orderBox in orderBoxList) {
+      var orderDetails = orderBox.orderDetails;
+      var foundDetail = orderDetails
+          ?.firstWhereOrNull((e) => e.productName == detail.productName);
+      if (foundDetail != null) {
+        quantity = quantity + foundDetail.quantity!;
+      }
+    }
+
     return Container(
-      margin: const EdgeInsets.all(8),
+      margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: Colors.white,
@@ -418,204 +402,25 @@ class _StationScreenState extends State<StationScreen> {
               const SizedBox(
                 height: 8,
               ),
-              // Row(
-              //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              //   children: [
-              //     Text('Số lượng:',
-              //         style: FineTheme.typograhpy.body1.copyWith(
-              //             color: FineTheme.palettes.neutral900,
-              //             fontWeight: FontWeight.bold)),
-              //     Text('${detail.quantity}', style: FineTheme.typograhpy.body1),
-              //   ],
-              // ),
-              // const SizedBox(
-              //   height: 8,
-              // ),
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text('Đặt vào:',
+                  Text('Số lượng:',
                       style: FineTheme.typograhpy.body1.copyWith(
                           color: FineTheme.palettes.neutral900,
                           fontWeight: FontWeight.bold)),
-                  Column(
-                    children: [
-                      ...orderBoxList.map(
-                          (orderBox) => _buildBoxProducts(orderBox, detail)),
-                    ],
-                  )
+                  Text('${quantity} món', style: FineTheme.typograhpy.body1),
                 ],
               ),
               const SizedBox(
                 height: 8,
-              )
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildBoxProducts(ShipperOrderBoxDTO orderBox, OrderDetail detail) {
-    String? boxCode =
-        model.boxList.firstWhere((box) => box.id == orderBox.boxId).code;
-    if (orderBox.orderDetails?.firstWhereOrNull(
-            (e) => e.productInMenuId == detail.productInMenuId) !=
-        null) {
-      return Text(
-        'Tủ $boxCode (${detail.quantity} món)',
-        style: FineTheme.typograhpy.body1,
-      );
-    }
-    return const SizedBox.shrink();
-  }
-
-  Widget _buildReportProducts(OrderDetail detail) {
-    int detailIndex = model.orderBoxList
-        .firstWhere((e) => e.boxId == model.selectedBoxId)
-        .orderDetails!
-        .indexOf(detail);
-    return StatefulBuilder(builder: (context, setState) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 175,
-            child: Text(
-              '${detail.productName}',
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal),
-            ),
-          ),
-          detail.isChecked == true
-              ? Row(
-                  children: [
-                    IconButton(
-                      splashRadius: 12,
-                      icon: const Icon(Icons.remove),
-                      onPressed: () {
-                        model.onChangeMissing(detailIndex, detail.missing! - 1);
-                        setState(() {});
-                      },
-                      color: FineTheme.palettes.emerald25,
-                    ),
-                    Text(
-                      '${detail.missing}',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          fontStyle: FontStyle.normal),
-                    ),
-                    IconButton(
-                      splashRadius: 12,
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        model.onChangeMissing(detailIndex, detail.missing! + 1);
-                        setState(() {});
-                      },
-                      color: FineTheme.palettes.emerald25,
-                    ),
-                  ],
-                )
-              : TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  child: Text(
-                    'Chọn',
-                    style: FineTheme.typograhpy.body1
-                        .copyWith(color: FineTheme.palettes.emerald25),
-                  ),
-                  onPressed: () {
-                    model.onSelectProductMissing(detailIndex, true);
-                    setState(() {});
-                  },
-                ),
-        ],
-      );
-    });
-  }
-
-  Future<void> _dialogBuilder(BuildContext context) {
-    return showDialog<void>(
-      context: context,
-      builder: (BuildContext context) {
-        List<ShipperOrderBoxDTO> orderBoxList = model.orderBoxList;
-        return StatefulBuilder(builder: (context, setState) {
-          return AlertDialog(
-            title: Text('Báo cáo thiếu món', style: FineTheme.typograhpy.h2),
-            content: SizedBox(
-              height: 350,
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text('Tủ:', style: FineTheme.typograhpy.body1),
-                      DropdownButton<String>(
-                        value: model.selectedBoxId,
-                        onChanged: (String? value) {
-                          model.onChangeBox(value!);
-                          setState(() {});
-                        },
-                        items: model.orderBoxList.map<DropdownMenuItem<String>>(
-                            (ShipperOrderBoxDTO orderBox) {
-                          return DropdownMenuItem<String>(
-                            value: orderBox.boxId,
-                            child: Text(
-                                '${model.boxList.firstWhere((box) => box.id == orderBox.boxId).code}',
-                                style: FineTheme.typograhpy.body1),
-                          );
-                        }).toList(),
-                      ),
-                      // Text(
-                      // '${currentTimeSlot.arriveTime?.substring(0, 5)} - ${currentTimeSlot.checkoutTime?.substring(0, 5)}',
-                      // style: FineTheme.typograhpy.body1)
-                    ],
-                  ),
-                  SizedBox(
-                      height: 300,
-                      width: 300,
-                      child: Scrollbar(
-                        child: ListView(
-                          children: [
-                            const SizedBox(height: 8),
-                            ...orderBoxList
-                                .firstWhere(
-                                    (e) => e.boxId == model.selectedBoxId)
-                                .orderDetails!
-                                .map((detail) => _buildReportProducts(detail)),
-                          ],
-                        ),
-                      )),
-                ],
               ),
-            ),
-            actions: <Widget>[
               Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    child: Text(
-                      'Đóng',
-                      style: FineTheme.typograhpy.body1
-                          .copyWith(color: FineTheme.palettes.emerald25),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                    },
-                  ),
                   OutlinedButton(
                     style: OutlinedButton.styleFrom(
-                      backgroundColor: FineTheme.palettes.emerald25,
+                      // backgroundColor: FineTheme.palettes.emerald25,
                       shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(8.0),
                       ),
@@ -625,20 +430,26 @@ class _StationScreenState extends State<StationScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      model.reportMissingProduct();
+                      _onTapToBoxList(detail);
                     },
                     child: Text(
-                      "Gửi",
+                      "Xem danh sách tủ",
                       style: FineTheme.typograhpy.subtitle2
-                          .copyWith(color: Colors.white),
+                          .copyWith(color: FineTheme.palettes.emerald25),
                     ),
                   ),
+                  // Column(
+                  //   children: [
+                  //     ...orderBoxList.map(
+                  //         (orderBox) => _buildBoxProducts(orderBox, detail)),
+                  //   ],
+                  // )
                 ],
-              )
+              ),
             ],
-          );
-        });
-      },
+          ),
+        ),
+      ),
     );
   }
 }

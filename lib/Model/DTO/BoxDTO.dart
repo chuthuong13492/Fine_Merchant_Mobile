@@ -8,6 +8,7 @@ class BoxDTO {
   bool? isHeat;
   String? createAt;
   String? updateAt;
+  bool? isSelected;
 
   BoxDTO(
       {this.id,
@@ -16,7 +17,8 @@ class BoxDTO {
       this.isActive,
       this.isHeat,
       this.createAt,
-      this.updateAt});
+      this.updateAt,
+      this.isSelected});
 
   BoxDTO.fromJson(Map<String, dynamic> json) {
     id = json['id'];
@@ -26,6 +28,7 @@ class BoxDTO {
     isHeat = json['isHeat'];
     createAt = json['createAt'];
     updateAt = json['updateAt'];
+    isSelected = false;
   }
 
   Map<String, dynamic> toJson() {
@@ -37,6 +40,22 @@ class BoxDTO {
     data['isHeat'] = isHeat;
     data['createAt'] = createAt;
     data['updateAt'] = updateAt;
+    return data;
+  }
+}
+
+class AddToBoxesRequestModel {
+  List<String>? orderId;
+
+  AddToBoxesRequestModel({this.orderId});
+
+  AddToBoxesRequestModel.fromJson(Map<String, dynamic> json) {
+    orderId = json['orderId'].cast<String>();
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['orderId'] = orderId;
     return data;
   }
 }

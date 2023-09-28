@@ -50,6 +50,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> refreshFetchData() async {
     await model.getSplitOrdersForDriver();
+    await model.getDeliveredOrdersForDriver();
   }
 
   @override
@@ -277,8 +278,8 @@ class _HomeScreenState extends State<HomeScreen> {
                 padding: EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
-                    await model.getSplitOrdersForDriver();
-                    await model.getDeliveredOrdersForDriver();
+                    await refreshFetchData();
+                    await model.addOrdersToBoxes();
                   },
                   child: Icon(
                     Icons.replay,
@@ -290,7 +291,7 @@ class _HomeScreenState extends State<HomeScreen> {
               Padding(
                 padding: const EdgeInsets.only(left: 48, right: 48),
                 child: Text(
-                  'Hiện tại các món cần giao cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name} đã hết!',
+                  'Hiện tại chưa có món nào cần giao cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name}!',
                   style: FineTheme.typograhpy.body1,
                   textAlign: TextAlign.center,
                 ),
@@ -307,7 +308,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         Padding(
                           padding: const EdgeInsets.only(left: 48, right: 48),
                           child: Text(
-                            '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này!',
+                            '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này',
                             style: FineTheme.typograhpy.body1,
                             textAlign: TextAlign.center,
                           ),
@@ -527,13 +528,11 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onTapDetail() async {
-    // get orderDetail
     await model.getShipperOrderBoxes();
-    // if (model.orderBoxList.isNotEmpty) {
-    await Get.toNamed(RouteHandler.PACKAGE_DETAIL);
-    // }
-
-    // model.getOrders();
+    await model.getBoxQrCode();
+    if (model.orderBoxList.isNotEmpty) {
+      await Get.toNamed(RouteHandler.PACKAGE_DETAIL);
+    }
   }
 
   Future<void> _dialogBuilder(BuildContext context) {
@@ -591,13 +590,17 @@ class _HomeScreenState extends State<HomeScreen> {
                   fontStyle: FontStyle.normal),
             ),
           ),
-          Text(
-            'x ${product.quantity}',
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.normal),
+          SizedBox(
+            width: 65,
+            child: Text(
+              'x ${product.quantity}',
+              textAlign: TextAlign.end,
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal),
+            ),
           ),
         ],
       ),

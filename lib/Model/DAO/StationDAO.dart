@@ -27,7 +27,9 @@ class StationDAO extends BaseDAO {
   Future<List<BoxDTO>?> getAllBoxByStation({String? stationId}) async {
     final res = await request.get(
       '/admin/box/station/$stationId',
-      queryParameters: {},
+      queryParameters: {
+        "PageSize": 100,
+      },
     );
     if (res.data['data'] != null) {
       var listJson = res.data['data'] as List;
@@ -76,6 +78,15 @@ class StationDAO extends BaseDAO {
       {required MissingProductReportRequestModel requestData}) async {
     final response =
         await request.post('/admin/shipper/report', data: requestData);
+    if (response.statusCode != null) {
+      return response.statusCode;
+    }
+    return null;
+  }
+
+  Future<int?> addOrdersToBoxes(
+      {required AddToBoxesRequestModel? requestData}) async {
+    final response = await request.post('/admin/box', data: requestData);
     if (response.statusCode != null) {
       return response.statusCode;
     }
