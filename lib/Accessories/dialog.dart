@@ -309,7 +309,7 @@ Future<int> showOptionDialog(String text,
             ),
             const Positioned(
               top: -50,
-              right: 100,
+              right: 75,
               child: Image(
                 image: AssetImage("assets/images/logo.png"),
                 width: 130,
