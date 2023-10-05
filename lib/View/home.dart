@@ -51,12 +51,14 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> refreshFetchData() async {
     await model.getSplitOrdersForDriver();
     await model.getDeliveredOrdersForDriver();
+    await model.getStationList();
+    await model.getTimeSlotList();
   }
 
   @override
   Widget build(BuildContext context) {
-    TimeSlotDTO currentTimeSlot = model.timeSlotList
-        .firstWhere((slot) => slot.id == model.selectedTimeSlotId);
+    StationDTO station = model.stationList
+        .firstWhere((station) => station.id == model.selectedStationId);
     return ScopedModel(
       model: Get.find<HomeViewModel>(),
       child: Scaffold(
@@ -64,34 +66,41 @@ class _HomeScreenState extends State<HomeScreen> {
             title: "Gói hàng ${model.isDelivering ? "Đang giao" : "Chờ giao"}",
             backButton: const SizedBox.shrink(),
             bottom: PreferredSize(
-              preferredSize: const Size.fromHeight(120),
-              child: model.isDelivering
-                  ? const SizedBox.shrink()
-                  : Column(
-                      children: [
-                        DropdownButton<String>(
-                          value: model.selectedStationId,
-                          onChanged: (String? value) {
-                            model.onChangeStation(value!);
-                            setState(() {});
-                          },
-                          items: model.stationList
-                              .map<DropdownMenuItem<String>>(
-                                  (StationDTO station) {
-                            return DropdownMenuItem<String>(
-                              value: station.id,
-                              child: Text(
-                                "${station.name}",
-                                style: FineTheme.typograhpy.h2.copyWith(
-                                  color: FineTheme.palettes.emerald25,
-                                ),
-                              ),
-                            );
-                          }).toList(),
-                        ),
-                      ],
+                preferredSize: const Size.fromHeight(120),
+                child: Padding(
+                  padding: const EdgeInsets.only(bottom: 8),
+                  child: Text(
+                    "${station.name}",
+                    style: FineTheme.typograhpy.h2.copyWith(
+                      color: FineTheme.palettes.emerald25,
                     ),
-            )),
+                  ),
+                )
+                // Column(
+                //   children: [
+                //     DropdownButton<String>(
+                //       value: model.selectedStationId,
+                //       onChanged: (String? value) {
+                //         model.onChangeStation(value!);
+                //         setState(() {});
+                //       },
+                //       items: model.stationList
+                //           .map<DropdownMenuItem<String>>(
+                //               (StationDTO station) {
+                //         return DropdownMenuItem<String>(
+                //           value: station.id,
+                //           child: Text(
+                //             "${station.name}",
+                //             style: FineTheme.typograhpy.h2.copyWith(
+                //               color: FineTheme.palettes.emerald25,
+                //             ),
+                //           ),
+                //         );
+                //       }).toList(),
+                //     ),
+                //   ],
+                // ),
+                )),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -130,7 +139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 color: const Color(0xffefefef),
               ),
             ),
-            const SizedBox(height: 16),
+            const SizedBox(height: 64),
           ],
         ),
       ),
@@ -176,7 +185,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Text(
                   '$stationName',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                       fontStyle: FontStyle.normal),
@@ -201,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 ),
                 Text(
                   '${timeSlot?.checkoutTime}',
-                  style: TextStyle(
+                  style: const TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                       fontStyle: FontStyle.normal),
@@ -270,81 +279,90 @@ class _HomeScreenState extends State<HomeScreen> {
           child: LoadingFine(),
         );
       } else if (status == ViewStatus.Empty || packageList.isEmpty) {
-        return Center(
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Padding(
-                padding: EdgeInsets.all(15),
-                child: InkWell(
-                  onTap: () async {
-                    await refreshFetchData();
-                    await model.addOrdersToBoxes();
-                  },
-                  child: Icon(
-                    Icons.replay,
-                    color: FineTheme.palettes.primary300,
-                    size: 26,
+        return RefreshIndicator(
+          key: _refreshIndicatorKey,
+          onRefresh: refreshFetchData,
+          child: ListView(children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Padding(
+                //   padding: const EdgeInsets.all(15),
+                //   child: InkWell(
+                //     onTap: () async {
+                //       await refreshFetchData();
+                //     },
+                //     child: Icon(
+                //       Icons.replay,
+                //       color: FineTheme.palettes.primary300,
+                //       size: 26,
+                //     ),
+                //   ),
+                // ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 48, right: 48),
+                  child: Text(
+                    'Hiện tại chưa có cửa hàng nào có hàng cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name}!',
+                    style: FineTheme.typograhpy.body1,
+                    textAlign: TextAlign.center,
                   ),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(left: 48, right: 48),
-                child: Text(
-                  'Hiện tại chưa có món nào cần giao cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name}!',
-                  style: FineTheme.typograhpy.body1,
-                  textAlign: TextAlign.center,
+                const SizedBox(
+                  height: 32,
                 ),
-              ),
-              const SizedBox(
-                height: 32,
-              ),
-              deliveredPackageList.isNotEmpty
-                  ? Column(
-                      children: [
-                        const SizedBox(
-                          height: 16,
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(left: 48, right: 48),
-                          child: Text(
-                            '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này',
-                            style: FineTheme.typograhpy.body1,
-                            textAlign: TextAlign.center,
+                deliveredPackageList.isNotEmpty
+                    ? Column(
+                        children: [
+                          const Image(
+                            image: AssetImage(
+                                "assets/images/package_delivery.png"),
+                            width: 300,
+                            height: 300,
                           ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                          child: Center(
-                            child: ElevatedButton(
-                              style: ElevatedButton.styleFrom(
-                                backgroundColor: Colors.white,
-                                shape: const RoundedRectangleBorder(
-                                    borderRadius:
-                                        // BorderRadius.only(
-                                        //     bottomRight: Radius.circular(16),
-                                        //     bottomLeft: Radius.circular(16))
-                                        BorderRadius.all(Radius.circular(8))),
-                              ),
-                              onPressed: () {
-                                _onTapDetail();
-                                // setState(() {
-                                //   isDelivering = !isDelivering;
-                                // });
-                              },
-                              child: Text(
-                                "Xem thông tin giao hàng!",
-                                style: FineTheme.typograhpy.subtitle2.copyWith(
-                                    color: FineTheme.palettes.emerald25),
-                              ),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 48, right: 48),
+                            child: Text(
+                              '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này',
+                              style: FineTheme.typograhpy.body1,
+                              textAlign: TextAlign.center,
                             ),
                           ),
-                        )
-                      ],
-                    )
-                  : SizedBox.shrink(),
-            ],
-          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                            child: Center(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius:
+                                          // BorderRadius.only(
+                                          //     bottomRight: Radius.circular(16),
+                                          //     bottomLeft: Radius.circular(16))
+                                          BorderRadius.all(Radius.circular(8))),
+                                ),
+                                onPressed: () {
+                                  _onTapDetail();
+                                  // setState(() {
+                                  //   isDelivering = !isDelivering;
+                                  // });
+                                },
+                                child: Text(
+                                  "Xem thông tin giao hàng!",
+                                  style: FineTheme.typograhpy.subtitle2
+                                      .copyWith(
+                                          color: FineTheme.palettes.emerald25),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ],
+            ),
+          ]),
         );
       }
 
@@ -378,31 +396,36 @@ class _HomeScreenState extends State<HomeScreen> {
       return RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: refreshFetchData,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          controller: Get.find<HomeViewModel>().scrollController,
-          padding: const EdgeInsets.all(8),
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
+        child: Scrollbar(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 28.0),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: Get.find<HomeViewModel>().scrollController,
+              padding: const EdgeInsets.all(8),
               children: [
-                // Center(
-                //   child: Text(
-                //       'Số gói hàng đã lấy: ${deliveredPackageList.length}/${packageList.length} ',
-                //       style: FineTheme.typograhpy.h2.copyWith(
-                //         color: FineTheme.palettes.emerald25,
-                //       )),
-                // ),
-                ...packageList
-                    .map((package) => _buildOrderPackage(package))
-                    .toList(),
-                loadMoreIcon(),
-                const SizedBox(
-                  height: 80,
-                ),
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Center(
+                    //   child: Text(
+                    //       'Số gói hàng đã lấy: ${deliveredPackageList.length}/${packageList.length} ',
+                    //       style: FineTheme.typograhpy.h2.copyWith(
+                    //         color: FineTheme.palettes.emerald25,
+                    //       )),
+                    // ),
+                    ...packageList
+                        .map((package) => _buildOrderPackage(package))
+                        .toList(),
+                    loadMoreIcon(),
+                    const SizedBox(
+                      height: 80,
+                    ),
+                  ],
+                )
               ],
-            )
-          ],
+            ),
+          ),
         ),
       );
     });
@@ -512,7 +535,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               onPressed: () async {
                 await model.confirmDelivery(package);
-                await model.getDeliveredOrdersForDriver();
                 setState(() {});
               },
               child: Text(
@@ -540,34 +562,54 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Chi tiết gói hàng', style: FineTheme.typograhpy.h2),
-          content: SizedBox(
-              height: 200,
-              width: 300,
-              child: Scrollbar(
-                child: ListView(
-                  children: [
-                    const SizedBox(height: 8),
-                    ...?currentPackage?.listProducts
-                        ?.map((product) => _buildPackageProducts(product)),
-                  ],
+          content: Container(
+            child: Stack(clipBehavior: Clip.none, children: [
+              Positioned(
+                top: -20,
+                right: -15,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                      textStyle: Theme.of(context).textTheme.labelLarge,
+                      alignment: Alignment.topRight),
+                  child: Icon(Icons.close_outlined,
+                      color: FineTheme.palettes.emerald25),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
                 ),
-              )),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
               ),
-              child: Text(
-                'Đóng',
-                style: FineTheme.typograhpy.body1
-                    .copyWith(color: FineTheme.palettes.emerald25),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: SizedBox(
+                  height: 350,
+                  child: Column(
+                    children: [
+                      Container(
+                          height: 50,
+                          width: 300,
+                          decoration: const BoxDecoration(
+                              border: Border(bottom: BorderSide(width: 1))),
+                          child: Text('Chi tiết gói hàng',
+                              style: FineTheme.typograhpy.h2)),
+                      SizedBox(
+                          height: 300,
+                          width: 300,
+                          child: Scrollbar(
+                            child: ListView(
+                              children: [
+                                const SizedBox(height: 8),
+                                ...?currentPackage?.listProducts?.map(
+                                    (product) =>
+                                        _buildPackageProducts(product)),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              )
+            ]),
+          ),
         );
       },
     );
@@ -584,7 +626,7 @@ class _HomeScreenState extends State<HomeScreen> {
             child: Text(
               '${product.productName}',
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   fontStyle: FontStyle.normal),
@@ -596,7 +638,7 @@ class _HomeScreenState extends State<HomeScreen> {
               'x ${product.quantity}',
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
-              style: TextStyle(
+              style: const TextStyle(
                   fontSize: 16,
                   fontWeight: FontWeight.w400,
                   fontStyle: FontStyle.normal),

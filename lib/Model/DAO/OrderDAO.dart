@@ -17,7 +17,7 @@ class OrderDAO extends BaseDAO {
     return null;
   }
 
-  Future<List<SplitOrderDTO>?> getSplitOrderListByStoreAndStation(
+  Future<List<SplitOrderDTO>?> getSplitOrderListByStoreForStaff(
       {required String storeId,
       String? stationId,
       String? timeSlotId,
@@ -26,7 +26,7 @@ class OrderDAO extends BaseDAO {
       '/admin/orderDetail/splitOrder/${storeId}',
       queryParameters: {
         "timeSlotId": timeSlotId,
-        "status": orderStatus,
+        "productStatus": orderStatus,
         "stationId": stationId,
         // "size": size ?? DEFAULT_SIZE,
         // "page": page ?? 1,
@@ -162,6 +162,15 @@ class OrderDAO extends BaseDAO {
       {required UpdateOrderStatusRequestModel orders}) async {
     final res = await request.put('admin/orderDetail/status/storeId/orderId',
         data: orders.toJson());
+
+    return res.statusCode;
+  }
+
+  Future<int?> confirmSplitProduct(
+      {required UpdateSplitProductsRequestModel products}) async {
+    final res = await request.put(
+        'admin/orderDetail/status/storeId/orderDetailId',
+        data: products.toJson());
 
     return res.statusCode;
   }

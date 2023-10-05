@@ -84,9 +84,14 @@ class HomeViewModel extends BaseModel {
                 1))
             .toList();
         if (timeSlotList.isEmpty) {
-          timeSlotList.add(data.last);
+          var lastTimeSlot = data.last;
+          timeSlotList.add(lastTimeSlot);
+          selectedTimeSlotId = lastTimeSlot.id!;
+        } else if (selectedTimeSlotId == '' ||
+            timeSlotList.firstWhereOrNull((e) => e.id == selectedTimeSlotId) ==
+                null) {
+          selectedTimeSlotId = timeSlotList.first.id!;
         }
-        selectedTimeSlotId = timeSlotList.first.id!;
       }
       setState(ViewStatus.Completed);
       notifyListeners();
@@ -103,13 +108,27 @@ class HomeViewModel extends BaseModel {
   Future<void> getStationList() async {
     try {
       setState(ViewStatus.Loading);
+      var currentUser = Get.find<AccountViewModel>().currentUser;
+      print(currentUser);
       final data = await _stationDAO?.getStationsByDestination(
           destinationId: selectedDestinationId);
       if (data != null) {
         stationList = data;
-        if (selectedStationId == '') {
-          selectedStationId = data.first.id!;
-        }
+        String? selectedStationCodeByName =
+            currentUser?.username!.replaceFirst("shipper", '');
+        String? findNumber =
+            selectedStationCodeByName?.replaceAll(RegExp(r'[^0-9]'), '');
+        selectedStationCodeByName =
+            selectedStationCodeByName?.replaceFirst(RegExp(r'\d'), '');
+
+        selectedStationCodeByName =
+            ("${selectedStationCodeByName!}L${findNumber!}").toUpperCase();
+
+        StationDTO foundStation = stationList
+            .firstWhere((station) => station.code == selectedStationCodeByName);
+
+        selectedStationId = foundStation.id!;
+        // selectedStationId = data.first.id!;
       }
       setState(ViewStatus.Completed);
       notifyListeners();
@@ -203,7 +222,6 @@ class HomeViewModel extends BaseModel {
       String? timeSlotId,
       int? orderStatus}) async {
     try {
-      setState(ViewStatus.Loading);
       var currentUser = Get.find<AccountViewModel>().currentUser;
       if (currentUser != null) {
         final data = await _orderDAO?.getOrderListForUpdating(
@@ -221,8 +239,6 @@ class HomeViewModel extends BaseModel {
       bool result = await showErrorDialog();
       if (result) {
         await getOrderDetails();
-      } else {
-        setState(ViewStatus.Error);
       }
     } finally {}
   }
@@ -278,12 +294,11 @@ class HomeViewModel extends BaseModel {
   }
 
   Future<void> confirmDelivery(PackageViewDTO package) async {
-    try {
-      List<ListStoreAndOrder> updateListStoreAndOrders = [];
-      List<UpdateOrderStatusRequestModel> updatedOrders = [];
-
-      int option = await showOptionDialog("Xác nhận đã lấy hàng này?");
-      if (option == 1) {
+    int option = await showOptionDialog("Xác nhận đã lấy hàng này?");
+    if (option == 1) {
+      try {
+        List<ListStoreAndOrder> updateListStoreAndOrders = [];
+        List<UpdateOrderStatusRequestModel> updatedOrders = [];
         showLoadingDialog();
         int newOrderStatus = OrderStatusEnum.DELIVERING;
         await getOrderDetails(
@@ -306,12 +321,8 @@ class HomeViewModel extends BaseModel {
           final statusCode =
               await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
           if (statusCode == 200) {
-            await getSplitOrdersForDriver();
-            await getDeliveredOrdersForDriver();
-
-            notifyListeners();
             await showStatusDialog(
-                "assets/images/icon-success.png", "Xác nhận thành công", "");
+                "assets/images/icon-success.png", "Lấy hàng thành công", "");
             Get.back();
           } else {
             await showStatusDialog(
@@ -323,14 +334,18 @@ class HomeViewModel extends BaseModel {
         } else {
           Get.back();
         }
+      } catch (e) {
+        await showStatusDialog(
+          "assets/images/error.png",
+          "Thất bại",
+          "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+        );
+      } finally {
+        await getSplitOrdersForDriver();
+        await getDeliveredOrdersForDriver();
+        notifyListeners();
       }
-    } catch (e) {
-      await showStatusDialog(
-        "assets/images/error.png",
-        "Thất bại",
-        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
-      );
-    } finally {}
+    }
   }
 
   Future<void> getShipperOrderBoxes() async {
@@ -388,14 +403,68 @@ class HomeViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> confirmAllBoxStored() async {
-    try {
-      List<ListStoreAndOrder> updateListStoreAndOrders = [];
-      List<UpdateOrderStatusRequestModel> updatedOrders = [];
+  // Future<void> confirmSplitProducts() async {
+  //   int option = await showOptionDialog("Xác nhận những món này?");
+  //   if (option == 1) {
+  //     try {
+  //       var currentUser = Get.find<AccountViewModel>().currentUser;
+  //       List<String> updatedOrderDetailIdList = [];
 
-      int option = await showOptionDialog("Xác nhận đã bỏ đủ hàng vào các tủ?");
-      if (option == 1) {
+  //       showLoadingDialog();
+  //       var newOrderStatus = OrderStatusEnum.PREPARED;
+  //       if (splitOrderList.isNotEmpty) {
+  //         for (final splitOrder in splitOrderList) {
+  //           if (splitOrder.isChecked == true) {
+  //             List<String>? orderDetailIdList = splitOrder.orderDetailIdList;
+  //             for (final orderDetailId in orderDetailIdList!) {
+  //               updatedOrderDetailIdList.add(orderDetailId);
+  //             }
+  //           }
+  //         }
+  //         UpdateSplitProductsRequestModel updatedProducts =
+  //             UpdateSplitProductsRequestModel(
+  //                 productStatus: newOrderStatus,
+  //                 orderDetailId: updatedOrderDetailIdList);
+
+  //         final statusCode =
+  //             await _orderDAO?.confirmSplitProduct(products: updatedProducts);
+  //         if (statusCode == 200) {
+  //           numsOfChecked = 0;
+  //           notifyListeners();
+  //           await showStatusDialog(
+  //               "assets/images/icon-success.png", "Xác nhận thành công", "");
+  //           Get.back();
+  //         } else {
+  //           await showStatusDialog(
+  //             "assets/images/error.png",
+  //             "Thất bại",
+  //             "",
+  //           );
+  //         }
+  //       } else {
+  //         Get.back();
+  //       }
+  //     } catch (e) {
+  //       await showStatusDialog(
+  //         "assets/images/error.png",
+  //         "Thất bại",
+  //         "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+  //       );
+  //       print(e);
+  //     } finally {
+  //       await getOrders();
+  //       await getSplitOrders();
+  //     }
+  //   }
+  // }
+
+  Future<void> confirmAllBoxStored() async {
+    int option = await showOptionDialog("Xác nhận đã bỏ đủ hàng vào các tủ?");
+    if (option == 1) {
+      try {
         showLoadingDialog();
+        List<ListStoreAndOrder> updateListStoreAndOrders = [];
+        List<UpdateOrderStatusRequestModel> updatedOrders = [];
         int newOrderStatus = OrderStatusEnum.BOX_STORED;
 
         if (orderBoxList.isNotEmpty) {
@@ -442,14 +511,14 @@ class HomeViewModel extends BaseModel {
         } else {
           Get.back();
         }
-      }
-    } catch (e) {
-      await showStatusDialog(
-        "assets/images/error.png",
-        "Thất bại",
-        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
-      );
-    } finally {}
+      } catch (e) {
+        await showStatusDialog(
+          "assets/images/error.png",
+          "Thất bại",
+          "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+        );
+      } finally {}
+    }
   }
 
   Future<void> getBoxQrCode() async {

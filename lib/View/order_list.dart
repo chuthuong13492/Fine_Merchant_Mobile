@@ -36,19 +36,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
   late Timer periodicTimer;
   OrderListViewModel model = Get.put(OrderListViewModel());
   AccountDTO? currentUser = Get.find<AccountViewModel>().currentUser;
+  List<SplitOrderDTO> splitOrderByStation = [];
 
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey1 =
+      GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey2 =
       GlobalKey<RefreshIndicatorState>();
 
   Future<void> refreshFetchOrder() async {
+    await model.getTimeSlotList();
+    await model.getSplitOrders();
     setState(() {
       isSelectAll = false;
       numsOfChecked = 0;
     });
-    await model.getTimeSlotList();
-    await model.getOrders();
-    await model.getSplitOrders();
-    // await model.getMoreOrders();
+  }
+
+  Future<void> refreshFetchOrderByStation() async {
+    await model.getSplitOrdersByStation();
+    setState(() {});
   }
 
   @override
@@ -56,14 +62,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
     super.initState();
     periodicTimer = Timer.periodic(const Duration(seconds: 30), (Timer timer) {
       refreshFetchOrder();
+      refreshFetchOrderByStation();
     });
-    model.filteredOrderList = model.orderList;
-    isStaff = currentUser?.roleType == AccountTypeEnum.STAFF ? true : false;
-    if (isStaff) {
-      model.selectedOrderStatus = model.staffOrderStatuses.first;
-    } else {
-      model.selectedOrderStatus = model.driverOrderStatuses.first;
-    }
+    splitOrderByStation = model.splitOrderListByStation;
   }
 
   @override
@@ -74,111 +75,197 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   @override
   Widget build(BuildContext context) {
+    List<SplitOrderDTO> splitOrderList = model.splitOrderList;
     final status = model.status;
     return ScopedModel(
       model: Get.find<OrderListViewModel>(),
-      child: Scaffold(
-        appBar: DefaultAppBar(
-            title: "Đơn hàng ${isStaff ? "Chờ duyệt" : "Chờ giao"}",
-            backButton: const SizedBox.shrink(),
-            bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(120),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    '${model.staffStore?.storeName}',
-                    style: FineTheme.typograhpy.h2.copyWith(
-                      color: FineTheme.palettes.emerald25,
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: DefaultAppBar(
+              title: "Đơn hàng ${isStaff ? "Chờ duyệt" : "Chờ giao"}",
+              backButton: const SizedBox.shrink(),
+              bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(120),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      '${model.staffStore?.storeName}',
+                      style: FineTheme.typograhpy.h2.copyWith(
+                        color: FineTheme.palettes.emerald25,
+                      ),
                     ),
-                  ),
-                ))),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            orderFilterSection(),
-            const SizedBox(height: 16),
-            Padding(
-              padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text(
-                    'Sản phẩm',
-                    style: FineTheme.typograhpy.h2.copyWith(
-                      color: FineTheme.palettes.emerald50,
-                    ),
-                  ),
-                  Row(
-                    children: [
-                      Text(
-                        '${numsOfChecked == 0 ? "Chọn tất cả" : "Đã chọn " + numsOfChecked.toString() + " món"} ',
-                        style: FineTheme.typograhpy.body2.copyWith(
-                          color: FineTheme.palettes.neutral900,
+                  ))),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              orderFilterSection(),
+              const SizedBox(height: 16),
+              SizedBox(
+                height: Get.height * 0.675,
+                child: TabBarView(
+                  children: [
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Sản phẩm',
+                                style: FineTheme.typograhpy.h2.copyWith(
+                                  color: FineTheme.palettes.emerald50,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${numsOfChecked == 0 ? "Chọn tất cả" : "Đã chọn " + numsOfChecked.toString() + " món"} ',
+                                    style: FineTheme.typograhpy.body2.copyWith(
+                                      color: FineTheme.palettes.neutral900,
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    checkColor: Colors.white,
+                                    activeColor: FineTheme.palettes.emerald25,
+                                    value: isSelectAll,
+                                    onChanged: (bool? value) {
+                                      model.onCheckAll(value!);
+                                      setState(() {
+                                        isSelectAll = value;
+                                        numsOfChecked = model.numsOfChecked;
+                                      });
+                                    },
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
                         ),
-                      ),
-                      Checkbox(
-                        checkColor: Colors.white,
-                        activeColor: FineTheme.palettes.emerald25,
-                        value: isSelectAll,
-                        onChanged: (bool? value) {
-                          model.onCheckAll(value!);
-                          setState(() {
-                            isSelectAll = value;
-                            numsOfChecked = model.numsOfChecked;
-                          });
-                        },
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            Expanded(
-              child: Container(
-                // ignore: sort_child_properties_last
-                child: _buildOrders(),
-                color: const Color(0xffefefef),
-              ),
-            ),
-            const SizedBox(height: 16),
-            ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: FineTheme.palettes.emerald25,
-                shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        // BorderRadius.only(
-                        //     bottomRight: Radius.circular(16),
-                        //     bottomLeft: Radius.circular(16))
-                        BorderRadius.all(Radius.circular(8))),
-              ),
-              onPressed: model.numsOfChecked < 1 || status == ViewStatus.Loading
-                  ? null
-                  : () async {
-                      if (numsOfChecked == model.splitOrderList.length) {
-                        if (model.selectedOrderStatus ==
-                            OrderStatusEnum.PROCESSING) {
-                          await model.confirmOrder(model.selectedOrderStatus);
-                        } else {
-                          await model
-                              .shipperUpdateOrder(model.selectedOrderStatus);
-                        }
-                        setState(() {
-                          numsOfChecked = model.numsOfChecked;
-                          isSelectAll = false;
-                        });
-                      }
-                    },
-              child: Padding(
-                padding: const EdgeInsets.only(top: 8, bottom: 8),
-                child: Text(
-                  "Xác nhận",
-                  style: FineTheme.typograhpy.subtitle2
-                      .copyWith(color: Colors.white),
+                        Expanded(
+                          child: Container(
+                            // ignore: sort_child_properties_last
+                            child: _buildOrders(),
+                            color: const Color(0xffefefef),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: FineTheme.palettes.emerald25,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    // BorderRadius.only(
+                                    //     bottomRight: Radius.circular(16),
+                                    //     bottomLeft: Radius.circular(16))
+                                    BorderRadius.all(Radius.circular(8))),
+                          ),
+                          onPressed: model.numsOfChecked < 1 ||
+                                  status == ViewStatus.Loading
+                              ? null
+                              : () async {
+                                  await model.confirmSplitProducts();
+                                  setState(() {
+                                    numsOfChecked = model.numsOfChecked;
+                                    isSelectAll = false;
+                                  });
+                                },
+                          child: Padding(
+                            padding: const EdgeInsets.only(top: 8, bottom: 8),
+                            child: Text(
+                              "Xác nhận",
+                              style: FineTheme.typograhpy.subtitle2
+                                  .copyWith(color: Colors.white),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Container(
+                          color: Colors.white70,
+                          child: SingleChildScrollView(
+                            scrollDirection: Axis.horizontal,
+                            child: Padding(
+                              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                              child: ToggleButtons(
+                                  renderBorder: false,
+                                  selectedColor: FineTheme.palettes.emerald25,
+                                  onPressed: (int index) async {
+                                    await model.onChangeSelectStation(index);
+                                    setState(() {});
+                                  },
+                                  borderRadius: BorderRadius.circular(24),
+                                  isSelected: model.stationSelections,
+                                  children: [
+                                    ...model.stationList.map(
+                                      (e) => Stack(
+                                        children: [
+                                          Container(
+                                            margin: const EdgeInsets.only(
+                                                top: 16, bottom: 16),
+                                            width: MediaQuery.of(context)
+                                                    .size
+                                                    .width /
+                                                3,
+                                            child: Text("${e.name}",
+                                                textAlign: TextAlign.center,
+                                                style: FineTheme
+                                                    .typograhpy.caption1
+                                                    .copyWith(
+                                                        color: FineTheme
+                                                            .palettes
+                                                            .neutral900,
+                                                        fontWeight:
+                                                            FontWeight.bold)),
+                                          ),
+                                          // Positioned(
+                                          //     top: 0,
+                                          //     right: 8,
+                                          //     child: Material(
+                                          //       color: Colors.red,
+                                          //       shape: const CircleBorder(
+                                          //           side: BorderSide(
+                                          //               color: Colors.red, width: 2)),
+                                          //       child: SizedBox(
+                                          //         width: 20,
+                                          //         height: 20,
+                                          //         child: Center(
+                                          //           child: Text(
+                                          //             '${}',
+                                          //             style: FineTheme
+                                          //                 .typograhpy.caption1
+                                          //                 .copyWith(
+                                          //                     color: Colors.white),
+                                          //           ),
+                                          //         ),
+                                          //       ),
+                                          //     ))
+                                        ],
+                                      ),
+                                    )
+                                  ]),
+                            ),
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            // ignore: sort_child_properties_last
+                            child: _buildOrdersByStation(),
+                            color: const Color(0xffefefef),
+                          ),
+                        ),
+                        const SizedBox(height: 100),
+                      ],
+                    ),
+                  ],
                 ),
               ),
-            ),
-            const SizedBox(height: 100),
-          ],
+            ],
+          ),
         ),
       ),
     );
@@ -238,7 +325,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    padding: const EdgeInsets.fromLTRB(32, 12, 32, 12),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
@@ -248,78 +335,48 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             color: FineTheme.palettes.neutral900,
                           ),
                         ),
-                        DropdownButton<int>(
-                          value: model.selectedOrderStatus,
-                          onChanged: (int? value) {
-                            model.onChangeOrderStatus(value!);
-                            setState(() {
-                              numsOfChecked = 0;
-                              isSelectAll = false;
-                            });
-                          },
-                          items: isStaff
-                              ? model.staffOrderStatuses
-                                  .map<DropdownMenuItem<int>>((int status) {
-                                  return DropdownMenuItem<int>(
-                                    value: status,
-                                    child: Text(
-                                      OrderStatusEnum.getOrderStatusName(
-                                          status),
-                                      style:
-                                          FineTheme.typograhpy.body1.copyWith(
-                                        color: FineTheme.palettes.emerald25,
-                                      ),
-                                    ),
-                                  );
-                                }).toList()
-                              : model.driverOrderStatuses
-                                  .map<DropdownMenuItem<int>>((int status) {
-                                  return DropdownMenuItem<int>(
-                                    value: status,
-                                    child: Text(
-                                      OrderStatusEnum.getOrderStatusName(
-                                          status),
-                                      style:
-                                          FineTheme.typograhpy.body1.copyWith(
-                                        color: FineTheme.palettes.emerald25,
-                                      ),
-                                    ),
-                                  );
-                                }).toList(),
-                        )
+                        Padding(
+                          padding: const EdgeInsets.only(right: 8.0),
+                          child: Text(
+                              OrderStatusEnum.getOrderStatusName(
+                                  model.selectedOrderStatus),
+                              style: FineTheme.typograhpy.body1.copyWith(
+                                color: FineTheme.palettes.emerald25,
+                              )),
+                        ),
                       ],
                     ),
                   ),
-                  SingleChildScrollView(
-                    scrollDirection: Axis.horizontal,
-                    child: Padding(
-                      padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                      child: ToggleButtons(
-                          renderBorder: false,
-                          selectedColor: FineTheme.palettes.emerald25,
-                          onPressed: (int index) {
-                            model.onChangeSelectStation(index);
-                            setState(() {
-                              numsOfChecked = 0;
-                              isSelectAll = false;
-                            });
-                          },
-                          borderRadius: BorderRadius.circular(24),
-                          isSelected: model.stationSelections,
-                          children: [
-                            ...model.stationList.map(
-                              (e) => SizedBox(
-                                width: MediaQuery.of(context).size.width / 3,
-                                child: Text("${e.name}",
-                                    textAlign: TextAlign.center,
-                                    style: FineTheme.typograhpy.caption1
-                                        .copyWith(
-                                            color:
-                                                FineTheme.palettes.neutral900,
-                                            fontWeight: FontWeight.bold)),
-                              ),
-                            )
-                          ]),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: TabBar(
+                      indicatorColor: FineTheme.palettes.emerald25,
+                      overlayColor: MaterialStateColor.resolveWith(
+                          (Set<MaterialState> states) {
+                        if (states.contains(MaterialState.focused)) {
+                          return FineTheme.palettes.emerald25;
+                        }
+                        if (states.contains(MaterialState.error)) {
+                          return Colors.red;
+                        }
+                        return FineTheme.palettes.emerald25;
+                      }),
+                      tabs: [
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 12),
+                          child: Text("Xác nhận",
+                              style: FineTheme.typograhpy.body1.copyWith(
+                                color: FineTheme.palettes.emerald25,
+                              )),
+                        ),
+                        Padding(
+                          padding: const EdgeInsets.only(top: 8, bottom: 12),
+                          child: Text("Gom theo trạm",
+                              style: FineTheme.typograhpy.body1.copyWith(
+                                color: FineTheme.palettes.emerald25,
+                              )),
+                        ),
+                      ],
                     ),
                   ),
                 ],
@@ -333,26 +390,26 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
 ////////////////////
   Widget _buildOrders() {
+    List<SplitOrderDTO> orderList = model.splitOrderList;
     return ScopedModelDescendant<OrderListViewModel>(
         builder: (context, child, model) {
       final status = model.status;
-      List<OrderDTO> orderList = model.filteredOrderList;
-      List<SplitOrderDTO> splitOrderList = model.splitOrderList;
-      orderList.sort((a, b) {
-        DateTime aDate = DateTime.parse(a.checkInDate!);
-        DateTime bDate = DateTime.parse(b.checkInDate!);
-        return bDate.compareTo(aDate);
-      });
+
+      // orderList.sort((a, b) {
+      //   DateTime aDate = DateTime.parse(a.checkInDate!);
+      //   DateTime bDate = DateTime.parse(b.checkInDate!);
+      //   return bDate.compareTo(aDate);
+      // });
       if (status == ViewStatus.Loading) {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || splitOrderList.isEmpty) {
+      } else if (status == ViewStatus.Empty || orderList.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Hiện tại chưa có đơn nào ở ${model.selectedStation?.name}'),
+              Text('Hiện tại chưa có đơn nào'),
               Padding(
                 padding: EdgeInsets.all(15),
                 child: InkWell(
@@ -395,37 +452,129 @@ class _OrderListScreenState extends State<OrderListScreen> {
       }
 
       return RefreshIndicator(
-        key: _refreshIndicatorKey,
+        key: _refreshIndicatorKey1,
         onRefresh: refreshFetchOrder,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          controller: Get.find<OrderListViewModel>().scrollController,
-          padding: const EdgeInsets.all(8),
-          children: [
-            Container(
-                // height: 80,
-                margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                decoration: BoxDecoration(
-                  borderRadius: BorderRadius.circular(8),
-                  color: Colors.white,
+        child: Scrollbar(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: Get.find<OrderListViewModel>().scrollController,
+            padding: const EdgeInsets.all(8),
+            children: [
+              Container(
+                  // height: 80,
+                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Material(
+                      color: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        // side: BorderSide(color: Colors.red),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ...orderList
+                              .map((orderSummary) =>
+                                  _buildSplitProduct(orderSummary))
+                              .toList(),
+                          loadMoreIcon(),
+                        ],
+                      ))),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildOrdersByStation() {
+    List<SplitOrderDTO> orderList = model.splitOrderListByStation;
+    return ScopedModelDescendant<OrderListViewModel>(
+        builder: (context, child, model) {
+      final status = model.status;
+
+      // orderList.sort((a, b) {
+      //   DateTime aDate = DateTime.parse(a.checkInDate!);
+      //   DateTime bDate = DateTime.parse(b.checkInDate!);
+      //   return bDate.compareTo(aDate);
+      // });
+      if (status == ViewStatus.Loading) {
+        return const Center(
+          child: SkeletonListItem(itemCount: 8),
+        );
+      } else if (status == ViewStatus.Empty || orderList.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Text('Hiện tại chưa có đơn nào ở ${model.selectedStation?.name}'),
+              Padding(
+                padding: EdgeInsets.all(15),
+                child: InkWell(
+                  onTap: () async {
+                    refreshFetchOrder();
+                  },
+                  child: Icon(
+                    Icons.replay,
+                    color: FineTheme.palettes.primary300,
+                    size: 26,
+                  ),
                 ),
-                child: Material(
-                    color: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                      // side: BorderSide(color: Colors.red),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.center,
-                      children: [
-                        ...splitOrderList
-                            .map((orderSummary) =>
-                                _buildSplitOrderSummary(orderSummary))
-                            .toList(),
-                        loadMoreIcon(),
-                      ],
-                    ))),
-          ],
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (status == ViewStatus.Error) {
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 1 / 4,
+            child: Image.asset(
+              'assets/images/error.png',
+              width: 24,
+            ),
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        key: _refreshIndicatorKey2,
+        onRefresh: refreshFetchOrderByStation,
+        child: Scrollbar(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: Get.find<OrderListViewModel>().scrollController,
+            padding: const EdgeInsets.all(8),
+            children: [
+              Container(
+                  // height: 80,
+                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Material(
+                      color: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        // side: BorderSide(color: Colors.red),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ...orderList
+                              .map((orderSummary) =>
+                                  _buildSplitProductByStation(orderSummary))
+                              .toList(),
+                          loadMoreIcon(),
+                        ],
+                      ))),
+            ],
+          ),
         ),
       );
     });
@@ -448,96 +597,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
     );
   }
 
-  Widget _buildOrderSummary(OrderDTO orderSummary) {
-    // final isToday = DateTime.parse(orderSummary.checkInDate!)
-    //         .difference(DateTime.now())
-    //         .inDays ==
-    //     0;
-    // var currentUser = Get.find<AccountViewModel>().currentUser;
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-      child: Column(
-        children: [
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  // Text('${orderSummary.checkInDate?.substring(0, 16)}'),
-                  // Text('${orderSummary.orderDetailStoreStatus}'),
-                  // Text('${orderSummary.stationName}'),
-                  ...orderSummary.orderDetails!
-                      .toList()
-                      .map((order) => _buildOrderItem(order)),
-                ],
-              ),
-              Checkbox(
-                checkColor: Colors.white,
-                value: orderSummary.isChecked,
-                onChanged: (bool? value) {
-                  model.onCheck(
-                      model.filteredOrderList.indexOf(orderSummary), value!);
-                  setState(() {
-                    numsOfChecked = model.numsOfChecked;
-                  });
-                },
-              ),
-            ],
-          ),
-
-          // ExpansionTile(
-          //   title: Text("${orderSummary.orderDetails?.length} món"),
-          //   children: [
-          //     Container(
-          //         color: FineTheme.palettes.neutral200,
-          //         padding: EdgeInsets.all(16),
-          //         width: double.infinity,
-          //         child: Column(
-          //           children: [
-          //             ...orderSummary.orderDetails!
-          //                 .toList()
-          //                 .map((order) => _buildOrderItem(order))
-          //                 .toList(),
-          //           ],
-          //         ))
-          //   ],
-          // ),
-
-          // Text("Chi tiết", style: TextStyle(color: Colors.blue)),
-          const SizedBox(
-            height: 24,
-          )
-        ],
-      ),
-    );
-  }
-
-  Widget _buildOrderItem(OrderDetail orderDetail) {
-    // var campus = Get.find<RootViewModel>().currentStore;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        Text(
-          '${orderDetail.productName}',
-          style: FineTheme.typograhpy.subtitle2,
-          maxLines: 1,
-          overflow: TextOverflow.ellipsis,
-        ),
-        Text(
-          " x ${orderDetail.quantity} ",
-          style: FineTheme.typograhpy.caption1
-              .copyWith(color: Colors.black, fontWeight: FontWeight.bold),
-        ),
-      ],
-    );
-  }
-
-  Widget _buildSplitOrderSummary(SplitOrderDTO splitOrderSummary) {
+  Widget _buildSplitProduct(SplitOrderDTO splitOrderSummary) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
       child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
         children: [
           SizedBox(width: 150, child: Text('${splitOrderSummary.productName}')),
           Row(
@@ -548,8 +613,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 checkColor: Colors.white,
                 value: splitOrderSummary.isChecked,
                 onChanged: (bool? value) {
-                  model.onCheck(
-                      model.splitOrderList.indexOf(splitOrderSummary), value!);
+                  int index = model.splitOrderList.indexOf(splitOrderSummary);
+                  model.onCheck(index, value!);
                   setState(() {
                     numsOfChecked = model.numsOfChecked;
                   });
@@ -561,9 +626,29 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     isSelectAll = false;
                   }
                 },
-              ),
+              )
             ],
           ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildSplitProductByStation(SplitOrderDTO splitOrderSummary) {
+    return Padding(
+      padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        crossAxisAlignment: CrossAxisAlignment.center,
+        children: [
+          Padding(
+            padding: const EdgeInsets.only(top: 12, bottom: 12),
+            child: SizedBox(
+              width: 150,
+              child: Text('${splitOrderSummary.productName}'),
+            ),
+          ),
+          SizedBox(child: Text(' x ${splitOrderSummary.quantity}')),
         ],
       ),
     );

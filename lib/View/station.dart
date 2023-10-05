@@ -176,9 +176,21 @@ class _StationScreenState extends State<StationScreen> {
             ViewStatus status = model.status;
 
             return SizedBox(
-              height: 50,
+              height: 65,
               child: Column(
                 children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text('Số món: ',
+                          style: FineTheme.typograhpy.body1.copyWith(
+                              color: FineTheme.palettes.neutral900,
+                              fontWeight: FontWeight.bold)),
+                      Text('${totalOrderDetailList.length}',
+                          style: FineTheme.typograhpy.body1),
+                    ],
+                  ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
@@ -348,9 +360,9 @@ class _StationScreenState extends State<StationScreen> {
       }
     }
     return Container(
-      padding: const EdgeInsets.only(top: 10, bottom: 10),
+      padding: const EdgeInsets.only(top: 8, bottom: 8),
       color: FineTheme.palettes.emerald25,
-      height: 680,
+      height: 700,
       width: 600,
       child: Scrollbar(
         child: ListView(children: [
@@ -409,7 +421,7 @@ class _StationScreenState extends State<StationScreen> {
                       style: FineTheme.typograhpy.body1.copyWith(
                           color: FineTheme.palettes.neutral900,
                           fontWeight: FontWeight.bold)),
-                  Text('${quantity} món', style: FineTheme.typograhpy.body1),
+                  Text('${quantity}', style: FineTheme.typograhpy.body1),
                 ],
               ),
               const SizedBox(

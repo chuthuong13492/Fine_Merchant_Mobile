@@ -24,6 +24,7 @@ class OrderListViewModel extends BaseModel {
   ];
   // local properties
   List<SplitOrderDTO> splitOrderList = [];
+  List<SplitOrderDTO> splitOrderListByStation = [];
   List<OrderDTO> orderList = [];
   List<OrderDTO> filteredOrderList = [];
   List<StationDTO> stationList = [];
@@ -66,11 +67,15 @@ class OrderListViewModel extends BaseModel {
   }
 
   void onCheck(int index, bool isChecked) {
-    splitOrderList[index].isChecked = isChecked;
-    if (isChecked) {
-      numsOfChecked++;
+    if (index > -1) {
+      splitOrderList[index].isChecked = isChecked;
+      if (isChecked) {
+        numsOfChecked++;
+      } else {
+        numsOfChecked--;
+      }
     } else {
-      numsOfChecked--;
+      print('No index found');
     }
     notifyListeners();
   }
@@ -92,32 +97,32 @@ class OrderListViewModel extends BaseModel {
 
   void onChangeTimeSlot(String value) {
     selectedTimeSlotId = value;
-    getOrders();
+
     getSplitOrders();
+    getSplitOrdersByStation();
     notifyListeners();
   }
 
   void onChangeStore(String value, int roleType) {
     selectedStoreId = value;
-    getOrders();
+
     getSplitOrders();
     notifyListeners();
   }
 
   void onChangeOrderStatus(int value) {
     selectedOrderStatus = value;
-    getOrders();
+
     getSplitOrders();
     notifyListeners();
   }
 
-  void onChangeSelectStation(int index) {
+  Future<void> onChangeSelectStation(int index) async {
     stationSelections = stationSelections.map((e) => false).toList();
     stationSelections[index] = true;
     selectedStation = stationList[index];
 
-    getOrders();
-    getSplitOrders();
+    await getSplitOrdersByStation();
     notifyListeners();
   }
 
@@ -133,9 +138,12 @@ class OrderListViewModel extends BaseModel {
                 1))
             .toList();
         if (timeSlotList.isEmpty) {
-          timeSlotList.add(data.last);
-        }
-        if (selectedTimeSlotId == '') {
+          var lastTimeSlot = data.last;
+          timeSlotList.add(lastTimeSlot);
+          selectedTimeSlotId = lastTimeSlot.id!;
+        } else if (selectedTimeSlotId == '' ||
+            timeSlotList.firstWhereOrNull((e) => e.id == selectedTimeSlotId) ==
+                null) {
           selectedTimeSlotId = timeSlotList.first.id!;
         }
       }
@@ -204,18 +212,18 @@ class OrderListViewModel extends BaseModel {
       var currentUser = Get.find<AccountViewModel>().currentUser;
       staffStore = Get.find<AccountViewModel>().currentStore;
       if (currentUser != null && currentUser.storeId != null) {
-        final data = await _orderDAO?.getSplitOrderListByStoreAndStation(
+        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
             storeId: currentUser.storeId!,
-            stationId: selectedStation?.id,
+            // stationId: selectedStation?.id,
             timeSlotId: selectedTimeSlotId,
             orderStatus: selectedOrderStatus);
         if (data != null) {
           splitOrderList = data;
         }
       } else {
-        final data = await _orderDAO?.getSplitOrderListByStoreAndStation(
+        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
             storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
-            stationId: selectedStation?.id,
+            // stationId: selectedStation?.id,
             timeSlotId: selectedTimeSlotId,
             orderStatus: selectedOrderStatus);
         if (data != null) {
@@ -229,8 +237,8 @@ class OrderListViewModel extends BaseModel {
               ;
         }
       }
-      setState(ViewStatus.Completed);
       notifyListeners();
+      setState(ViewStatus.Completed);
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
@@ -241,9 +249,47 @@ class OrderListViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> getOrders() async {
+  Future<void> getSplitOrdersByStation() async {
     try {
       setState(ViewStatus.Loading);
+      numsOfChecked = 0;
+      print('selectedTimeSlotId: $selectedTimeSlotId');
+      var currentUser = Get.find<AccountViewModel>().currentUser;
+      staffStore = Get.find<AccountViewModel>().currentStore;
+      int orderByStationStatus = OrderStatusEnum.PREPARED;
+      if (currentUser != null && currentUser.storeId != null) {
+        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
+            storeId: currentUser.storeId!,
+            stationId: selectedStation?.id,
+            timeSlotId: selectedTimeSlotId,
+            orderStatus: orderByStationStatus);
+        if (data != null) {
+          splitOrderListByStation = data;
+        }
+      } else {
+        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
+            storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
+            stationId: selectedStation?.id,
+            timeSlotId: selectedTimeSlotId,
+            orderStatus: orderByStationStatus);
+        if (data != null) {
+          splitOrderListByStation = data;
+        }
+      }
+      notifyListeners();
+      setState(ViewStatus.Completed);
+    } catch (e) {
+      bool result = await showErrorDialog();
+      if (result) {
+        await getSplitOrdersByStation();
+      } else {
+        setState(ViewStatus.Error);
+      }
+    } finally {}
+  }
+
+  Future<void> getOrders() async {
+    try {
       var currentUser = Get.find<AccountViewModel>().currentUser;
       staffStore = Get.find<AccountViewModel>().currentStore;
       if (currentUser != null && currentUser.storeId != null) {
@@ -256,14 +302,12 @@ class OrderListViewModel extends BaseModel {
           orderList = data;
         }
       }
-      setState(ViewStatus.Completed);
+
       notifyListeners();
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
         await getOrders();
-      } else {
-        setState(ViewStatus.Error);
       }
     } finally {}
   }
@@ -279,14 +323,12 @@ class OrderListViewModel extends BaseModel {
     }
   }
 
-  Future<void> confirmOrder(int orderStatus) async {
+  Future<void> confirmOrder() async {
     try {
       var currentUser = Get.find<AccountViewModel>().currentUser;
       List<ListStoreAndOrder> updateListStoreAndOrders = [];
-      int option = await showOptionDialog(
-          orderStatus == OrderStatusEnum.PROCESSING
-              ? "Xác nhận những món này?"
-              : "Đã chuẩn bị xong những món này?");
+      int option = await showOptionDialog("Xác nhận những món này?");
+
       if (option == 1) {
         showLoadingDialog();
         var newOrderStatus = OrderStatusEnum.PREPARED;
@@ -308,8 +350,7 @@ class OrderListViewModel extends BaseModel {
             //     orderList.where((e) => e.orderId != orderId).toList();
             // orderList = newOrderList;
             // Refresh
-            await getOrders();
-            await getSplitOrders();
+
             numsOfChecked = 0;
             notifyListeners();
             await showStatusDialog(
@@ -332,46 +373,41 @@ class OrderListViewModel extends BaseModel {
         "Thất bại",
         "Có lỗi xảy ra, vui lòng thử lại sau 😓",
       );
-    } finally {}
+    } finally {
+      await getOrders();
+      await getSplitOrders();
+    }
   }
 
-  Future<void> shipperUpdateOrder(int orderStatus) async {
-    try {
-      List<ListStoreAndOrder> updateListStoreAndOrders = [];
-      int option = await showOptionDialog("Xác nhận lấy những món này?");
-      if (option == 1) {
+  Future<void> confirmSplitProducts() async {
+    int option = await showOptionDialog("Xác nhận những món này?");
+    if (option == 1) {
+      try {
+        List<String> updatedOrderDetailIdList = [];
+
         showLoadingDialog();
-        var newOrderStatus = orderStatus == OrderStatusEnum.PREPARED
-            ? OrderStatusEnum.SHIPPER_ASSIGNED
-            : orderStatus == OrderStatusEnum.SHIPPER_ASSIGNED
-                ? OrderStatusEnum.DELIVERING
-                : orderStatus == OrderStatusEnum.DELIVERING
-                    ? OrderStatusEnum.BOX_STORED
-                    : OrderStatusEnum.BOX_STORED;
-        if (orderList.isNotEmpty) {
-          for (final order in orderList) {
-            ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
-                orderId: order.orderId, storeId: order.storeId);
-            updateListStoreAndOrders.add(updateListStoreAndOrder);
+        var newOrderStatus = OrderStatusEnum.PREPARED;
+        if (splitOrderList.isNotEmpty) {
+          for (final splitOrder in splitOrderList) {
+            if (splitOrder.isChecked == true) {
+              List<String>? orderDetailIdList = splitOrder.orderDetailIdList;
+              for (final orderDetailId in orderDetailIdList!) {
+                updatedOrderDetailIdList.add(orderDetailId);
+              }
+            }
           }
-          UpdateOrderStatusRequestModel updatedOrders =
-              UpdateOrderStatusRequestModel(
-                  orderDetailStoreStatus: newOrderStatus,
-                  listStoreAndOrder: updateListStoreAndOrders);
+          UpdateSplitProductsRequestModel updatedProducts =
+              UpdateSplitProductsRequestModel(
+                  productStatus: newOrderStatus,
+                  orderDetailId: updatedOrderDetailIdList);
 
           final statusCode =
-              await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
+              await _orderDAO?.confirmSplitProduct(products: updatedProducts);
           if (statusCode == 200) {
-            // var newOrderList =
-            //     orderList.where((e) => e.orderId != orderId).toList();
-            // orderList = newOrderList;
-            // Refresh
-            await getOrders();
-            await getSplitOrders();
             numsOfChecked = 0;
             notifyListeners();
-            await showStatusDialog("assets/images/icon-success.png",
-                "Xác nhận giao thành công", "");
+            await showStatusDialog(
+                "assets/images/icon-success.png", "Xác nhận thành công", "");
             Get.back();
           } else {
             await showStatusDialog(
@@ -383,14 +419,29 @@ class OrderListViewModel extends BaseModel {
         } else {
           Get.back();
         }
+      } catch (e) {
+        await showStatusDialog(
+          "assets/images/error.png",
+          "Thất bại",
+          "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+        );
+        print(e);
+      } finally {
+        await getOrders();
+        await getSplitOrders();
+        notifyListeners();
       }
-    } catch (e) {
-      await showStatusDialog(
-        "assets/images/error.png",
-        "Thất bại",
-        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
-      );
-    } finally {}
+    } else {
+      clearCheckList();
+      notifyListeners();
+    }
+  }
+
+  void clearCheckList() {
+    for (SplitOrderDTO splitOrder in splitOrderList) {
+      splitOrder.isChecked = false;
+    }
+    notifyListeners();
   }
 
   void clearNewOrder(int orderId) {

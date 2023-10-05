@@ -414,108 +414,98 @@ class _ReportListScreenState extends State<ReportListScreen> {
   }
 
   Future<void> _dialogBuilder(BuildContext context) {
-    String? stationName = model.stationList
-        .firstWhere((station) => station.id == currentReport?.stationId)
-        .name;
-
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
         return AlertDialog(
-          title: Text('Chi tiết báo cáo', style: FineTheme.typograhpy.h2),
-          content: SizedBox(
-            height: 330,
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    const Text(
-                      'Món đang thiếu:',
-                      overflow: TextOverflow.ellipsis,
-                      style: TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.bold,
-                          fontStyle: FontStyle.normal),
-                    ),
-                    SizedBox(
-                      width: 150,
-                      child: Text(
-                        '${currentReport?.productName}',
-                        textAlign: TextAlign.end,
-                        overflow: TextOverflow.ellipsis,
-                        style: const TextStyle(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w400,
-                            fontStyle: FontStyle.normal),
-                      ),
-                    ),
-                  ],
-                ),
-                const SizedBox(
-                  height: 16,
-                ),
-                Center(
-                  child: Text(
-                    'Các tủ đang thiếu:',
-                    style: FineTheme.typograhpy.body1
-                        .copyWith(color: FineTheme.palettes.emerald25),
-                  ),
-                ),
-                SizedBox(
-                    height: 240,
-                    width: 300,
-                    child: Scrollbar(
-                      child: ListView(
-                        children: [
-                          _buildReportSection(),
-                        ],
-                      ),
-                    )),
-              ],
-            ),
-          ),
-          actions: <Widget>[
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                TextButton(
+          content: Container(
+            child: Stack(clipBehavior: Clip.none, children: [
+              Positioned(
+                top: -20,
+                right: -15,
+                child: TextButton(
                   style: TextButton.styleFrom(
-                    textStyle: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  child: Text(
-                    'Đóng',
-                    style: FineTheme.typograhpy.body1
-                        .copyWith(color: FineTheme.palettes.emerald25),
-                  ),
+                      textStyle: Theme.of(context).textTheme.labelLarge,
+                      alignment: Alignment.topRight),
+                  child: Icon(Icons.close_outlined,
+                      color: FineTheme.palettes.emerald25),
                   onPressed: () {
                     Navigator.of(context).pop();
                   },
                 ),
-                OutlinedButton(
-                  style: OutlinedButton.styleFrom(
-                    backgroundColor: FineTheme.palettes.emerald25,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(8.0),
-                    ),
-                    side: BorderSide(
-                      width: 1.0,
-                      color: FineTheme.palettes.emerald25,
-                    ),
-                  ),
-                  onPressed: () async {
-                    model.confirmReportSolved(
-                        reportId: currentReport?.reportId);
-                  },
-                  child: Text(
-                    "Đã xử lý",
-                    style: FineTheme.typograhpy.subtitle2
-                        .copyWith(color: Colors.white),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: SizedBox(
+                  height: 350,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 50,
+                        width: 300,
+                        decoration: const BoxDecoration(
+                            border: Border(bottom: BorderSide(width: 1))),
+                        child: Text('Chi tiết báo cáo',
+                            style: FineTheme.typograhpy.h2),
+                      ),
+                      SizedBox(
+                        height: 330,
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                const Text(
+                                  'Món đang thiếu:',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      fontStyle: FontStyle.normal),
+                                ),
+                                SizedBox(
+                                  width: 150,
+                                  child: Text(
+                                    '${currentReport?.productName}',
+                                    textAlign: TextAlign.end,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.w400,
+                                        fontStyle: FontStyle.normal),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 16,
+                            ),
+                            Center(
+                              child: Text(
+                                'Các tủ đang thiếu:',
+                                style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.emerald25),
+                              ),
+                            ),
+                            SizedBox(
+                                height: 240,
+                                width: 300,
+                                child: Scrollbar(
+                                  child: ListView(
+                                    children: [
+                                      _buildReportSection(),
+                                    ],
+                                  ),
+                                )),
+                          ],
+                        ),
+                      ),
+                    ],
                   ),
                 ),
-              ],
-            )
-          ],
+              )
+            ]),
+          ),
         );
       },
     );

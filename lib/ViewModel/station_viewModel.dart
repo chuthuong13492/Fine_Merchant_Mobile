@@ -59,14 +59,16 @@ class StationViewModel extends BaseModel {
   }
 
   void onChangeMissing(int index, int newValue) {
-    OrderDetail foundDetail = orderBoxList
-        .firstWhere((e) => e.boxId == selectedBoxId)
-        .orderDetails![index];
-    if (newValue > 0 && (foundDetail.quantity! - newValue >= 0)) {
-      foundDetail.missing = newValue;
-    }
-    if (newValue == 0) {
-      onSelectProductMissing(index, false);
+    if (index >= 0) {
+      OrderDetail foundDetail = orderBoxList
+          .firstWhere((e) => e.boxId == selectedBoxId)
+          .orderDetails![index];
+      if (newValue > 0 && (foundDetail.quantity! - newValue >= 0)) {
+        foundDetail.missing = newValue;
+      }
+      if (newValue == 0) {
+        onSelectProductMissing(index, false);
+      }
     }
 
     notifyListeners();

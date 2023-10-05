@@ -351,41 +351,54 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
       builder: (BuildContext context) {
         List<PackageViewDTO>? packageList = model.deliveredPackageList;
         return AlertDialog(
-          title: Text('Chi tiết các gói hàng', style: FineTheme.typograhpy.h2),
-          content: SizedBox(
-            height: 300,
-            child: Column(
-              children: [
-                SizedBox(
-                    height: 300,
-                    width: 300,
-                    child: Scrollbar(
-                      child: ListView(
-                        children: [
-                          const SizedBox(height: 8),
-                          ...packageList
-                              .map((package) => _buildPackageSection(package)),
-                        ],
+          content: Container(
+            child: Stack(clipBehavior: Clip.none, children: [
+              Positioned(
+                top: -20,
+                right: -15,
+                child: TextButton(
+                  style: TextButton.styleFrom(
+                      textStyle: Theme.of(context).textTheme.labelLarge,
+                      alignment: Alignment.topRight),
+                  child: Icon(Icons.close_outlined,
+                      color: FineTheme.palettes.emerald25),
+                  onPressed: () {
+                    Navigator.of(context).pop();
+                  },
+                ),
+              ),
+              Padding(
+                padding: const EdgeInsets.only(top: 12),
+                child: SizedBox(
+                  height: 350,
+                  child: Column(
+                    children: [
+                      Container(
+                        height: 50,
+                        width: 300,
+                        decoration: const BoxDecoration(
+                            border: Border(bottom: BorderSide(width: 1))),
+                        child: Text('Chi tiết các gói hàng',
+                            style: FineTheme.typograhpy.h2),
                       ),
-                    )),
-              ],
-            ),
+                      SizedBox(
+                          height: 300,
+                          width: 300,
+                          child: Scrollbar(
+                            child: ListView(
+                              children: [
+                                const SizedBox(height: 8),
+                                ...packageList.map(
+                                    (package) => _buildPackageSection(package)),
+                              ],
+                            ),
+                          )),
+                    ],
+                  ),
+                ),
+              )
+            ]),
           ),
-          actions: <Widget>[
-            TextButton(
-              style: TextButton.styleFrom(
-                textStyle: Theme.of(context).textTheme.labelLarge,
-              ),
-              child: Text(
-                'Đóng',
-                style: FineTheme.typograhpy.body1
-                    .copyWith(color: FineTheme.palettes.emerald25),
-              ),
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-            ),
-          ],
         );
       },
     );

@@ -151,7 +151,7 @@ class OrderDetail {
     finalAmount = json['finalAmount'];
     note = json['note'];
     isChecked = false;
-    missing = 0;
+    missing = 1;
   }
 
   static List<OrderDetail> fromList(List<Map<String, dynamic>> list) {

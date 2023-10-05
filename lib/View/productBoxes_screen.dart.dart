@@ -274,18 +274,26 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
 
   Widget _buildBoxes(BoxDTO box) {
     List<ShipperOrderBoxDTO> orderBoxList = model.orderBoxList;
+    OrderDetail? foundDetail;
     var isStored = false;
     var quantity = 0;
+    int detailIndex = 0;
     for (ShipperOrderBoxDTO orderBox in orderBoxList) {
       if (orderBox.boxId == box.id) {
         List<OrderDetail>? orderDetails = orderBox.orderDetails;
-        OrderDetail? foundDetail = orderDetails?.firstWhereOrNull(
+        foundDetail = orderDetails?.firstWhereOrNull(
             (detail) => detail.productName == widget.detail.productName);
         if (foundDetail != null) {
           isStored = true;
           quantity = foundDetail.quantity!;
         }
       }
+    }
+    if (foundDetail != null) {
+      detailIndex = model.orderBoxList
+          .firstWhere((e) => e.boxId == model.selectedBoxId)
+          .orderDetails!
+          .indexOf(foundDetail);
     }
 
     return Stack(
@@ -303,9 +311,17 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
               onTap: isStored && isReporting == true
                   ? () {
                       model.onSelectReportBox(box.id!);
+                      model.onChangeMissing(detailIndex, 1);
                       setState(() {});
                     }
                   : null,
+              onLongPress:
+                  isStored && isReporting == true && box.isSelected == true
+                      ? () {
+                          model.selectedBoxId = box.id;
+                          _dialogBuilder(context, foundDetail!);
+                        }
+                      : null,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -324,7 +340,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                             ),
                             Text(
                               textAlign: TextAlign.center,
-                              '(${quantity} món)',
+                              '(${quantity})',
                               style: FineTheme.typograhpy.subtitle3.copyWith(
                                   color: isStored == true
                                       ? Colors.white
@@ -352,14 +368,20 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                 child: Material(
                   color: box.isSelected == true
                       ? Colors.red
-                      : Color.fromARGB(0, 58, 58, 58),
-                  shape: CircleBorder(
+                      : const Color.fromARGB(0, 58, 58, 58),
+                  shape: const CircleBorder(
                       side: BorderSide(color: Colors.red, width: 2)),
                   child: box.isSelected == true
-                      ? const Icon(
-                          Icons.check,
-                          size: 20,
-                          color: Colors.white,
+                      ? SizedBox(
+                          width: 20,
+                          height: 20,
+                          child: Center(
+                            child: Text(
+                              '${foundDetail!.missing}',
+                              style: FineTheme.typograhpy.caption1
+                                  .copyWith(color: Colors.white),
+                            ),
+                          ),
                         )
                       : const SizedBox(
                           width: 20,
@@ -441,58 +463,64 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
     });
   }
 
-  Future<void> _dialogBuilder(BuildContext context) {
+  Future<void> _dialogBuilder(BuildContext context, OrderDetail detail) {
+    int detailIndex = model.orderBoxList
+        .firstWhere((e) => e.boxId == model.selectedBoxId)
+        .orderDetails!
+        .indexOf(detail);
+    String? boxCode =
+        model.boxList.firstWhere((box) => box.id == model.selectedBoxId).code;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        List<ShipperOrderBoxDTO> orderBoxList = model.orderBoxList;
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
-            title: Text('Báo cáo thiếu món', style: FineTheme.typograhpy.h2),
+            title: Text('Số lượng thiếu của tủ ${boxCode?.split('_')[0]}',
+                style: FineTheme.typograhpy.h2),
             content: SizedBox(
-              height: 350,
+              height: 60,
               child: Column(
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Tủ:', style: FineTheme.typograhpy.body1),
-                      DropdownButton<String>(
-                        value: model.selectedBoxId,
-                        onChanged: (String? value) {
-                          model.onChangeBox(value!);
+                      IconButton(
+                        splashRadius: 24,
+                        icon: const Icon(
+                          Icons.remove,
+                          size: 32,
+                        ),
+                        onPressed: () {
+                          model.onChangeMissing(
+                              detailIndex, detail.missing! - 1);
                           setState(() {});
                         },
-                        items: model.orderBoxList.map<DropdownMenuItem<String>>(
-                            (ShipperOrderBoxDTO orderBox) {
-                          return DropdownMenuItem<String>(
-                            value: orderBox.boxId,
-                            child: Text(
-                                '${model.boxList.firstWhere((box) => box.id == orderBox.boxId).code}',
-                                style: FineTheme.typograhpy.body1),
-                          );
-                        }).toList(),
+                        color: FineTheme.palettes.emerald25,
                       ),
-                      // Text(
-                      // '${currentTimeSlot.arriveTime?.substring(0, 5)} - ${currentTimeSlot.checkoutTime?.substring(0, 5)}',
-                      // style: FineTheme.typograhpy.body1)
-                    ],
-                  ),
-                  SizedBox(
-                      height: 300,
-                      width: 300,
-                      child: Scrollbar(
-                        child: ListView(
-                          children: [
-                            const SizedBox(height: 8),
-                            ...orderBoxList
-                                .firstWhere(
-                                    (e) => e.boxId == model.selectedBoxId)
-                                .orderDetails!
-                                .map((detail) => _buildReportProducts(detail)),
-                          ],
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16),
+                        child: Text(
+                          '${detail.missing}',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w400,
+                              fontStyle: FontStyle.normal),
                         ),
-                      )),
+                      ),
+                      IconButton(
+                        splashRadius: 24,
+                        icon: const Icon(Icons.add, size: 32),
+                        onPressed: () {
+                          model.onChangeMissing(
+                              detailIndex, detail.missing! + 1);
+                          setState(() {});
+                        },
+                        color: FineTheme.palettes.emerald25,
+                      ),
+                    ],
+                  )
                 ],
               ),
             ),
@@ -511,28 +539,8 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                     ),
                     onPressed: () {
                       Navigator.of(context).pop();
+                      this.setState(() {});
                     },
-                  ),
-                  OutlinedButton(
-                    style: OutlinedButton.styleFrom(
-                      backgroundColor: FineTheme.palettes.emerald25,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                      ),
-                      side: BorderSide(
-                        width: 1.0,
-                        color: FineTheme.palettes.emerald25,
-                      ),
-                    ),
-                    onPressed: () async {
-                      model.reportMissingProduct(
-                          productName: widget.detail.productName);
-                    },
-                    child: Text(
-                      "Gửi",
-                      style: FineTheme.typograhpy.subtitle2
-                          .copyWith(color: Colors.white),
-                    ),
                   ),
                 ],
               )
@@ -542,4 +550,106 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
       },
     );
   }
+
+  // Future<void> _dialogBuilder(BuildContext context) {
+  //   return showDialog<void>(
+  //     context: context,
+  //     builder: (BuildContext context) {
+  //       List<ShipperOrderBoxDTO> orderBoxList = model.orderBoxList;
+  //       return StatefulBuilder(builder: (context, setState) {
+  //         return AlertDialog(
+  //           title: Text('Báo cáo thiếu món', style: FineTheme.typograhpy.h2),
+  //           content: SizedBox(
+  //             height: 350,
+  //             child: Column(
+  //               children: [
+  //                 Row(
+  //                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //                   children: [
+  //                     Text('Tủ:', style: FineTheme.typograhpy.body1),
+  //                     DropdownButton<String>(
+  //                       value: model.selectedBoxId,
+  //                       onChanged: (String? value) {
+  //                         model.onChangeBox(value!);
+  //                         setState(() {});
+  //                       },
+  //                       items: model.orderBoxList.map<DropdownMenuItem<String>>(
+  //                           (ShipperOrderBoxDTO orderBox) {
+  //                         return DropdownMenuItem<String>(
+  //                           value: orderBox.boxId,
+  //                           child: Text(
+  //                               '${model.boxList.firstWhere((box) => box.id == orderBox.boxId).code}',
+  //                               style: FineTheme.typograhpy.body1),
+  //                         );
+  //                       }).toList(),
+  //                     ),
+  //                     // Text(
+  //                     // '${currentTimeSlot.arriveTime?.substring(0, 5)} - ${currentTimeSlot.checkoutTime?.substring(0, 5)}',
+  //                     // style: FineTheme.typograhpy.body1)
+  //                   ],
+  //                 ),
+  //                 SizedBox(
+  //                     height: 300,
+  //                     width: 300,
+  //                     child: Scrollbar(
+  //                       child: ListView(
+  //                         children: [
+  //                           const SizedBox(height: 8),
+  //                           ...orderBoxList
+  //                               .firstWhere(
+  //                                   (e) => e.boxId == model.selectedBoxId)
+  //                               .orderDetails!
+  //                               .map((detail) => _buildReportProducts(detail)),
+  //                         ],
+  //                       ),
+  //                     )),
+  //               ],
+  //             ),
+  //           ),
+  //           actions: <Widget>[
+  //             Row(
+  //               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //               children: [
+  //                 TextButton(
+  //                   style: TextButton.styleFrom(
+  //                     textStyle: Theme.of(context).textTheme.labelLarge,
+  //                   ),
+  //                   child: Text(
+  //                     'Đóng',
+  //                     style: FineTheme.typograhpy.body1
+  //                         .copyWith(color: FineTheme.palettes.emerald25),
+  //                   ),
+  //                   onPressed: () {
+  //                     Navigator.of(context).pop();
+  //                   },
+  //                 ),
+  //                 OutlinedButton(
+  //                   style: OutlinedButton.styleFrom(
+  //                     backgroundColor: FineTheme.palettes.emerald25,
+  //                     shape: RoundedRectangleBorder(
+  //                       borderRadius: BorderRadius.circular(8.0),
+  //                     ),
+  //                     side: BorderSide(
+  //                       width: 1.0,
+  //                       color: FineTheme.palettes.emerald25,
+  //                     ),
+  //                   ),
+  //                   onPressed: () async {
+  //                     model.reportMissingProduct(
+  //                         productName: widget.detail.productName);
+  //                   },
+  //                   child: Text(
+  //                     "Gửi",
+  //                     style: FineTheme.typograhpy.subtitle2
+  //                         .copyWith(color: Colors.white),
+  //                   ),
+  //                 ),
+  //               ],
+  //             )
+  //           ],
+  //         );
+  //       });
+  //     },
+  //   );
+  // }
 }
