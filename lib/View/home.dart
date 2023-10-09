@@ -1,16 +1,13 @@
 // ignore_for_file: avoid_unnecessary_containers
 
 import 'dart:async';
-
 import 'package:fine_merchant_mobile/Accessories/index.dart';
 import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
-
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
-
 import 'package:fine_merchant_mobile/widgets/skeleton_list.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -37,7 +34,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 30), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
       refreshFetchData();
     });
   }
@@ -112,8 +109,8 @@ class _HomeScreenState extends State<HomeScreen> {
                   Text('Khung giờ:', style: FineTheme.typograhpy.h2),
                   DropdownButton<String>(
                     value: model.selectedTimeSlotId,
-                    onChanged: (String? value) {
-                      model.onChangeTimeSlot(value!);
+                    onChanged: (String? value) async {
+                      await model.onChangeTimeSlot(value!);
                       setState(() {});
                     },
                     items: model.timeSlotList

@@ -459,7 +459,8 @@ class HomeViewModel extends BaseModel {
   // }
 
   Future<void> confirmAllBoxStored() async {
-    int option = await showOptionDialog("Xác nhận đã bỏ đủ hàng vào các tủ?");
+    int option = await showOptionDialog(
+        "Xác nhận đã bỏ đủ hàng vào các tủ?, Mọi trường hợp thiếu món sau đó sẽ do bạn chịu trách nhiệm.");
     if (option == 1) {
       try {
         showLoadingDialog();

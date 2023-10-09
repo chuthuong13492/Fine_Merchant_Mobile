@@ -1,23 +1,16 @@
 import 'dart:async';
 
 import 'package:fine_merchant_mobile/Constant/enum.dart';
-import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Model/DTO/index.dart';
-import 'package:fine_merchant_mobile/Utils/format_price.dart';
 import 'package:fine_merchant_mobile/Utils/format_time.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
-import 'package:fine_merchant_mobile/ViewModel/root_viewModel.dart';
-import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
-import 'package:fine_merchant_mobile/widgets/cache_image.dart';
 import 'package:fine_merchant_mobile/widgets/skeleton_list.dart';
 import 'package:flutter/src/widgets/framework.dart';
-import 'package:flutter/src/widgets/placeholder.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:get/get.dart';
-import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter/material.dart';
 import '../Accessories/index.dart';
@@ -31,46 +24,35 @@ class OrderListScreen extends StatefulWidget {
 
 class _OrderListScreenState extends State<OrderListScreen> {
   bool isStaff = false;
-  bool isSelectAll = false;
-  int numsOfChecked = 0;
+
   late Timer periodicTimer;
   OrderListViewModel model = Get.put(OrderListViewModel());
   AccountDTO? currentUser = Get.find<AccountViewModel>().currentUser;
-  List<SplitOrderDTO> splitOrderByStation = [];
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey1 =
       GlobalKey<RefreshIndicatorState>();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey2 =
       GlobalKey<RefreshIndicatorState>();
 
-  Future<void> refreshFetchOrder() async {
-    await model.getTimeSlotList();
-    await model.getSplitOrders();
-    setState(() {
-      isSelectAll = false;
-      numsOfChecked = 0;
-    });
-  }
-
-  Future<void> refreshFetchOrderByStation() async {
-    await model.getSplitOrdersByStation();
-    setState(() {});
-  }
-
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 30), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
       refreshFetchOrder();
-      refreshFetchOrderByStation();
     });
-    splitOrderByStation = model.splitOrderListByStation;
   }
 
   @override
   void dispose() {
     super.dispose();
     periodicTimer.cancel();
+  }
+
+  Future<void> refreshFetchOrder() async {
+    await model.getTimeSlotList();
+    await model.getSplitOrders();
+    await model.getSplitOrdersByStation();
+    setState(() {});
   }
 
   @override
@@ -121,7 +103,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               Row(
                                 children: [
                                   Text(
-                                    '${numsOfChecked == 0 ? "Chọn tất cả" : "Đã chọn " + numsOfChecked.toString() + " món"} ',
+                                    '${model.numsOfCheck == 0 ? "Chọn tất cả" : "Đã chọn " + model.numsOfCheck.toString() + " món"} ',
                                     style: FineTheme.typograhpy.body2.copyWith(
                                       color: FineTheme.palettes.neutral900,
                                     ),
@@ -129,14 +111,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                   Checkbox(
                                     checkColor: Colors.white,
                                     activeColor: FineTheme.palettes.emerald25,
-                                    value: isSelectAll,
-                                    onChanged: (bool? value) {
-                                      model.onCheckAll(value!);
-                                      setState(() {
-                                        isSelectAll = value;
-                                        numsOfChecked = model.numsOfChecked;
-                                      });
-                                    },
+                                    value: model.isAllChecked,
+                                    onChanged: model.splitOrderList.isNotEmpty
+                                        ? (bool? value) {
+                                            model.onCheckAll(value!);
+                                            setState(() {});
+                                          }
+                                        : null,
                                   ),
                                 ],
                               ),
@@ -161,15 +142,12 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     //     bottomLeft: Radius.circular(16))
                                     BorderRadius.all(Radius.circular(8))),
                           ),
-                          onPressed: model.numsOfChecked < 1 ||
+                          onPressed: model.numsOfCheck < 1 ||
                                   status == ViewStatus.Loading
                               ? null
                               : () async {
                                   await model.confirmSplitProducts();
-                                  setState(() {
-                                    numsOfChecked = model.numsOfChecked;
-                                    isSelectAll = false;
-                                  });
+                                  setState(() {});
                                 },
                           child: Padding(
                             padding: const EdgeInsets.only(top: 8, bottom: 8),
@@ -303,12 +281,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             style: FineTheme.typograhpy.h2),
                         DropdownButton<String>(
                           value: model.selectedTimeSlotId,
-                          onChanged: (String? value) {
-                            model.onChangeTimeSlot(value!);
-                            setState(() {
-                              numsOfChecked = 0;
-                              isSelectAll = false;
-                            });
+                          onChanged: (String? value) async {
+                            await model.onChangeTimeSlot(value!);
+                            setState(() {});
                           },
                           items: model.timeSlotList
                               .map<DropdownMenuItem<String>>(
@@ -409,7 +384,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Hiện tại chưa có đơn nào'),
+              Text('Hiện tại chưa có đơn nào.'),
               Padding(
                 padding: EdgeInsets.all(15),
                 child: InkWell(
@@ -543,7 +518,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
       return RefreshIndicator(
         key: _refreshIndicatorKey2,
-        onRefresh: refreshFetchOrderByStation,
+        onRefresh: model.getSplitOrdersByStation,
         child: Scrollbar(
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -615,16 +590,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 onChanged: (bool? value) {
                   int index = model.splitOrderList.indexOf(splitOrderSummary);
                   model.onCheck(index, value!);
-                  setState(() {
-                    numsOfChecked = model.numsOfChecked;
-                  });
-                  if (numsOfChecked == model.splitOrderList.length) {
-                    setState(() {
-                      isSelectAll = true;
-                    });
+
+                  if (model.numsOfCheck == model.splitOrderList.length) {
+                    model.isAllChecked = true;
                   } else {
-                    isSelectAll = false;
+                    model.isAllChecked = false;
                   }
+                  setState(() {});
                 },
               )
             ],

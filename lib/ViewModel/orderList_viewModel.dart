@@ -39,7 +39,8 @@ class OrderListViewModel extends BaseModel {
   OrderDTO? orderDTO;
   // Widget
   ScrollController? scrollController;
-  int numsOfChecked = 0;
+  var numsOfCheck = 0;
+  var isAllChecked = false;
   int selectedOrderStatus = OrderStatusEnum.PROCESSING;
   StationDTO? selectedStation;
   String selectedTimeSlotId = '';
@@ -70,9 +71,9 @@ class OrderListViewModel extends BaseModel {
     if (index > -1) {
       splitOrderList[index].isChecked = isChecked;
       if (isChecked) {
-        numsOfChecked++;
+        numsOfCheck++;
       } else {
-        numsOfChecked--;
+        numsOfCheck--;
       }
     } else {
       print('No index found');
@@ -80,40 +81,42 @@ class OrderListViewModel extends BaseModel {
     notifyListeners();
   }
 
-  void onCheckAll(bool isSelectAll) {
-    if (isSelectAll) {
+  void onCheckAll(bool isCheckingAll) {
+    if (isCheckingAll) {
       for (final item in splitOrderList) {
         item.isChecked = true;
       }
-      numsOfChecked = splitOrderList.length;
+      numsOfCheck = splitOrderList.length;
+      isAllChecked = true;
     } else {
       for (final item in splitOrderList) {
         item.isChecked = false;
       }
-      numsOfChecked = 0;
+      numsOfCheck = 0;
+      isAllChecked = false;
     }
     notifyListeners();
   }
 
-  void onChangeTimeSlot(String value) {
+  Future<void> onChangeTimeSlot(String value) async {
     selectedTimeSlotId = value;
 
-    getSplitOrders();
-    getSplitOrdersByStation();
+    await getSplitOrders();
+    await getSplitOrdersByStation();
     notifyListeners();
   }
 
-  void onChangeStore(String value, int roleType) {
+  Future<void> onChangeStore(String value, int roleType) async {
     selectedStoreId = value;
 
-    getSplitOrders();
+    await getSplitOrders();
     notifyListeners();
   }
 
-  void onChangeOrderStatus(int value) {
+  Future<void> onChangeOrderStatus(int value) async {
     selectedOrderStatus = value;
 
-    getSplitOrders();
+    await getSplitOrders();
     notifyListeners();
   }
 
@@ -207,37 +210,49 @@ class OrderListViewModel extends BaseModel {
   Future<void> getSplitOrders() async {
     try {
       setState(ViewStatus.Loading);
-      numsOfChecked = 0;
       print('selectedTimeSlotId: $selectedTimeSlotId');
       var currentUser = Get.find<AccountViewModel>().currentUser;
       staffStore = Get.find<AccountViewModel>().currentStore;
       if (currentUser != null && currentUser.storeId != null) {
         final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
             storeId: currentUser.storeId!,
-            // stationId: selectedStation?.id,
+            timeSlotId: selectedTimeSlotId,
+            orderStatus: selectedOrderStatus);
+        if (data != null) {
+          var newSplitOrderList = data;
+          numsOfCheck = 0;
+          for (SplitOrderDTO splitOrder in splitOrderList) {
+            if (splitOrder.isChecked == true) {
+              var foundSplitOrder = newSplitOrderList.firstWhereOrNull(
+                  (e) => e.productName == splitOrder.productName);
+              if (foundSplitOrder != null) {
+                final updateIndex = newSplitOrderList.indexWhere(
+                    (e) => e.productName == foundSplitOrder.productName);
+                newSplitOrderList[updateIndex].isChecked = true;
+                numsOfCheck = numsOfCheck + 1;
+              }
+            }
+          }
+          if (newSplitOrderList.isNotEmpty &&
+              numsOfCheck == newSplitOrderList.length) {
+            isAllChecked = true;
+            numsOfCheck = newSplitOrderList.length;
+          } else {
+            isAllChecked = false;
+          }
+          splitOrderList = newSplitOrderList;
+          notifyListeners();
+        }
+      } else {
+        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
+            storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
             timeSlotId: selectedTimeSlotId,
             orderStatus: selectedOrderStatus);
         if (data != null) {
           splitOrderList = data;
         }
-      } else {
-        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
-            storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
-            // stationId: selectedStation?.id,
-            timeSlotId: selectedTimeSlotId,
-            orderStatus: selectedOrderStatus);
-        if (data != null) {
-          splitOrderList = data
-              // .where((e) =>
-              //     (e.orderDetailStoreStatus != OrderStatusEnum.PROCESSING &&
-              //         e.orderDetailStoreStatus !=
-              //             OrderStatusEnum.STAFF_CONFIRM) &&
-              //     e.orderDetailStoreStatus != OrderStatusEnum.FINISHED)
-              // .toList();
-              ;
-        }
       }
-      notifyListeners();
+
       setState(ViewStatus.Completed);
     } catch (e) {
       bool result = await showErrorDialog();
@@ -252,7 +267,6 @@ class OrderListViewModel extends BaseModel {
   Future<void> getSplitOrdersByStation() async {
     try {
       setState(ViewStatus.Loading);
-      numsOfChecked = 0;
       print('selectedTimeSlotId: $selectedTimeSlotId');
       var currentUser = Get.find<AccountViewModel>().currentUser;
       staffStore = Get.find<AccountViewModel>().currentStore;
@@ -351,7 +365,8 @@ class OrderListViewModel extends BaseModel {
             // orderList = newOrderList;
             // Refresh
 
-            numsOfChecked = 0;
+            numsOfCheck = 0;
+            isAllChecked = false;
             notifyListeners();
             await showStatusDialog(
                 "assets/images/icon-success.png", "Xác nhận thành công", "");
@@ -374,8 +389,8 @@ class OrderListViewModel extends BaseModel {
         "Có lỗi xảy ra, vui lòng thử lại sau 😓",
       );
     } finally {
-      await getOrders();
       await getSplitOrders();
+      await getSplitOrdersByStation();
     }
   }
 
@@ -388,11 +403,15 @@ class OrderListViewModel extends BaseModel {
         showLoadingDialog();
         var newOrderStatus = OrderStatusEnum.PREPARED;
         if (splitOrderList.isNotEmpty) {
-          for (final splitOrder in splitOrderList) {
+          for (SplitOrderDTO splitOrder in splitOrderList) {
             if (splitOrder.isChecked == true) {
               List<String>? orderDetailIdList = splitOrder.orderDetailIdList;
               for (final orderDetailId in orderDetailIdList!) {
-                updatedOrderDetailIdList.add(orderDetailId);
+                if (updatedOrderDetailIdList
+                        .firstWhereOrNull((e) => e == orderDetailId) ==
+                    null) {
+                  updatedOrderDetailIdList.add(orderDetailId);
+                }
               }
             }
           }
@@ -404,7 +423,8 @@ class OrderListViewModel extends BaseModel {
           final statusCode =
               await _orderDAO?.confirmSplitProduct(products: updatedProducts);
           if (statusCode == 200) {
-            numsOfChecked = 0;
+            numsOfCheck = 0;
+            isAllChecked = false;
             notifyListeners();
             await showStatusDialog(
                 "assets/images/icon-success.png", "Xác nhận thành công", "");
@@ -427,12 +447,11 @@ class OrderListViewModel extends BaseModel {
         );
         print(e);
       } finally {
-        await getOrders();
         await getSplitOrders();
+        await getSplitOrdersByStation();
         notifyListeners();
       }
     } else {
-      clearCheckList();
       notifyListeners();
     }
   }
