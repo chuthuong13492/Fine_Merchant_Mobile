@@ -5,6 +5,7 @@ import 'package:fine_merchant_mobile/Utils/constrant.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
 import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
+import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
@@ -12,11 +13,11 @@ import 'package:get/get.dart';
 import '../Model/DAO/index.dart';
 import '../Model/DTO/index.dart';
 
-class ReportListViewModel extends BaseModel {
+class StationPackageViewModel extends BaseModel {
   // constant
 
   // local properties
-  List<MissingProductReportDTO> reportList = [];
+  List<StationSplitProductDTO> splitProductsByStation = [];
   List<StoreDTO> storeList = [];
   List<TimeSlotDTO> timeSlotList = [];
   List<StationDTO> stationList = [];
@@ -28,65 +29,52 @@ class ReportListViewModel extends BaseModel {
   // Data Object Model
   OrderDAO? _orderDAO;
   StationDAO? _stationDAO;
+  SplitProductDAO? _splitProductDAO;
   dynamic error;
   OrderDTO? orderDTO;
+
   // Widget
   ScrollController? scrollController;
   bool isDelivering = false;
   PackageViewDTO? currentDeliveryPackage;
-  ReportListViewModel() {
+
+  StationPackageViewModel() {
     _stationDAO = StationDAO();
     _orderDAO = OrderDAO();
-
+    _splitProductDAO = SplitProductDAO();
     scrollController = ScrollController();
   }
 
   void onChangeTimeSlot(String value) {
     selectedTimeSlotId = value;
-    getReportList();
+    getSplitOrdersByStation();
     notifyListeners();
   }
 
-  Future<void> getReportList() async {
+  Future<void> getSplitOrdersByStation() async {
     try {
       setState(ViewStatus.Loading);
-      final data = await _stationDAO?.getMissingProductReport(
-          storeId: selectedStoreId, timeSlotId: selectedTimeSlotId);
+      selectedTimeSlotId = Get.find<OrderListViewModel>().selectedTimeSlotId;
+      print('selectedTimeSlotId: $selectedTimeSlotId');
+
+      final data = await _splitProductDAO?.getStationSplitProductsForStaff(
+        timeSlotId: selectedTimeSlotId,
+      );
       if (data != null) {
-        reportList = data;
+        splitProductsByStation = data;
       }
-      setState(ViewStatus.Completed);
+
       notifyListeners();
+      setState(ViewStatus.Completed);
     } catch (e) {
+      print(e);
       bool result = await showErrorDialog();
       if (result) {
-        await getReportList();
+        await getSplitOrdersByStation();
       } else {
         setState(ViewStatus.Error);
       }
-    }
-  }
-
-  Future<void> confirmReportSolved({String? reportId}) async {
-    try {
-      int option = await showOptionDialog("Xác nhận đã xử lí?");
-      if (option == 1) {
-        showLoadingDialog();
-        final status =
-            await _stationDAO?.confirmReportSolved(reportId: reportId);
-
-        if (status == 200) {
-          await showStatusDialog(
-              "assets/images/icon-success.png", "Xử lí thành công", "");
-        }
-        await getReportList();
-        Get.back();
-        setState(ViewStatus.Completed);
-        notifyListeners();
-      }
-    } catch (e) {
-      setState(ViewStatus.Error, e.toString());
-    }
+    } finally {}
   }
 
   Future<void> getBoxListByStation() async {

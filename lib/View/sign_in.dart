@@ -219,6 +219,44 @@ class SignIn extends State<loginWithAccount> {
                       ),
                     ),
                   ),
+                  // const SizedBox(
+                  //   height: 16,
+                  // ),
+                  // InkWell(
+                  //   onTap: () {
+                  //     model.signInWithFireBase(
+                  //         "dtminh.dev@gmail.com", "zaQ@1234");
+                  //   },
+                  //   child: Container(
+                  //     alignment: Alignment.center,
+                  //     height: 56,
+                  //     decoration: BoxDecoration(
+                  //       color: FineTheme.palettes.shades100,
+                  //       borderRadius: BorderRadius.circular(25),
+                  //     ),
+                  //     child: Row(
+                  //       crossAxisAlignment: CrossAxisAlignment.start,
+                  //       mainAxisAlignment: MainAxisAlignment.center,
+                  //       children: [
+                  //         // Center(
+                  //         //   child: Image.asset(
+                  //         //     "assets/icons/google.png",
+                  //         //     width: 32,
+                  //         //     height: 32,
+                  //         //   ),
+                  //         // ),
+
+                  //         Center(
+                  //           child: Text(
+                  //             'Test',
+                  //             style: FineTheme.typograhpy.h2.copyWith(
+                  //                 color: FineTheme.palettes.emerald25),
+                  //           ),
+                  //         ),
+                  //       ],
+                  //     ),
+                  //   ),
+                  // ),
                   // Row(
                   //   mainAxisAlignment: MainAxisAlignment.center,
                   //   children: [

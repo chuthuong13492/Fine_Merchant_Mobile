@@ -1,6 +1,6 @@
 import 'package:fine_merchant_mobile/Service/push_notification_service.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
-import 'package:fine_merchant_mobile/ViewModel/reportList_viewModel.dart';
+import 'package:fine_merchant_mobile/ViewModel/stationPackage_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/home_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/login_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
@@ -24,6 +24,6 @@ void createRouteBindings() async {
   Get.put(LoginViewModel());
   Get.put(AccountViewModel());
   Get.put(StationViewModel());
-  Get.put(ReportListViewModel());
+  Get.put(StationPackageViewModel());
   Get.put(OrderListViewModel());
 }

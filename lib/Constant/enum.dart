@@ -35,3 +35,19 @@ class AccountTypeEnum {
     return options[type] ?? "N/A";
   }
 }
+
+class UpdateSplitProductTypeEnum {
+  static const int CONFIRM = 1;
+  static const int ERROR = 2;
+  static const int RECONFIRM = 3;
+
+  static Map<int, String> options = {
+    UpdateSplitProductTypeEnum.CONFIRM: "Xử lý",
+    UpdateSplitProductTypeEnum.ERROR: "Cần xử lý lại",
+    UpdateSplitProductTypeEnum.RECONFIRM: "Xử lý lại",
+  };
+
+  static String getAccountTypeName(int? type) {
+    return options[type] ?? "N/A";
+  }
+}

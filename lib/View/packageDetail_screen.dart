@@ -322,7 +322,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 200,
+            width: 160,
             child: Text(
               '${product.productName}',
               overflow: TextOverflow.ellipsis,
@@ -332,13 +332,16 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                   fontStyle: FontStyle.normal),
             ),
           ),
-          Text(
-            'x ${product.quantity}',
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.normal),
+          SizedBox(
+            width: 50,
+            child: Text(
+              'x ${product.quantity}',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal),
+            ),
           ),
         ],
       ),
@@ -349,57 +352,52 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        List<PackageViewDTO>? packageList = model.deliveredPackageList;
-        return AlertDialog(
-          content: Container(
-            child: Stack(clipBehavior: Clip.none, children: [
-              Positioned(
-                top: -20,
-                right: -15,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge,
-                      alignment: Alignment.topRight),
-                  child: Icon(Icons.close_outlined,
-                      color: FineTheme.palettes.emerald25),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+        return StatefulBuilder(builder: (context, setState) {
+          List<PackageViewDTO>? packageList = model.deliveredPackageList;
+          return AlertDialog(
+            title: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 50,
+                  width: 300,
+                  decoration: const BoxDecoration(
+                      border: Border(bottom: BorderSide(width: 1))),
+                  child: Text('Chi tiết các gói hàng',
+                      style: FineTheme.typograhpy.h2
+                          .copyWith(color: FineTheme.palettes.emerald25)),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: SizedBox(
-                  height: 350,
-                  child: Column(
-                    children: [
-                      Container(
-                        height: 50,
-                        width: 300,
-                        decoration: const BoxDecoration(
-                            border: Border(bottom: BorderSide(width: 1))),
-                        child: Text('Chi tiết các gói hàng',
-                            style: FineTheme.typograhpy.h2),
-                      ),
-                      SizedBox(
-                          height: 300,
-                          width: 300,
-                          child: Scrollbar(
-                            child: ListView(
-                              children: [
-                                const SizedBox(height: 8),
-                                ...packageList.map(
-                                    (package) => _buildPackageSection(package)),
-                              ],
-                            ),
-                          )),
-                    ],
+                Positioned(
+                  top: -20,
+                  right: -15,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                        splashFactory: NoSplash.splashFactory,
+                        textStyle: Theme.of(context).textTheme.labelLarge,
+                        alignment: Alignment.centerRight),
+                    child: Icon(Icons.close_outlined,
+                        color: FineTheme.palettes.error300),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ),
-              )
-            ]),
-          ),
-        );
+              ],
+            ),
+            content: SizedBox(
+                height: 300,
+                width: 300,
+                child: Scrollbar(
+                  child: ListView(
+                    children: [
+                      const SizedBox(height: 8),
+                      ...packageList
+                          .map((package) => _buildPackageSection(package)),
+                    ],
+                  ),
+                )),
+          );
+        });
       },
     );
   }

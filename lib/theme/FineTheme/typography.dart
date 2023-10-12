@@ -14,7 +14,12 @@ class FineTypograhpy {
       fontWeight: FontWeight.w600,
       fontStyle: FontStyle.normal,
       height: 1.2);
-
+  TextStyle h3 = const TextStyle(
+      fontFamily: 'Montserrat',
+      fontSize: 18,
+      fontWeight: FontWeight.w600,
+      fontStyle: FontStyle.normal,
+      height: 1.2);
   TextStyle subtitle1 = const TextStyle(
       fontFamily: 'Montserrat',
       fontSize: 16,

@@ -4,7 +4,7 @@ import 'dart:ui';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
-import 'package:fine_merchant_mobile/View/report_list.dart';
+import 'package:fine_merchant_mobile/View/stationPackage_list.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/root_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
@@ -42,7 +42,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
     {
       "icon": "assets/icons/Form.svg",
       "active_icon": "assets/icons/Form_white.svg",
-      "page": const ReportListScreen(),
+      "page": const StationPackagesScreen(),
     },
     {
       "icon": "assets/icons/Profile.svg",
@@ -64,7 +64,7 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
   ];
   final staffScreens = [
     const OrderListScreen(),
-    const ReportListScreen(),
+    const StationPackagesScreen(),
     const ProfileScreen()
   ];
   final shipperScreens = [const HomeScreen(), const ProfileScreen()];

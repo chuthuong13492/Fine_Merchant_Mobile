@@ -24,14 +24,15 @@ class OrderListScreen extends StatefulWidget {
 
 class _OrderListScreenState extends State<OrderListScreen> {
   bool isStaff = false;
-
   late Timer periodicTimer;
   OrderListViewModel model = Get.put(OrderListViewModel());
   AccountDTO? currentUser = Get.find<AccountViewModel>().currentUser;
 
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey1 =
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey2 =
+      GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey3 =
       GlobalKey<RefreshIndicatorState>();
 
   @override
@@ -51,28 +52,28 @@ class _OrderListScreenState extends State<OrderListScreen> {
   Future<void> refreshFetchOrder() async {
     await model.getTimeSlotList();
     await model.getSplitOrders();
-    await model.getSplitOrdersByStation();
+
     setState(() {});
   }
 
   @override
   Widget build(BuildContext context) {
-    List<SplitOrderDTO> splitOrderList = model.splitOrderList;
     final status = model.status;
+    var staffStore = Get.find<AccountViewModel>().currentStore;
     return ScopedModel(
       model: Get.find<OrderListViewModel>(),
       child: DefaultTabController(
-        length: 2,
+        length: 3,
         child: Scaffold(
           appBar: DefaultAppBar(
-              title: "Đơn hàng ${isStaff ? "Chờ duyệt" : "Chờ giao"}",
+              title: "Đơn hàng chờ duyệt",
               backButton: const SizedBox.shrink(),
               bottom: PreferredSize(
                   preferredSize: const Size.fromHeight(120),
                   child: Padding(
                     padding: const EdgeInsets.only(bottom: 8),
                     child: Text(
-                      '${model.staffStore?.storeName}',
+                      '${staffStore?.storeName}',
                       style: FineTheme.typograhpy.h2.copyWith(
                         color: FineTheme.palettes.emerald25,
                       ),
@@ -112,9 +113,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     checkColor: Colors.white,
                                     activeColor: FineTheme.palettes.emerald25,
                                     value: model.isAllChecked,
-                                    onChanged: model.splitOrderList.isNotEmpty
+                                    onChanged: model.splitOrder != null &&
+                                            model
+                                                .splitOrder!
+                                                .productTotalDetailList!
+                                                .isNotEmpty
                                         ? (bool? value) {
-                                            model.onCheckAll(value!);
+                                            model.onCheckAll(value!, 1);
                                             setState(() {});
                                           }
                                         : null,
@@ -127,7 +132,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         Expanded(
                           child: Container(
                             // ignore: sort_child_properties_last
-                            child: _buildOrders(),
+                            child: _buildPendingProducts(),
                             color: const Color(0xffefefef),
                           ),
                         ),
@@ -146,7 +151,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                   status == ViewStatus.Loading
                               ? null
                               : () async {
-                                  await model.confirmSplitProducts();
+                                  await model.updateSplitProductsStatus(
+                                      statusType:
+                                          UpdateSplitProductTypeEnum.CONFIRM);
                                   setState(() {});
                                 },
                           child: Padding(
@@ -158,85 +165,88 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 100),
+                        const SizedBox(height: 50),
                       ],
                     ),
                     Column(
                       children: [
-                        Container(
-                          color: Colors.white70,
-                          child: SingleChildScrollView(
-                            scrollDirection: Axis.horizontal,
-                            child: Padding(
-                              padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                              child: ToggleButtons(
-                                  renderBorder: false,
-                                  selectedColor: FineTheme.palettes.emerald25,
-                                  onPressed: (int index) async {
-                                    await model.onChangeSelectStation(index);
-                                    setState(() {});
-                                  },
-                                  borderRadius: BorderRadius.circular(24),
-                                  isSelected: model.stationSelections,
-                                  children: [
-                                    ...model.stationList.map(
-                                      (e) => Stack(
-                                        children: [
-                                          Container(
-                                            margin: const EdgeInsets.only(
-                                                top: 16, bottom: 16),
-                                            width: MediaQuery.of(context)
-                                                    .size
-                                                    .width /
-                                                3,
-                                            child: Text("${e.name}",
-                                                textAlign: TextAlign.center,
-                                                style: FineTheme
-                                                    .typograhpy.caption1
-                                                    .copyWith(
-                                                        color: FineTheme
-                                                            .palettes
-                                                            .neutral900,
-                                                        fontWeight:
-                                                            FontWeight.bold)),
-                                          ),
-                                          // Positioned(
-                                          //     top: 0,
-                                          //     right: 8,
-                                          //     child: Material(
-                                          //       color: Colors.red,
-                                          //       shape: const CircleBorder(
-                                          //           side: BorderSide(
-                                          //               color: Colors.red, width: 2)),
-                                          //       child: SizedBox(
-                                          //         width: 20,
-                                          //         height: 20,
-                                          //         child: Center(
-                                          //           child: Text(
-                                          //             '${}',
-                                          //             style: FineTheme
-                                          //                 .typograhpy.caption1
-                                          //                 .copyWith(
-                                          //                     color: Colors.white),
-                                          //           ),
-                                          //         ),
-                                          //       ),
-                                          //     ))
-                                        ],
-                                      ),
-                                    )
-                                  ]),
-                            ),
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 12, bottom: 12),
+                                child: Text(
+                                  'Sản phẩm',
+                                  style: FineTheme.typograhpy.h2.copyWith(
+                                    color: FineTheme.palettes.emerald50,
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ),
                         Expanded(
                           child: Container(
                             // ignore: sort_child_properties_last
-                            child: _buildOrdersByStation(),
+                            child: _buildConfirmedProducts(),
                             color: const Color(0xffefefef),
                           ),
                         ),
-                        const SizedBox(height: 100),
+                        const SizedBox(height: 50),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                'Sản phẩm',
+                                style: FineTheme.typograhpy.h2.copyWith(
+                                  color: FineTheme.palettes.emerald50,
+                                ),
+                              ),
+                              Row(
+                                children: [
+                                  Text(
+                                    '${model.numsOfCheck == 0 ? "Chọn tất cả" : "Đã chọn " + model.numsOfCheck.toString() + " món"} ',
+                                    style: FineTheme.typograhpy.body2.copyWith(
+                                      color: FineTheme.palettes.neutral900,
+                                    ),
+                                  ),
+                                  Checkbox(
+                                    checkColor: Colors.white,
+                                    activeColor: FineTheme.palettes.emerald25,
+                                    value: model.isAllChecked,
+                                    onChanged: model.splitOrder != null &&
+                                            model
+                                                .splitOrder!
+                                                .productTotalDetailList!
+                                                .isNotEmpty
+                                        ? (bool? value) {
+                                            model.onCheckAll(value!, 2);
+                                            setState(() {});
+                                          }
+                                        : null,
+                                  ),
+                                ],
+                              ),
+                            ],
+                          ),
+                        ),
+                        Expanded(
+                          child: Container(
+                            // ignore: sort_child_properties_last
+                            child: _buildReportedProducts(),
+                            color: const Color(0xffefefef),
+                          ),
+                        ),
+                        const SizedBox(height: 50),
                       ],
                     ),
                   ],
@@ -252,11 +262,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
 ////////////////////
 
   Widget orderFilterSection() {
+    SplitOrderDTO? splitOrder = model.splitOrder;
     return ScopedModelDescendant<OrderListViewModel>(
       builder: (context, child, model) {
+        if (model.splitOrder == null) {
+          return const SizedBox.shrink();
+        }
         return Center(
           child: Container(
-            // color: Colors.amber,
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
             width: double.infinity,
             decoration: const BoxDecoration(
@@ -300,29 +313,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     ),
                   ),
                   Padding(
-                    padding: const EdgeInsets.fromLTRB(32, 12, 32, 12),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Trạng thái:",
-                          style: FineTheme.typograhpy.h2.copyWith(
-                            color: FineTheme.palettes.neutral900,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.only(right: 8.0),
-                          child: Text(
-                              OrderStatusEnum.getOrderStatusName(
-                                  model.selectedOrderStatus),
-                              style: FineTheme.typograhpy.body1.copyWith(
-                                color: FineTheme.palettes.emerald25,
-                              )),
-                        ),
-                      ],
-                    ),
-                  ),
-                  Padding(
                     padding: const EdgeInsets.only(top: 8),
                     child: TabBar(
                       indicatorColor: FineTheme.palettes.emerald25,
@@ -337,19 +327,106 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         return FineTheme.palettes.emerald25;
                       }),
                       tabs: [
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 12),
-                          child: Text("Xác nhận",
-                              style: FineTheme.typograhpy.body1.copyWith(
-                                color: FineTheme.palettes.emerald25,
-                              )),
+                        Stack(
+                          children: [
+                            Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Material(
+                                  color: Colors.red,
+                                  shape: const CircleBorder(
+                                      side: BorderSide(
+                                          color: Colors.red, width: 2)),
+                                  child: SizedBox(
+                                    width:
+                                        splitOrder!.totalProductPending! >= 10
+                                            ? 24
+                                            : 20,
+                                    height:
+                                        splitOrder.totalProductPending! >= 10
+                                            ? 24
+                                            : 20,
+                                    child: Center(
+                                      child: Text(
+                                        '${splitOrder.totalProductPending}',
+                                        style: FineTheme.typograhpy.subtitle2
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 18, bottom: 12, right: 18),
+                              child: Text("Đang xử lý",
+                                  style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.emerald25,
+                                  )),
+                            ),
+                          ],
                         ),
-                        Padding(
-                          padding: const EdgeInsets.only(top: 8, bottom: 12),
-                          child: Text("Gom theo trạm",
-                              style: FineTheme.typograhpy.body1.copyWith(
-                                color: FineTheme.palettes.emerald25,
-                              )),
+                        Stack(
+                          children: [
+                            Positioned(
+                                top: 0,
+                                right: 0,
+                                child: Material(
+                                  color: Colors.red,
+                                  shape: const CircleBorder(
+                                      side: BorderSide(
+                                          color: Colors.red, width: 2)),
+                                  child: SizedBox(
+                                    width: splitOrder.totalProductReady! >= 10
+                                        ? 24
+                                        : 20,
+                                    height: splitOrder.totalProductReady! >= 10
+                                        ? 24
+                                        : 20,
+                                    child: Center(
+                                      child: Text(
+                                        '${splitOrder.totalProductReady}',
+                                        style: FineTheme.typograhpy.subtitle2
+                                            .copyWith(color: Colors.white),
+                                      ),
+                                    ),
+                                  ),
+                                )),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 18, bottom: 12, right: 18),
+                              child: Text("Đã xử lý",
+                                  style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.emerald25,
+                                  )),
+                            ),
+                          ],
+                        ),
+                        Stack(
+                          children: [
+                            splitOrder.totalProductError! > 0
+                                ? const Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Material(
+                                      color: Colors.red,
+                                      shape: CircleBorder(
+                                          side: BorderSide(
+                                              color: Colors.red, width: 2)),
+                                      child: SizedBox(
+                                        width: 10,
+                                        height: 10,
+                                      ),
+                                    ))
+                                : const SizedBox.shrink(),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 12, bottom: 12, right: 12),
+                              child: Text("Báo cáo",
+                                  style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.emerald25,
+                                  )),
+                            ),
+                          ],
                         ),
                       ],
                     ),
@@ -364,27 +441,23 @@ class _OrderListScreenState extends State<OrderListScreen> {
   }
 
 ////////////////////
-  Widget _buildOrders() {
-    List<SplitOrderDTO> orderList = model.splitOrderList;
+  Widget _buildPendingProducts() {
+    List<ProductTotalDetail>? pendingProductList = model.pendingProductList;
+
     return ScopedModelDescendant<OrderListViewModel>(
         builder: (context, child, model) {
       final status = model.status;
 
-      // orderList.sort((a, b) {
-      //   DateTime aDate = DateTime.parse(a.checkInDate!);
-      //   DateTime bDate = DateTime.parse(b.checkInDate!);
-      //   return bDate.compareTo(aDate);
-      // });
       if (status == ViewStatus.Loading) {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || orderList.isEmpty) {
+      } else if (status == ViewStatus.Empty || pendingProductList!.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Hiện tại chưa có đơn nào.'),
+              const Text('Hiện tại chưa có món nào cần xử lý.'),
               Padding(
                 padding: EdgeInsets.all(15),
                 child: InkWell(
@@ -398,17 +471,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   ),
                 ),
               ),
-              // MaterialButton(
-              //   onPressed: () {
-              //     Get.offAndToNamed(RouteHandler.NAV);
-              //   },
-              //   child: Text(
-              //     '🥡 Đặt ngay 🥡',
-              //     style: FineTheme.typograhpy.subtitle2.copyWith(
-              //       color: FineTheme.palettes.primary300,
-              //     ),
-              //   ),
-              // )
             ],
           ),
         );
@@ -427,7 +489,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
       }
 
       return RefreshIndicator(
-        key: _refreshIndicatorKey1,
+        key: _refreshIndicatorKey,
         onRefresh: refreshFetchOrder,
         child: Scrollbar(
           child: ListView(
@@ -451,9 +513,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          ...orderList
-                              .map((orderSummary) =>
-                                  _buildSplitProduct(orderSummary))
+                          ...pendingProductList
+                              .map((splitProduct) =>
+                                  _buildSplitProductWithCheckbox(
+                                      splitProduct, 1))
                               .toList(),
                           loadMoreIcon(),
                         ],
@@ -465,29 +528,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
     });
   }
 
-  Widget _buildOrdersByStation() {
-    List<SplitOrderDTO> orderList = model.splitOrderListByStation;
+  Widget _buildConfirmedProducts() {
+    List<ProductTotalDetail>? confirmedProductList = model.confirmedProductList;
+
     return ScopedModelDescendant<OrderListViewModel>(
         builder: (context, child, model) {
       final status = model.status;
 
-      // orderList.sort((a, b) {
-      //   DateTime aDate = DateTime.parse(a.checkInDate!);
-      //   DateTime bDate = DateTime.parse(b.checkInDate!);
-      //   return bDate.compareTo(aDate);
-      // });
       if (status == ViewStatus.Loading) {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || orderList.isEmpty) {
+      } else if (status == ViewStatus.Empty || confirmedProductList!.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Text('Hiện tại chưa có đơn nào ở ${model.selectedStation?.name}'),
+              const Text('Hiện tại chưa có món nào đã xử lý'),
               Padding(
-                padding: EdgeInsets.all(15),
+                padding: const EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
                     refreshFetchOrder();
@@ -518,7 +577,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
       return RefreshIndicator(
         key: _refreshIndicatorKey2,
-        onRefresh: model.getSplitOrdersByStation,
+        onRefresh: model.getSplitOrders,
         child: Scrollbar(
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -541,9 +600,96 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.center,
                         children: [
-                          ...orderList
-                              .map((orderSummary) =>
-                                  _buildSplitProductByStation(orderSummary))
+                          ...confirmedProductList
+                              .map((splitProduct) => _buildSplitProduct(
+                                  splitProduct.productName!,
+                                  splitProduct.readyQuantity!))
+                              .toList(),
+                          loadMoreIcon(),
+                        ],
+                      ))),
+            ],
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildReportedProducts() {
+    List<ProductTotalDetail>? reportedProductList = model.reportedProductList;
+
+    return ScopedModelDescendant<OrderListViewModel>(
+        builder: (context, child, model) {
+      final status = model.status;
+
+      if (status == ViewStatus.Loading) {
+        return const Center(
+          child: SkeletonListItem(itemCount: 8),
+        );
+      } else if (status == ViewStatus.Empty || reportedProductList!.isEmpty) {
+        return Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const Text('Hiện tại chưa có món nào được báo cáo'),
+              Padding(
+                padding: const EdgeInsets.all(15),
+                child: InkWell(
+                  onTap: () async {
+                    refreshFetchOrder();
+                  },
+                  child: Icon(
+                    Icons.replay,
+                    color: FineTheme.palettes.primary300,
+                    size: 26,
+                  ),
+                ),
+              ),
+            ],
+          ),
+        );
+      }
+
+      if (status == ViewStatus.Error) {
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 1 / 4,
+            child: Image.asset(
+              'assets/images/error.png',
+              width: 24,
+            ),
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        key: _refreshIndicatorKey3,
+        onRefresh: model.getSplitOrders,
+        child: Scrollbar(
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: Get.find<OrderListViewModel>().scrollController,
+            padding: const EdgeInsets.all(8),
+            children: [
+              Container(
+                  // height: 80,
+                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(8),
+                    color: Colors.white,
+                  ),
+                  child: Material(
+                      color: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(8.0),
+                        // side: BorderSide(color: Colors.red),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          ...reportedProductList
+                              .map((product) =>
+                                  _buildSplitProductWithCheckbox(product, 2))
                               .toList(),
                           loadMoreIcon(),
                         ],
@@ -572,41 +718,62 @@ class _OrderListScreenState extends State<OrderListScreen> {
     );
   }
 
-  Widget _buildSplitProduct(SplitOrderDTO splitOrderSummary) {
-    return Padding(
-      padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        crossAxisAlignment: CrossAxisAlignment.center,
-        children: [
-          SizedBox(width: 150, child: Text('${splitOrderSummary.productName}')),
-          Row(
-            children: [
-              SizedBox(child: Text(' x ${splitOrderSummary.quantity}')),
-              Checkbox(
-                activeColor: FineTheme.palettes.emerald25,
-                checkColor: Colors.white,
-                value: splitOrderSummary.isChecked,
-                onChanged: (bool? value) {
-                  int index = model.splitOrderList.indexOf(splitOrderSummary);
-                  model.onCheck(index, value!);
+  Widget _buildSplitProductWithCheckbox(ProductTotalDetail product, int type) {
+    List<ProductTotalDetail>? splitProductList =
+        type == 1 ? model.pendingProductList : model.reportedProductList;
+    int? quantity = type == 1 ? product.pendingQuantity : product.errorQuantity;
+    return InkWell(
+      onLongPress: product.isChecked!
+          ? () {
+              model.currentMissing = product.currentMissing!;
+              _dialogBuilder(context, product);
+            }
+          : null,
+      child: Padding(
+        padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          crossAxisAlignment: CrossAxisAlignment.center,
+          children: [
+            SizedBox(
+                width: 150,
+                child: Text('${product.productName}',
+                    style: FineTheme.typograhpy.caption1)),
+            Row(
+              children: [
+                SizedBox(
+                    child: Row(
+                  children: [
+                    Text('${product.pendingQuantity}',
+                        style: FineTheme.typograhpy.caption1),
+                  ],
+                )),
+                Checkbox(
+                  activeColor: FineTheme.palettes.emerald25,
+                  checkColor: Colors.white,
+                  value: product.isChecked,
+                  onChanged: (bool? value) {
+                    int index = splitProductList!.indexOf(product);
+                    model.onCheck(index, value!, type);
 
-                  if (model.numsOfCheck == model.splitOrderList.length) {
-                    model.isAllChecked = true;
-                  } else {
-                    model.isAllChecked = false;
-                  }
-                  setState(() {});
-                },
-              )
-            ],
-          ),
-        ],
+                    if (model.numsOfCheck ==
+                        model.splitOrder!.productTotalDetailList!.length) {
+                      model.isAllChecked = true;
+                    } else {
+                      model.isAllChecked = false;
+                    }
+                    setState(() {});
+                  },
+                )
+              ],
+            ),
+          ],
+        ),
       ),
     );
   }
 
-  Widget _buildSplitProductByStation(SplitOrderDTO splitOrderSummary) {
+  Widget _buildSplitProduct(String productName, int quantity) {
     return Padding(
       padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
       child: Row(
@@ -617,12 +784,184 @@ class _OrderListScreenState extends State<OrderListScreen> {
             padding: const EdgeInsets.only(top: 12, bottom: 12),
             child: SizedBox(
               width: 150,
-              child: Text('${splitOrderSummary.productName}'),
+              child: Text('$productName'),
             ),
           ),
-          SizedBox(child: Text(' x ${splitOrderSummary.quantity}')),
+          SizedBox(child: Text('$quantity')),
         ],
       ),
     );
   }
+
+  Future<void> _dialogBuilder(
+      BuildContext context, ProductTotalDetail product) {
+    int splitProductIndex = model.pendingProductList!
+        .indexWhere((e) => e.productName == product.productName);
+
+    return showDialog<void>(
+      context: context,
+      builder: (BuildContext context) {
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                      'Số lượng bị thiếu của món ${product.productName}',
+                      textAlign: TextAlign.center,
+                      style: FineTheme.typograhpy.h3
+                          .copyWith(color: FineTheme.palettes.emerald25)),
+                ),
+                Positioned(
+                  top: -20,
+                  right: -15,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                        splashFactory: NoSplash.splashFactory,
+                        textStyle: Theme.of(context).textTheme.labelLarge,
+                        alignment: Alignment.centerRight),
+                    child: Icon(Icons.close_outlined,
+                        color: FineTheme.palettes.error300),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            ),
+            content: SizedBox(
+              height: 50,
+              child: Column(
+                children: [
+                  Row(
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      IconButton(
+                        splashRadius: 24,
+                        icon: const Icon(
+                          Icons.remove,
+                          size: 32,
+                        ),
+                        onPressed: () {
+                          if (model.currentMissing > -1) {
+                            model.currentMissing--;
+                            setState(() {});
+                          }
+                        },
+                        color: FineTheme.palettes.emerald25,
+                      ),
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16),
+                        child: Text(
+                          '${model.currentMissing}',
+                          overflow: TextOverflow.ellipsis,
+                          style: const TextStyle(
+                              fontSize: 32,
+                              fontWeight: FontWeight.w400,
+                              fontStyle: FontStyle.normal),
+                        ),
+                      ),
+                      IconButton(
+                        splashRadius: 24,
+                        icon: const Icon(Icons.add, size: 32),
+                        onPressed: () {
+                          if (model.currentMissing < product.pendingQuantity!) {
+                            model.currentMissing++;
+                            setState(() {});
+                          }
+                        },
+                        color: FineTheme.palettes.emerald25,
+                      ),
+                    ],
+                  )
+                ],
+              ),
+            ),
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  splashFactory: NoSplash.splashFactory,
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: Text('Đồng ý',
+                    textAlign: TextAlign.center,
+                    style: FineTheme.typograhpy.body1
+                        .copyWith(color: FineTheme.palettes.emerald25)),
+                onPressed: () async {
+                  // model.onChangeMissing(
+                  //     splitProductIndex, model.currentMissing);
+                  await model.reportSplitProduct(
+                      productId: product.productId!,
+                      quantity: model.currentMissing);
+                  // ignore: use_build_context_synchronously
+                  // Navigator.of(context).pop();
+                },
+              ),
+            ],
+          );
+        });
+      },
+    );
+  }
 }
+
+
+         // Column(
+                    //   children: [
+                    //     Container(
+                    //       color: Colors.white70,
+                    //       child: SingleChildScrollView(
+                    //         scrollDirection: Axis.horizontal,
+                    //         child: Padding(
+                    //           padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+                    //           child: ToggleButtons(
+                    //               renderBorder: false,
+                    //               selectedColor: FineTheme.palettes.emerald25,
+                    //               onPressed: (int index) async {
+                    //                 await model.onChangeSelectStation(index);
+                    //                 setState(() {});
+                    //               },
+                    //               borderRadius: BorderRadius.circular(24),
+                    //               isSelected: model.stationSelections,
+                    //               children: [
+                    //                 ...model.stationList.map(
+                    //                   (e) => Stack(
+                    //                     children: [
+                    //                       Container(
+                    //                         margin: const EdgeInsets.only(
+                    //                             top: 16, bottom: 16),
+                    //                         width: MediaQuery.of(context)
+                    //                                 .size
+                    //                                 .width /
+                    //                             3,
+                    //                         child: Text("${e.name}",
+                    //                             textAlign: TextAlign.center,
+                    //                             style: FineTheme
+                    //                                 .typograhpy.caption1
+                    //                                 .copyWith(
+                    //                                     color: FineTheme
+                    //                                         .palettes
+                    //                                         .neutral900,
+                    //                                     fontWeight:
+                    //                                         FontWeight.bold)),
+                    //                       ),
+                    //                     ],
+                    //                   ),
+                    //                 )
+                    //               ]),
+                    //         ),
+                    //       ),
+                    //     ),
+                    //     Expanded(
+                    //       child: Container(
+                    //         // ignore: sort_child_properties_last
+                    //         child: _buildOrdersByStation(),
+                    //         color: const Color(0xffefefef),
+                    //       ),
+                    //     ),
+                    //     const SizedBox(height: 50),
+                    //   ],
+                    // ),

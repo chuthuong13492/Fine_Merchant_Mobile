@@ -8,7 +8,7 @@ import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/Utils/pageNavigation.dart';
 import 'package:fine_merchant_mobile/Utils/request.dart';
 import 'package:fine_merchant_mobile/View/productBoxes_screen.dart.dart';
-import 'package:fine_merchant_mobile/View/report_list.dart';
+import 'package:fine_merchant_mobile/View/stationPackage_list.dart';
 import 'package:fine_merchant_mobile/View/nav_screen.dart';
 import 'package:fine_merchant_mobile/View/notFoundScreen.dart';
 import 'package:fine_merchant_mobile/View/onboard.dart';
@@ -81,7 +81,7 @@ class MyApp extends StatelessWidget {
                 settings: settings);
           case RouteHandler.REPORT_LIST:
             return CupertinoPageRoute(
-                builder: (context) => const ReportListScreen(),
+                builder: (context) => const StationPackagesScreen(),
                 settings: settings);
           case RouteHandler.STATION_SCREEN:
             return CupertinoPageRoute(

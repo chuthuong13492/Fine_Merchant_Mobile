@@ -63,7 +63,8 @@ class DefaultFirebaseOptions {
     messagingSenderId: '762441361635',
     projectId: 'fine-merchant',
     storageBucket: 'fine-merchant.appspot.com',
-    iosClientId: '762441361635-5egb60eilqdrgnbu98cm2ikb7hfeks0v.apps.googleusercontent.com',
+    iosClientId:
+        '762441361635-5egb60eilqdrgnbu98cm2ikb7hfeks0v.apps.googleusercontent.com',
     iosBundleId: 'com.example.fineMerchantMobile',
   );
 }

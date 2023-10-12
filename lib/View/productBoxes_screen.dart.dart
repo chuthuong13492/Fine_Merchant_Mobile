@@ -475,10 +475,36 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
           return AlertDialog(
-            title: Text('Số lượng thiếu của tủ ${boxCode?.split('_')[0]}',
-                style: FineTheme.typograhpy.h2),
+            title: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Text(
+                      'Số lượng bị thiếu của tủ ${boxCode?.split('_')[0]}',
+                      textAlign: TextAlign.center,
+                      style: FineTheme.typograhpy.h3
+                          .copyWith(color: FineTheme.palettes.emerald25)),
+                ),
+                Positioned(
+                  top: -20,
+                  right: -15,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                        splashFactory: NoSplash.splashFactory,
+                        textStyle: Theme.of(context).textTheme.labelLarge,
+                        alignment: Alignment.centerRight),
+                    child: Icon(Icons.close_outlined,
+                        color: FineTheme.palettes.error300),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
+                  ),
+                ),
+              ],
+            ),
             content: SizedBox(
-              height: 60,
+              height: 50,
               child: Column(
                 children: [
                   Row(
@@ -492,8 +518,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           size: 32,
                         ),
                         onPressed: () {
-                          model.onChangeMissing(
-                              detailIndex, detail.missing! - 1);
+                          model.currentMissing--;
                           setState(() {});
                         },
                         color: FineTheme.palettes.emerald25,
@@ -501,7 +526,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 16, right: 16),
                         child: Text(
-                          '${detail.missing}',
+                          '${model.currentMissing}',
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                               fontSize: 32,
@@ -513,8 +538,8 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         splashRadius: 24,
                         icon: const Icon(Icons.add, size: 32),
                         onPressed: () {
-                          model.onChangeMissing(
-                              detailIndex, detail.missing! + 1);
+                          model.currentMissing++;
+
                           setState(() {});
                         },
                         color: FineTheme.palettes.emerald25,
@@ -524,26 +549,21 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                 ],
               ),
             ),
-            actions: <Widget>[
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  TextButton(
-                    style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge,
-                    ),
-                    child: Text(
-                      'Đóng',
-                      style: FineTheme.typograhpy.body1
-                          .copyWith(color: FineTheme.palettes.emerald25),
-                    ),
-                    onPressed: () {
-                      Navigator.of(context).pop();
-                      this.setState(() {});
-                    },
-                  ),
-                ],
-              )
+            actions: [
+              TextButton(
+                style: TextButton.styleFrom(
+                  splashFactory: NoSplash.splashFactory,
+                  textStyle: Theme.of(context).textTheme.labelLarge,
+                ),
+                child: Text('Đồng ý',
+                    textAlign: TextAlign.center,
+                    style: FineTheme.typograhpy.body1
+                        .copyWith(color: FineTheme.palettes.emerald25)),
+                onPressed: () {
+                  model.onChangeMissing(detailIndex, model.currentMissing);
+                  Navigator.of(context).pop();
+                },
+              ),
             ],
           );
         });

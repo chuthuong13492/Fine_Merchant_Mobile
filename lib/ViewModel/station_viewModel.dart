@@ -33,6 +33,7 @@ class StationViewModel extends BaseModel {
   // Widget
   ScrollController? scrollController;
   int numsOfChecked = 0;
+  int currentMissing = 0;
   StationViewModel() {
     _stationDAO = StationDAO();
     scrollController = ScrollController();

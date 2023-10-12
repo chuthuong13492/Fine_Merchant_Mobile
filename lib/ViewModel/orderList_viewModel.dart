@@ -23,14 +23,17 @@ class OrderListViewModel extends BaseModel {
     OrderStatusEnum.DELIVERING,
   ];
   // local properties
-  List<SplitOrderDTO> splitOrderList = [];
-  List<SplitOrderDTO> splitOrderListByStation = [];
+  SplitOrderDTO? splitOrder;
+  List<ProductTotalDetail>? pendingProductList = [];
+  List<ProductTotalDetail>? reportedProductList = [];
+  List<ProductTotalDetail>? confirmedProductList = [];
   List<OrderDTO> orderList = [];
   List<OrderDTO> filteredOrderList = [];
   List<StationDTO> stationList = [];
   List<StoreDTO> storeList = [];
   List<TimeSlotDTO> timeSlotList = [];
   // Data Object Model
+  SplitProductDAO? _splitProductDAO;
   OrderDAO? _orderDAO;
   StationDAO? _stationDAO;
   StoreDAO? _storeDAO;
@@ -40,6 +43,7 @@ class OrderListViewModel extends BaseModel {
   // Widget
   ScrollController? scrollController;
   var numsOfCheck = 0;
+  int currentMissing = 1;
   var isAllChecked = false;
   int selectedOrderStatus = OrderStatusEnum.PROCESSING;
   StationDTO? selectedStation;
@@ -50,30 +54,47 @@ class OrderListViewModel extends BaseModel {
   StoreDTO? staffStore;
 
   OrderListViewModel() {
-    // orderDTO = dto;
+    _splitProductDAO = SplitProductDAO();
     _orderDAO = OrderDAO();
     _stationDAO = StationDAO();
     _storeDAO = StoreDAO();
     _timeSlotDAO = TimeSlotDAO();
     scrollController = ScrollController();
+
     scrollController!.addListener(() async {
-      if (scrollController!.position.pixels ==
-          scrollController!.position.maxScrollExtent) {
-        int total_page = (_orderDAO!.metaDataDTO.total! / DEFAULT_SIZE).ceil();
-        if (total_page > _orderDAO!.metaDataDTO.page!) {
-          await getMoreOrders();
-        }
-      }
+      // if (scrollController!.position.pixels ==
+      //     scrollController!.position.maxScrollExtent) {
+      //   int total_page = (_orderDAO!.metaDataDTO.total! / DEFAULT_SIZE).ceil();
+      //   if (total_page > _orderDAO!.metaDataDTO.page!) {
+      //     await getMoreOrders();
+      //   }
+      // }
     });
   }
 
-  void onCheck(int index, bool isChecked) {
-    if (index > -1) {
-      splitOrderList[index].isChecked = isChecked;
+  void onChangeMissing(int index, int newValue) {
+    List<ProductTotalDetail>? splitProductList =
+        splitOrder?.productTotalDetailList;
+    if (index >= 0 && splitProductList != null && splitProductList.isNotEmpty) {
+      if (newValue > -1 &&
+          (splitProductList[index].pendingQuantity! - newValue > 0)) {
+        splitProductList[index].currentMissing = newValue;
+      }
+    }
+
+    notifyListeners();
+  }
+
+  void onCheck(int index, bool isChecked, int type) {
+    List<ProductTotalDetail>? productList =
+        type == 1 ? pendingProductList : reportedProductList;
+    if (index > -1 && productList != null && productList!.isNotEmpty) {
+      productList[index].isChecked = isChecked;
       if (isChecked) {
         numsOfCheck++;
       } else {
         numsOfCheck--;
+        productList[index].currentMissing = 0;
       }
     } else {
       print('No index found');
@@ -81,15 +102,17 @@ class OrderListViewModel extends BaseModel {
     notifyListeners();
   }
 
-  void onCheckAll(bool isCheckingAll) {
-    if (isCheckingAll) {
-      for (final item in splitOrderList) {
+  void onCheckAll(bool isCheckingAll, int type) {
+    List<ProductTotalDetail>? productList =
+        type == 1 ? pendingProductList : reportedProductList;
+    if (isCheckingAll && productList != null && productList.isNotEmpty) {
+      for (final item in productList) {
         item.isChecked = true;
       }
-      numsOfCheck = splitOrderList.length;
+      numsOfCheck = productList.length;
       isAllChecked = true;
     } else {
-      for (final item in splitOrderList) {
+      for (final item in productList!) {
         item.isChecked = false;
       }
       numsOfCheck = 0;
@@ -102,7 +125,6 @@ class OrderListViewModel extends BaseModel {
     selectedTimeSlotId = value;
 
     await getSplitOrders();
-    await getSplitOrdersByStation();
     notifyListeners();
   }
 
@@ -125,7 +147,6 @@ class OrderListViewModel extends BaseModel {
     stationSelections[index] = true;
     selectedStation = stationList[index];
 
-    await getSplitOrdersByStation();
     notifyListeners();
   }
 
@@ -211,46 +232,68 @@ class OrderListViewModel extends BaseModel {
     try {
       setState(ViewStatus.Loading);
       print('selectedTimeSlotId: $selectedTimeSlotId');
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      staffStore = Get.find<AccountViewModel>().currentStore;
-      if (currentUser != null && currentUser.storeId != null) {
-        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
-            storeId: currentUser.storeId!,
-            timeSlotId: selectedTimeSlotId,
-            orderStatus: selectedOrderStatus);
-        if (data != null) {
-          var newSplitOrderList = data;
+      // var currentUser = Get.find<AccountViewModel>().currentUser;
+      List<ProductTotalDetail>? newPendingProductList = [];
+      List<ProductTotalDetail>? newConfirmedProductList = [];
+      List<ProductTotalDetail>? newReportedProductList = [];
+      final data = await _splitProductDAO?.getSplitProductsForStaff(
+        timeSlotId: selectedTimeSlotId,
+      );
+      if (data != null) {
+        List<ProductTotalDetail>? newSplitProductList =
+            data.productTotalDetailList;
+
+        if (splitOrder != null) {
+          List<ProductTotalDetail>? currentSplitProductList =
+              splitOrder!.productTotalDetailList;
           numsOfCheck = 0;
-          for (SplitOrderDTO splitOrder in splitOrderList) {
-            if (splitOrder.isChecked == true) {
-              var foundSplitOrder = newSplitOrderList.firstWhereOrNull(
-                  (e) => e.productName == splitOrder.productName);
-              if (foundSplitOrder != null) {
-                final updateIndex = newSplitOrderList.indexWhere(
-                    (e) => e.productName == foundSplitOrder.productName);
-                newSplitOrderList[updateIndex].isChecked = true;
-                numsOfCheck = numsOfCheck + 1;
+          if (currentSplitProductList != null) {
+            for (ProductTotalDetail splitProduct in currentSplitProductList) {
+              if (splitProduct.isChecked == true) {
+                final updateIndex = newSplitProductList!.indexWhere(
+                    (e) => e.productName == splitProduct.productName);
+                if (updateIndex > -1) {
+                  newSplitProductList[updateIndex].isChecked = true;
+                  newSplitProductList[updateIndex].currentMissing =
+                      splitProduct.currentMissing;
+                  numsOfCheck = numsOfCheck + 1;
+                }
               }
             }
           }
-          if (newSplitOrderList.isNotEmpty &&
-              numsOfCheck == newSplitOrderList.length) {
+        }
+        if (newSplitProductList != null && newSplitProductList.isNotEmpty) {
+          if (numsOfCheck == newSplitProductList.length) {
             isAllChecked = true;
-            numsOfCheck = newSplitOrderList.length;
+            numsOfCheck = newSplitProductList.length;
           } else {
             isAllChecked = false;
           }
-          splitOrderList = newSplitOrderList;
-          notifyListeners();
+
+          data.productTotalDetailList = newSplitProductList;
+          splitOrder = data;
+
+          for (ProductTotalDetail product in newSplitProductList) {
+            if (product.pendingQuantity! > 0) {
+              newPendingProductList.add(product);
+            }
+          }
+          for (ProductTotalDetail product in newSplitProductList) {
+            if (product.readyQuantity! > 0) {
+              newConfirmedProductList.add(product);
+            }
+          }
+          for (ProductTotalDetail product in newSplitProductList) {
+            if (product.errorQuantity! > 0) {
+              newReportedProductList.add(product);
+            }
+          }
         }
-      } else {
-        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
-            storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
-            timeSlotId: selectedTimeSlotId,
-            orderStatus: selectedOrderStatus);
-        if (data != null) {
-          splitOrderList = data;
-        }
+        pendingProductList = newPendingProductList;
+        confirmedProductList = newConfirmedProductList;
+        reportedProductList = newReportedProductList;
+
+        notifyListeners();
       }
 
       setState(ViewStatus.Completed);
@@ -258,44 +301,6 @@ class OrderListViewModel extends BaseModel {
       bool result = await showErrorDialog();
       if (result) {
         await getSplitOrders();
-      } else {
-        setState(ViewStatus.Error);
-      }
-    } finally {}
-  }
-
-  Future<void> getSplitOrdersByStation() async {
-    try {
-      setState(ViewStatus.Loading);
-      print('selectedTimeSlotId: $selectedTimeSlotId');
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      staffStore = Get.find<AccountViewModel>().currentStore;
-      int orderByStationStatus = OrderStatusEnum.PREPARED;
-      if (currentUser != null && currentUser.storeId != null) {
-        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
-            storeId: currentUser.storeId!,
-            stationId: selectedStation?.id,
-            timeSlotId: selectedTimeSlotId,
-            orderStatus: orderByStationStatus);
-        if (data != null) {
-          splitOrderListByStation = data;
-        }
-      } else {
-        final data = await _orderDAO?.getSplitOrderListByStoreForStaff(
-            storeId: "751a2190-d06c-4d5e-9c5a-08c33c3db266",
-            stationId: selectedStation?.id,
-            timeSlotId: selectedTimeSlotId,
-            orderStatus: orderByStationStatus);
-        if (data != null) {
-          splitOrderListByStation = data;
-        }
-      }
-      notifyListeners();
-      setState(ViewStatus.Completed);
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getSplitOrdersByStation();
       } else {
         setState(ViewStatus.Error);
       }
@@ -337,34 +342,31 @@ class OrderListViewModel extends BaseModel {
     }
   }
 
-  Future<void> confirmOrder() async {
+  Future<void> updateSplitProductsStatus({required int statusType}) async {
     try {
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      List<ListStoreAndOrder> updateListStoreAndOrders = [];
+      List<String> updatedProducts = [];
       int option = await showOptionDialog("Xác nhận những món này?");
 
       if (option == 1) {
         showLoadingDialog();
-        var newOrderStatus = OrderStatusEnum.PREPARED;
-        if (orderList.isNotEmpty) {
-          for (final order in orderList) {
-            ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
-                orderId: order.orderId, storeId: order.storeId);
-            updateListStoreAndOrders.add(updateListStoreAndOrder);
+        List<ProductTotalDetail>? productList =
+            statusType == 1 ? pendingProductList : reportedProductList;
+        if (productList != null && productList.isNotEmpty) {
+          for (final splitProduct in productList) {
+            if (splitProduct.isChecked == true) {
+              updatedProducts.add(splitProduct.productId!);
+            }
           }
-          UpdateOrderStatusRequestModel updatedOrders =
-              UpdateOrderStatusRequestModel(
-                  orderDetailStoreStatus: newOrderStatus,
-                  listStoreAndOrder: updateListStoreAndOrders);
+          UpdateSplitProductRequestModel requestModel =
+              UpdateSplitProductRequestModel(
+                  type: statusType,
+                  timeSlotId: selectedTimeSlotId,
+                  productsUpdate: updatedProducts,
+                  quantity: 0);
 
-          final statusCode =
-              await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
+          final statusCode = await _splitProductDAO?.confirmSplitProduct(
+              requestModel: requestModel);
           if (statusCode == 200) {
-            // var newOrderList =
-            //     orderList.where((e) => e.orderId != orderId).toList();
-            // orderList = newOrderList;
-            // Refresh
-
             numsOfCheck = 0;
             isAllChecked = false;
             notifyListeners();
@@ -390,38 +392,31 @@ class OrderListViewModel extends BaseModel {
       );
     } finally {
       await getSplitOrders();
-      await getSplitOrdersByStation();
+      // await getSplitOrdersByStation();
     }
   }
 
-  Future<void> confirmSplitProducts() async {
-    int option = await showOptionDialog("Xác nhận những món này?");
-    if (option == 1) {
-      try {
-        List<String> updatedOrderDetailIdList = [];
+  Future<void> reportSplitProduct(
+      {required String productId, required int quantity}) async {
+    try {
+      List<String> updatedProducts = [];
+      int option = await showOptionDialog("Báo cáo thiếu món này?");
 
+      if (option == 1) {
         showLoadingDialog();
-        var newOrderStatus = OrderStatusEnum.PREPARED;
-        if (splitOrderList.isNotEmpty) {
-          for (SplitOrderDTO splitOrder in splitOrderList) {
-            if (splitOrder.isChecked == true) {
-              List<String>? orderDetailIdList = splitOrder.orderDetailIdList;
-              for (final orderDetailId in orderDetailIdList!) {
-                if (updatedOrderDetailIdList
-                        .firstWhereOrNull((e) => e == orderDetailId) ==
-                    null) {
-                  updatedOrderDetailIdList.add(orderDetailId);
-                }
-              }
-            }
-          }
-          UpdateSplitProductsRequestModel updatedProducts =
-              UpdateSplitProductsRequestModel(
-                  productStatus: newOrderStatus,
-                  orderDetailId: updatedOrderDetailIdList);
+        List<ProductTotalDetail>? currentSplitProductList =
+            splitOrder!.productTotalDetailList;
+        if (currentSplitProductList!.isNotEmpty) {
+          updatedProducts.add(productId);
+          UpdateSplitProductRequestModel requestModel =
+              UpdateSplitProductRequestModel(
+                  type: UpdateSplitProductTypeEnum.ERROR,
+                  timeSlotId: selectedTimeSlotId,
+                  productsUpdate: updatedProducts,
+                  quantity: quantity);
 
-          final statusCode =
-              await _orderDAO?.confirmSplitProduct(products: updatedProducts);
+          final statusCode = await _splitProductDAO?.confirmSplitProduct(
+              requestModel: requestModel);
           if (statusCode == 200) {
             numsOfCheck = 0;
             isAllChecked = false;
@@ -439,57 +434,22 @@ class OrderListViewModel extends BaseModel {
         } else {
           Get.back();
         }
-      } catch (e) {
-        await showStatusDialog(
-          "assets/images/error.png",
-          "Thất bại",
-          "Có lỗi xảy ra, vui lòng thử lại sau 😓",
-        );
-        print(e);
-      } finally {
-        await getSplitOrders();
-        await getSplitOrdersByStation();
-        notifyListeners();
       }
-    } else {
-      notifyListeners();
+    } catch (e) {
+      await showStatusDialog(
+        "assets/images/error.png",
+        "Thất bại",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+      );
+    } finally {
+      await getSplitOrders();
+      // await getSplitOrdersByStation();
     }
-  }
-
-  void clearCheckList() {
-    for (SplitOrderDTO splitOrder in splitOrderList) {
-      splitOrder.isChecked = false;
-    }
-    notifyListeners();
   }
 
   void clearNewOrder(int orderId) {
     newTodayOrders = null;
     notifyListeners();
-  }
-
-  Future<void> getMoreOrders() async {
-    // try {
-    //   setState(ViewStatus.LoadMore);
-    //   // OrderFilter filter =
-    //   //     selections[0] ? OrderFilter.ORDERING : OrderFilter.DONE;
-
-    //   final data =
-    //       await _orderDAO?.getOrders(page: _orderDAO!.metaDataDTO.page! + 1);
-
-    //   orderThumbnail += data!;
-
-    //   await Future.delayed(const Duration(milliseconds: 1000));
-    //   setState(ViewStatus.Completed);
-    //   // notifyListeners();
-    // } catch (e) {
-    //   bool result = await showErrorDialog();
-    //   if (result) {
-    //     await getMoreOrders();
-    //   } else {
-    //     setState(ViewStatus.Error);
-    //   }
-    // }
   }
 
   Future<void> closeNewOrder(orderId) async {

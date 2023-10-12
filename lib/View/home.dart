@@ -54,20 +54,25 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    StationDTO station = model.stationList
-        .firstWhere((station) => station.id == model.selectedStationId);
+    StationDTO? station;
+    var stationList = model.stationList;
+    if (stationList != null && stationList.isNotEmpty) {
+      station = stationList
+          .firstWhere((station) => station.id == model.selectedStationId);
+    }
+
     return ScopedModel(
       model: Get.find<HomeViewModel>(),
       child: Scaffold(
         appBar: DefaultAppBar(
-            title: "Gói hàng ${model.isDelivering ? "Đang giao" : "Chờ giao"}",
+            title: "Gói hàng Chờ giao",
             backButton: const SizedBox.shrink(),
             bottom: PreferredSize(
                 preferredSize: const Size.fromHeight(120),
                 child: Padding(
                   padding: const EdgeInsets.only(bottom: 8),
                   child: Text(
-                    "${station.name}",
+                    "${station!.name}",
                     style: FineTheme.typograhpy.h2.copyWith(
                       color: FineTheme.palettes.emerald25,
                     ),
@@ -558,56 +563,51 @@ class _HomeScreenState extends State<HomeScreen> {
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
-        return AlertDialog(
-          content: Container(
-            child: Stack(clipBehavior: Clip.none, children: [
-              Positioned(
-                top: -20,
-                right: -15,
-                child: TextButton(
-                  style: TextButton.styleFrom(
-                      textStyle: Theme.of(context).textTheme.labelLarge,
-                      alignment: Alignment.topRight),
-                  child: Icon(Icons.close_outlined,
-                      color: FineTheme.palettes.emerald25),
-                  onPressed: () {
-                    Navigator.of(context).pop();
-                  },
+        return StatefulBuilder(builder: (context, setState) {
+          return AlertDialog(
+            title: Stack(
+              clipBehavior: Clip.none,
+              children: [
+                Container(
+                  height: 50,
+                  width: 300,
+                  decoration: const BoxDecoration(
+                      border: Border(bottom: BorderSide(width: 1))),
+                  child: Text('Chi tiết các gói hàng',
+                      style: FineTheme.typograhpy.h2
+                          .copyWith(color: FineTheme.palettes.emerald25)),
                 ),
-              ),
-              Padding(
-                padding: const EdgeInsets.only(top: 12),
-                child: SizedBox(
-                  height: 350,
-                  child: Column(
-                    children: [
-                      Container(
-                          height: 50,
-                          width: 300,
-                          decoration: const BoxDecoration(
-                              border: Border(bottom: BorderSide(width: 1))),
-                          child: Text('Chi tiết gói hàng',
-                              style: FineTheme.typograhpy.h2)),
-                      SizedBox(
-                          height: 300,
-                          width: 300,
-                          child: Scrollbar(
-                            child: ListView(
-                              children: [
-                                const SizedBox(height: 8),
-                                ...?currentPackage?.listProducts?.map(
-                                    (product) =>
-                                        _buildPackageProducts(product)),
-                              ],
-                            ),
-                          )),
-                    ],
+                Positioned(
+                  top: -20,
+                  right: -15,
+                  child: TextButton(
+                    style: TextButton.styleFrom(
+                        splashFactory: NoSplash.splashFactory,
+                        textStyle: Theme.of(context).textTheme.labelLarge,
+                        alignment: Alignment.centerRight),
+                    child: Icon(Icons.close_outlined,
+                        color: FineTheme.palettes.error300),
+                    onPressed: () {
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ),
-              )
-            ]),
-          ),
-        );
+              ],
+            ),
+            content: SizedBox(
+                height: 300,
+                width: 300,
+                child: Scrollbar(
+                  child: ListView(
+                    children: [
+                      const SizedBox(height: 8),
+                      ...?currentPackage?.listProducts
+                          ?.map((product) => _buildPackageProducts(product)),
+                    ],
+                  ),
+                )),
+          );
+        });
       },
     );
   }
@@ -619,7 +619,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 200,
+            width: 160,
             child: Text(
               '${product.productName}',
               overflow: TextOverflow.ellipsis,
@@ -630,7 +630,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SizedBox(
-            width: 65,
+            width: 50,
             child: Text(
               'x ${product.quantity}',
               textAlign: TextAlign.end,

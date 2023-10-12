@@ -166,15 +166,6 @@ class OrderDAO extends BaseDAO {
     return res.statusCode;
   }
 
-  Future<int?> confirmSplitProduct(
-      {required UpdateSplitProductsRequestModel products}) async {
-    final res = await request.put(
-        'admin/orderDetail/status/storeId/orderDetailId',
-        data: products.toJson());
-
-    return res.statusCode;
-  }
-
   Future<int?> finishParentOrder({String? orderId, int? orderStatus}) async {
     final res = await request.put('admin/order/status/${orderId}',
         data: {"orderStatus": orderStatus});
