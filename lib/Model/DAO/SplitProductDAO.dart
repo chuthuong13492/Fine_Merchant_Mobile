@@ -28,6 +28,14 @@ class SplitProductDAO extends BaseDAO {
     return res.statusCode;
   }
 
+  Future<int?> confirmDeliveryProduct(
+      {required UpdateSplitProductRequestModel requestModel}) async {
+    final res = await request.put('staff/package/confirmDelivery',
+        data: requestModel.toJson());
+
+    return res.statusCode;
+  }
+
   Future<List<StationSplitProductDTO>?> getStationSplitProductsForStaff(
       {String? timeSlotId}) async {
     final res = await request.get(
@@ -36,10 +44,30 @@ class SplitProductDAO extends BaseDAO {
     );
 
     var listJson = res.data['data'] as List;
-    if (!listJson.isEmpty) {
+    if (listJson.isNotEmpty) {
       return listJson.map((e) => StationSplitProductDTO.fromJson(e)).toList();
     }
 
+    return null;
+  }
+
+  Future<List<DeliveryPackageDTO>?> getDeliveryPackageListForDriver({
+    required String timeSlotId,
+  }) async {
+    final res = await request.get(
+      'staff/package/deliveryPackage',
+      queryParameters: {
+        "timeSlotId": timeSlotId,
+
+        // "size": size ?? DEFAULT_SIZE,
+        // "page": page ?? 1,
+      },
+    );
+    if (res.data['data'] != null) {
+      var listJson = res.data['data'] as List;
+
+      return listJson.map((e) => DeliveryPackageDTO.fromJson(e)).toList();
+    }
     return null;
   }
 }

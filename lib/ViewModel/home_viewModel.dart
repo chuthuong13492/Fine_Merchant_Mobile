@@ -32,6 +32,7 @@ class HomeViewModel extends BaseModel {
   StationDAO? _stationDAO;
   StoreDAO? _storeDAO;
   TimeSlotDAO? _timeSlotDAO;
+  SplitProductDAO? _splitProductDAO;
   dynamic error;
   OrderDTO? orderDTO;
   Uint8List? imageBytes;
@@ -48,27 +49,28 @@ class HomeViewModel extends BaseModel {
     _stationDAO = StationDAO();
     _storeDAO = StoreDAO();
     _timeSlotDAO = TimeSlotDAO();
+    _splitProductDAO = SplitProductDAO();
     scrollController = ScrollController();
   }
 
   Future<void> onChangeStore(String value) async {
     selectedStoreId = value;
     // getOrders();
-    await getSplitOrdersForDriver();
+    await getDeliveryPackageListForDriver();
     notifyListeners();
   }
 
   Future<void> onChangeStation(String value) async {
     selectedStationId = value;
     await getDeliveredOrdersForDriver();
-    await getSplitOrdersForDriver();
+    await getDeliveryPackageListForDriver();
     notifyListeners();
   }
 
   Future<void> onChangeTimeSlot(String value) async {
     selectedTimeSlotId = value;
     await getDeliveredOrdersForDriver();
-    await getSplitOrdersForDriver();
+    await getDeliveryPackageListForDriver();
     notifyListeners();
   }
 
@@ -164,44 +166,17 @@ class HomeViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> getSplitOrdersForDriver() async {
+  Future<void> getDeliveryPackageListForDriver() async {
     try {
       setState(ViewStatus.Loading);
       List<PackageViewDTO> newPackageList = [];
       var currentUser = Get.find<AccountViewModel>().currentUser;
       if (currentUser != null) {
-        final data = await _orderDAO?.getSplitOrderListByStoreForDriver(
-            orderStatus: OrderStatusEnum.PREPARED,
-            timeSlotId: selectedTimeSlotId,
-            stationId: selectedStationId);
+        final data = await _splitProductDAO?.getDeliveryPackageListForDriver(
+          timeSlotId: selectedTimeSlotId,
+        );
         if (data != null) {
           packageList = data;
-          for (TimeSlotDTO timeSlot in timeSlotList) {
-            var groupByTimeSlot = packageList
-                .where((item) => item.timeSlotId == timeSlot.id)
-                .toList();
-            for (StoreDTO store in storeList) {
-              var groupByTimeSlotAndStore = groupByTimeSlot
-                  .where((item) => item.storeId == store.id)
-                  .toList();
-              if (groupByTimeSlotAndStore.isNotEmpty) {
-                List<ListProduct> products = [];
-                for (DeliveryPackageDTO package in groupByTimeSlotAndStore) {
-                  products.add(ListProduct(
-                      productName: package.productName,
-                      quantity: package.quantity));
-                }
-                newPackageList.add(PackageViewDTO(
-                    listProducts: products,
-                    storeId: store.id,
-                    timeSlotId: timeSlot.id));
-              }
-            }
-          }
-          packageViewList = newPackageList;
-          // var newPackageList = data.map((e) {
-          //   var newPackage = {}
-          // });
         }
       }
       setState(ViewStatus.Completed);
@@ -209,36 +184,9 @@ class HomeViewModel extends BaseModel {
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
-        await getSplitOrdersForDriver();
+        await getDeliveryPackageListForDriver();
       } else {
         setState(ViewStatus.Error);
-      }
-    } finally {}
-  }
-
-  Future<void> getOrderDetails(
-      {String? stationId,
-      String? storeId,
-      String? timeSlotId,
-      int? orderStatus}) async {
-    try {
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      if (currentUser != null) {
-        final data = await _orderDAO?.getOrderListForUpdating(
-            storeId: storeId,
-            stationId: stationId,
-            timeSlotId: timeSlotId,
-            orderStatus: orderStatus);
-        if (data != null) {
-          orderDetailList = data;
-        }
-      }
-      notifyListeners();
-      setState(ViewStatus.Completed);
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getOrderDetails();
       }
     } finally {}
   }
@@ -250,37 +198,37 @@ class HomeViewModel extends BaseModel {
       var currentUser = Get.find<AccountViewModel>().currentUser;
       ;
       if (currentUser != null) {
-        final data = await _orderDAO?.getSplitOrderListByStoreForDriver(
-            orderStatus: OrderStatusEnum.DELIVERING,
-            timeSlotId: selectedTimeSlotId,
-            stationId: selectedStationId);
-        if (data != null) {
-          packageList = data;
-          for (TimeSlotDTO timeSlot in timeSlotList) {
-            var groupByTimeSlot = packageList
-                .where((item) => item.timeSlotId == timeSlot.id)
-                .toList();
-            for (StoreDTO store in storeList) {
-              var groupByTimeSlotAndStore = groupByTimeSlot
-                  .where((item) => item.storeId == store.id)
-                  .toList();
-              if (groupByTimeSlotAndStore.isNotEmpty) {
-                List<ListProduct> products = [];
-                for (DeliveryPackageDTO package in groupByTimeSlotAndStore) {
-                  products.add(ListProduct(
-                      productName: package.productName,
-                      quantity: package.quantity));
-                }
-                newPackageList.add(PackageViewDTO(
-                    listProducts: products,
-                    storeId: store.id,
-                    timeSlotId: timeSlot.id));
-              }
-            }
-          }
-          deliveredPackageList = newPackageList;
-          notifyListeners();
-        }
+        // final data = await _orderDAO?.getSplitOrderListByStoreForDriver(
+        //     orderStatus: OrderStatusEnum.DELIVERING,
+        //     timeSlotId: selectedTimeSlotId,
+        //     stationId: selectedStationId);
+        // if (data != null) {
+        //   packageList = data;
+        //   for (TimeSlotDTO timeSlot in timeSlotList) {
+        //     var groupByTimeSlot = packageList
+        //         .where((item) => item.timeSlotId == timeSlot.id)
+        //         .toList();
+        //     for (StoreDTO store in storeList) {
+        //       var groupByTimeSlotAndStore = groupByTimeSlot
+        //           .where((item) => item.storeId == store.id)
+        //           .toList();
+        //       if (groupByTimeSlotAndStore.isNotEmpty) {
+        //         List<ListProduct> products = [];
+        //         for (DeliveryPackageDTO package in groupByTimeSlotAndStore) {
+        //           products.add(ListProduct(
+        //               productName: package.productName,
+        //               quantity: package.quantity));
+        //         }
+        //         newPackageList.add(PackageViewDTO(
+        //             listProducts: products,
+        //             storeId: store.id,
+        //             timeSlotId: timeSlot.id));
+        //       }
+        //     }
+        //   }
+        //   deliveredPackageList = newPackageList;
+        //   notifyListeners();
+        // }
       }
       setState(ViewStatus.Completed);
     } catch (e) {
@@ -301,11 +249,6 @@ class HomeViewModel extends BaseModel {
         List<UpdateOrderStatusRequestModel> updatedOrders = [];
         showLoadingDialog();
         int newOrderStatus = OrderStatusEnum.DELIVERING;
-        await getOrderDetails(
-            orderStatus: OrderStatusEnum.PREPARED,
-            storeId: package.storeId,
-            stationId: selectedStationId,
-            timeSlotId: selectedTimeSlotId);
 
         currentDeliveryPackage = package;
         if (orderDetailList.isNotEmpty) {
@@ -341,7 +284,7 @@ class HomeViewModel extends BaseModel {
           "Có lỗi xảy ra, vui lòng thử lại sau 😓",
         );
       } finally {
-        await getSplitOrdersForDriver();
+        await getDeliveryPackageListForDriver();
         await getDeliveredOrdersForDriver();
         notifyListeners();
       }
@@ -377,10 +320,7 @@ class HomeViewModel extends BaseModel {
   Future<void> addOrdersToBoxes() async {
     try {
       var requestModel = AddToBoxesRequestModel(orderId: []);
-      await getOrderDetails(
-          orderStatus: OrderStatusEnum.DELIVERING,
-          stationId: selectedStationId,
-          timeSlotId: selectedTimeSlotId);
+
       if (orderDetailList.isNotEmpty) {
         var orderIdList = requestModel.orderId;
         for (final order in orderDetailList) {

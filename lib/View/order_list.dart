@@ -45,15 +45,17 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   @override
   void dispose() {
-    super.dispose();
     periodicTimer.cancel();
+    super.dispose();
   }
 
   Future<void> refreshFetchOrder() async {
     await model.getTimeSlotList();
     await model.getSplitOrders();
 
-    setState(() {});
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -118,7 +120,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                     .productTotalDetailList !=
                                                 null
                                         ? (bool? value) {
-                                            model.onCheckAll(value!, 1);
+                                            model.onCheckAll(value!);
                                             setState(() {});
                                           }
                                         : null,
@@ -227,7 +229,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                                     .productTotalDetailList !=
                                                 null
                                         ? (bool? value) {
-                                            model.onCheckAll(value!, 2);
+                                            model.onCheckAll(value!);
                                             setState(() {});
                                           }
                                         : null,
@@ -455,25 +457,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || pendingProductList == null) {
+      } else if (status == ViewStatus.Empty || pendingProductList!.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text('Hiện tại chưa có món nào cần xử lý.'),
-              Padding(
-                padding: const EdgeInsets.all(15),
-                child: InkWell(
-                  onTap: () async {
-                    refreshFetchOrder();
-                  },
-                  child: Icon(
-                    Icons.replay,
-                    color: FineTheme.palettes.primary300,
-                    size: 26,
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(15),
+              //   child: InkWell(
+              //     onTap: () async {
+              //       refreshFetchOrder();
+              //     },
+              //     child: Icon(
+              //       Icons.replay,
+              //       color: FineTheme.palettes.primary300,
+              //       size: 26,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         );
@@ -518,8 +520,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         children: [
                           ...pendingProductList
                               .map((splitProduct) =>
-                                  _buildSplitProductWithCheckbox(
-                                      splitProduct, 1))
+                                  _buildSplitProductWithCheckbox(splitProduct))
                               .toList(),
                           loadMoreIcon(),
                         ],
@@ -542,25 +543,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || confirmedProductList == null) {
+      } else if (status == ViewStatus.Empty || confirmedProductList!.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text('Hiện tại chưa có món nào đã xử lý'),
-              Padding(
-                padding: const EdgeInsets.all(15),
-                child: InkWell(
-                  onTap: () async {
-                    refreshFetchOrder();
-                  },
-                  child: Icon(
-                    Icons.replay,
-                    color: FineTheme.palettes.primary300,
-                    size: 26,
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(15),
+              //   child: InkWell(
+              //     onTap: () async {
+              //       refreshFetchOrder();
+              //     },
+              //     child: Icon(
+              //       Icons.replay,
+              //       color: FineTheme.palettes.primary300,
+              //       size: 26,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         );
@@ -619,7 +620,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   }
 
   Widget _buildReportedProducts() {
-    List<ProductTotalDetail>? reportedProductList = model.reportedProductList;
+    List<ErrorProducts>? errorProductList = model.errorProductList;
 
     return ScopedModelDescendant<OrderListViewModel>(
         builder: (context, child, model) {
@@ -629,25 +630,25 @@ class _OrderListScreenState extends State<OrderListScreen> {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || reportedProductList == null) {
+      } else if (status == ViewStatus.Empty || errorProductList!.isEmpty) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text('Hiện tại chưa có món nào được báo cáo'),
-              Padding(
-                padding: const EdgeInsets.all(15),
-                child: InkWell(
-                  onTap: () async {
-                    refreshFetchOrder();
-                  },
-                  child: Icon(
-                    Icons.replay,
-                    color: FineTheme.palettes.primary300,
-                    size: 26,
-                  ),
-                ),
-              ),
+              // Padding(
+              //   padding: const EdgeInsets.all(15),
+              //   child: InkWell(
+              //     onTap: () async {
+              //       refreshFetchOrder();
+              //     },
+              //     child: Icon(
+              //       Icons.replay,
+              //       color: FineTheme.palettes.primary300,
+              //       size: 26,
+              //     ),
+              //   ),
+              // ),
             ],
           ),
         );
@@ -674,29 +675,15 @@ class _OrderListScreenState extends State<OrderListScreen> {
             controller: Get.find<OrderListViewModel>().scrollController,
             padding: const EdgeInsets.all(8),
             children: [
-              Container(
-                  // height: 80,
-                  margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                  decoration: BoxDecoration(
-                    borderRadius: BorderRadius.circular(8),
-                    color: Colors.white,
-                  ),
-                  child: Material(
-                      color: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8.0),
-                        // side: BorderSide(color: Colors.red),
-                      ),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.center,
-                        children: [
-                          ...reportedProductList
-                              .map((product) =>
-                                  _buildSplitProductWithCheckbox(product, 2))
-                              .toList(),
-                          loadMoreIcon(),
-                        ],
-                      ))),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ...errorProductList
+                      .map((product) => _buildReportedProduct(product))
+                      .toList(),
+                  loadMoreIcon(),
+                ],
+              ),
             ],
           ),
         ),
@@ -721,10 +708,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
     );
   }
 
-  Widget _buildSplitProductWithCheckbox(ProductTotalDetail product, int type) {
-    List<ProductTotalDetail>? splitProductList =
-        type == 1 ? model.pendingProductList : model.reportedProductList;
-    int? quantity = type == 1 ? product.pendingQuantity : product.errorQuantity;
+  Widget _buildSplitProductWithCheckbox(ProductTotalDetail product) {
+    List<ProductTotalDetail>? splitProductList = model.pendingProductList;
     return InkWell(
       onLongPress: product.isChecked!
           ? () {
@@ -747,7 +732,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 SizedBox(
                     child: Row(
                   children: [
-                    Text('x${product.pendingQuantity}',
+                    Text('x ${product.pendingQuantity}',
                         style: FineTheme.typograhpy.caption1),
                   ],
                 )),
@@ -757,7 +742,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   value: product.isChecked,
                   onChanged: (bool? value) {
                     int index = splitProductList!.indexOf(product);
-                    model.onCheck(index, value!, type);
+                    model.onCheck(index, value!);
 
                     if (model.numsOfCheck ==
                         model.splitOrder!.productTotalDetailList!.length) {
@@ -790,9 +775,157 @@ class _OrderListScreenState extends State<OrderListScreen> {
               child: Text('$productName'),
             ),
           ),
-          SizedBox(child: Text('$quantity')),
+          SizedBox(child: Text('x $quantity')),
         ],
       ),
+    );
+  }
+
+  Widget _buildReportedProduct(ErrorProducts product) {
+    String? stationName = '';
+    if (product.stationId != null) {
+      stationName = model.stationList
+          .firstWhere((station) => station.id == product.stationId)
+          .name;
+    }
+
+    return Column(
+      children: [
+        Container(
+          margin: const EdgeInsets.fromLTRB(8, 0, 8, 0),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(8),
+            color: Colors.white,
+          ),
+          child: Material(
+            color: Colors.transparent,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(8.0),
+              // side: BorderSide(color: Colors.red),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          'Món:',
+                          style: FineTheme.typograhpy.subtitle2,
+                        ),
+                      ),
+                      SizedBox(
+                          child: Text('${product.productName}',
+                              style: FineTheme.typograhpy.subtitle2)),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          'Số lượng:',
+                          style: FineTheme.typograhpy.subtitle2,
+                        ),
+                      ),
+                      SizedBox(
+                          child: Text('x ${product.quantity}',
+                              style: FineTheme.typograhpy.subtitle2)),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          'Bởi:',
+                          style: FineTheme.typograhpy.subtitle2,
+                        ),
+                      ),
+                      SizedBox(
+                          child: Text(
+                              '${product.reportMemType == 2 ? "Staff" : "Shipper"}',
+                              style: FineTheme.typograhpy.subtitle2)),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  product.reportMemType == 3
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          crossAxisAlignment: CrossAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 150,
+                              child: Text(
+                                'Tại trạm:',
+                                style: FineTheme.typograhpy.subtitle2,
+                              ),
+                            ),
+                            SizedBox(
+                                child: Text('${stationName}',
+                                    style: FineTheme.typograhpy.subtitle2)),
+                          ],
+                        )
+                      : const SizedBox.shrink(),
+                  const SizedBox(
+                    height: 12,
+                  ),
+                  InkWell(
+                    onTap: () async {
+                      await model.updateReportProduct(
+                          productId: product.productId!,
+                          quantity: product.quantity!,
+                          type: UpdateSplitProductTypeEnum.RECONFIRM);
+                    },
+                    child: Container(
+                      width: 150,
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        color: Colors.white,
+                        borderRadius: BorderRadius.circular(12),
+                        border:
+                            Border.all(color: FineTheme.palettes.primary100),
+                        boxShadow: [
+                          BoxShadow(
+                            color: FineTheme.palettes.primary100,
+                            offset: const Offset(0, 3),
+                          ),
+                        ],
+                      ),
+                      child: Center(
+                        child: Text(
+                          "Đã xử lý",
+                          style: FineTheme.typograhpy.subtitle1
+                              .copyWith(color: FineTheme.palettes.primary100),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ),
+        const SizedBox(
+          height: 16,
+        ),
+      ],
     );
   }
 
@@ -896,9 +1029,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 onPressed: () async {
                   // model.onChangeMissing(
                   //     splitProductIndex, model.currentMissing);
-                  await model.reportSplitProduct(
+                  await model.updateReportProduct(
                       productId: product.productId!,
-                      quantity: model.currentMissing);
+                      quantity: model.currentMissing,
+                      type: UpdateSplitProductTypeEnum.ERROR);
                   // ignore: use_build_context_synchronously
                   // Navigator.of(context).pop();
                 },

@@ -25,8 +25,8 @@ class OrderListViewModel extends BaseModel {
   // local properties
   SplitOrderDTO? splitOrder;
   List<ProductTotalDetail>? pendingProductList = [];
-  List<ProductTotalDetail>? reportedProductList = [];
   List<ProductTotalDetail>? confirmedProductList = [];
+  List<ErrorProducts>? errorProductList = [];
   List<OrderDTO> orderList = [];
   List<OrderDTO> filteredOrderList = [];
   List<StationDTO> stationList = [];
@@ -88,10 +88,9 @@ class OrderListViewModel extends BaseModel {
     notifyListeners();
   }
 
-  void onCheck(int index, bool isChecked, int type) {
-    List<ProductTotalDetail>? productList =
-        type == 1 ? pendingProductList : reportedProductList;
-    if (index > -1 && productList != null && productList!.isNotEmpty) {
+  void onCheck(int index, bool isChecked) {
+    List<ProductTotalDetail>? productList = pendingProductList;
+    if (index > -1 && productList != null && productList.isNotEmpty) {
       productList[index].isChecked = isChecked;
       if (isChecked) {
         numsOfCheck++;
@@ -105,9 +104,8 @@ class OrderListViewModel extends BaseModel {
     notifyListeners();
   }
 
-  void onCheckAll(bool isCheckingAll, int type) {
-    List<ProductTotalDetail>? productList =
-        type == 1 ? pendingProductList : reportedProductList;
+  void onCheckAll(bool isCheckingAll) {
+    List<ProductTotalDetail>? productList = pendingProductList;
     if (isCheckingAll && productList != null && productList.isNotEmpty) {
       for (final item in productList) {
         item.isChecked = true;
@@ -238,21 +236,28 @@ class OrderListViewModel extends BaseModel {
       // var currentUser = Get.find<AccountViewModel>().currentUser;
       List<ProductTotalDetail>? newPendingProductList = [];
       List<ProductTotalDetail>? newConfirmedProductList = [];
-      List<ProductTotalDetail>? newReportedProductList = [];
+
       final data = await _splitProductDAO?.getSplitProductsForStaff(
         timeSlotId: selectedTimeSlotId,
       );
-      if (data?.productTotalDetailList != null) {
+      if (data != null) {
         List<ProductTotalDetail>? newSplitProductList =
-            data?.productTotalDetailList;
+            data.productTotalDetailList;
+        if (data.errorProducts != null && data.errorProducts!.isNotEmpty) {
+          errorProductList = data.errorProducts;
+        } else {
+          errorProductList = [];
+        }
 
         if (splitOrder != null) {
           List<ProductTotalDetail>? currentSplitProductList =
               splitOrder!.productTotalDetailList;
-          numsOfCheck = 0;
+
           if (currentSplitProductList != null) {
             for (ProductTotalDetail splitProduct in currentSplitProductList) {
-              if (splitProduct.isChecked == true) {
+              if (splitProduct.isChecked == true &&
+                  splitProduct.pendingQuantity! > 0) {
+                numsOfCheck = 0;
                 final updateIndex = newSplitProductList!.indexWhere(
                     (e) => e.productName == splitProduct.productName);
                 if (updateIndex > -1) {
@@ -263,17 +268,15 @@ class OrderListViewModel extends BaseModel {
                 }
               }
             }
+            if (numsOfCheck == newSplitProductList!.length) {
+              isAllChecked = true;
+            } else {
+              isAllChecked = false;
+            }
           }
         }
         if (newSplitProductList != null && newSplitProductList.isNotEmpty) {
-          if (numsOfCheck == newSplitProductList.length) {
-            isAllChecked = true;
-            numsOfCheck = newSplitProductList.length;
-          } else {
-            isAllChecked = false;
-          }
-
-          data?.productTotalDetailList = newSplitProductList;
+          data.productTotalDetailList = newSplitProductList;
           splitOrder = data;
           notifierPending.value = splitOrder!.totalProductPending!;
           notifierReady.value = splitOrder!.totalProductReady!;
@@ -289,15 +292,14 @@ class OrderListViewModel extends BaseModel {
               newConfirmedProductList.add(product);
             }
           }
-          for (ProductTotalDetail product in newSplitProductList) {
-            if (product.errorQuantity! > 0) {
-              newReportedProductList.add(product);
-            }
-          }
+          // for (ProductTotalDetail product in newSplitProductList) {
+          //   if (product.errorQuantity! > 0) {
+          //     newReportedProductList.add(product);
+          //   }
+          // }
         }
         pendingProductList = newPendingProductList;
         confirmedProductList = newConfirmedProductList;
-        reportedProductList = newReportedProductList;
 
         notifyListeners();
       } else {
@@ -307,7 +309,6 @@ class OrderListViewModel extends BaseModel {
         notifierError.value = splitOrder!.totalProductError!;
         pendingProductList = null;
         confirmedProductList = null;
-        reportedProductList = null;
       }
       notifyListeners();
       setState(ViewStatus.Completed);
@@ -363,8 +364,7 @@ class OrderListViewModel extends BaseModel {
 
       if (option == 1) {
         showLoadingDialog();
-        List<ProductTotalDetail>? productList =
-            statusType == 1 ? pendingProductList : reportedProductList;
+        List<ProductTotalDetail>? productList = pendingProductList;
         if (productList != null && productList.isNotEmpty) {
           for (final splitProduct in productList) {
             if (splitProduct.isChecked == true) {
@@ -410,11 +410,14 @@ class OrderListViewModel extends BaseModel {
     }
   }
 
-  Future<void> reportSplitProduct(
-      {required String productId, required int quantity}) async {
+  Future<void> updateReportProduct(
+      {required String productId,
+      required int quantity,
+      required int type}) async {
     try {
       List<String> updatedProducts = [];
-      int option = await showOptionDialog("Báo cáo thiếu món này?");
+      int option = await showOptionDialog(
+          type == 2 ? "Báo cáo thiếu món này?" : "Đã xử lý món này?");
 
       if (option == 1) {
         showLoadingDialog();
@@ -424,7 +427,7 @@ class OrderListViewModel extends BaseModel {
           updatedProducts.add(productId);
           UpdateSplitProductRequestModel requestModel =
               UpdateSplitProductRequestModel(
-                  type: UpdateSplitProductTypeEnum.ERROR,
+                  type: type,
                   timeSlotId: selectedTimeSlotId,
                   productsUpdate: updatedProducts,
                   quantity: quantity);

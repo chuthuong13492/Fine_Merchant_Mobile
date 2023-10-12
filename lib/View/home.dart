@@ -46,10 +46,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> refreshFetchData() async {
-    await model.getSplitOrdersForDriver();
+    // await model.getSplitOrdersForDriver();
     await model.getDeliveredOrdersForDriver();
     await model.getStationList();
     await model.getTimeSlotList();
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
