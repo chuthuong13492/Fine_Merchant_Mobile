@@ -52,6 +52,9 @@ class OrderListViewModel extends BaseModel {
   List<bool> stationSelections = [];
   OrderDTO? newTodayOrders;
   StoreDTO? staffStore;
+  final ValueNotifier<int> notifierPending = ValueNotifier(0);
+  final ValueNotifier<int> notifierReady = ValueNotifier(0);
+  final ValueNotifier<int> notifierError = ValueNotifier(0);
 
   OrderListViewModel() {
     _splitProductDAO = SplitProductDAO();
@@ -152,7 +155,7 @@ class OrderListViewModel extends BaseModel {
 
   Future<void> getTimeSlotList() async {
     try {
-      setState(ViewStatus.Loading);
+      setState(ViewStatus.Completed);
       final data = await _timeSlotDAO?.getTimeSlots(
           destinationId: selectedDestinationId);
       if (data != null) {
@@ -230,7 +233,7 @@ class OrderListViewModel extends BaseModel {
 
   Future<void> getSplitOrders() async {
     try {
-      setState(ViewStatus.Loading);
+      setState(ViewStatus.Completed);
       print('selectedTimeSlotId: $selectedTimeSlotId');
       // var currentUser = Get.find<AccountViewModel>().currentUser;
       List<ProductTotalDetail>? newPendingProductList = [];
@@ -239,9 +242,9 @@ class OrderListViewModel extends BaseModel {
       final data = await _splitProductDAO?.getSplitProductsForStaff(
         timeSlotId: selectedTimeSlotId,
       );
-      if (data != null) {
+      if (data?.productTotalDetailList != null) {
         List<ProductTotalDetail>? newSplitProductList =
-            data.productTotalDetailList;
+            data?.productTotalDetailList;
 
         if (splitOrder != null) {
           List<ProductTotalDetail>? currentSplitProductList =
@@ -270,8 +273,11 @@ class OrderListViewModel extends BaseModel {
             isAllChecked = false;
           }
 
-          data.productTotalDetailList = newSplitProductList;
+          data?.productTotalDetailList = newSplitProductList;
           splitOrder = data;
+          notifierPending.value = splitOrder!.totalProductPending!;
+          notifierReady.value = splitOrder!.totalProductReady!;
+          notifierError.value = splitOrder!.totalProductError!;
 
           for (ProductTotalDetail product in newSplitProductList) {
             if (product.pendingQuantity! > 0) {
@@ -294,8 +300,16 @@ class OrderListViewModel extends BaseModel {
         reportedProductList = newReportedProductList;
 
         notifyListeners();
+      } else {
+        splitOrder = data;
+        notifierPending.value = splitOrder!.totalProductPending!;
+        notifierReady.value = splitOrder!.totalProductReady!;
+        notifierError.value = splitOrder!.totalProductError!;
+        pendingProductList = null;
+        confirmedProductList = null;
+        reportedProductList = null;
       }
-
+      notifyListeners();
       setState(ViewStatus.Completed);
     } catch (e) {
       bool result = await showErrorDialog();
@@ -455,5 +469,16 @@ class OrderListViewModel extends BaseModel {
   Future<void> closeNewOrder(orderId) async {
     newTodayOrders = null;
     notifyListeners();
+  }
+
+  bool listsAreEqual(
+      List<ProductTotalDetail> list1, List<ProductTotalDetail> list2) {
+    if (list1.length != list2.length) return false;
+
+    for (int i = 0; i < list1.length; i++) {
+      if (list1[i] != list2[i]) return false;
+    }
+
+    return true;
   }
 }

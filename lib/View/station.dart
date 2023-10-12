@@ -70,7 +70,7 @@ class _StationScreenState extends State<StationScreen> {
     return Scaffold(
       resizeToAvoidBottomInset: false,
       backgroundColor: FineTheme.palettes.shades100,
-      appBar: DefaultAppBar(
+      appBar: StationPackageDetailAppBar(
           title: "Danh sách món cần giao",
           backButton: widget.isRouted ? null : SizedBox.shrink()),
       body: SafeArea(

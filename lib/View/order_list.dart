@@ -38,7 +38,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       refreshFetchOrder();
     });
   }
@@ -114,10 +114,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     activeColor: FineTheme.palettes.emerald25,
                                     value: model.isAllChecked,
                                     onChanged: model.splitOrder != null &&
-                                            model
-                                                .splitOrder!
-                                                .productTotalDetailList!
-                                                .isNotEmpty
+                                            model.splitOrder!
+                                                    .productTotalDetailList !=
+                                                null
                                         ? (bool? value) {
                                             model.onCheckAll(value!, 1);
                                             setState(() {});
@@ -224,10 +223,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                     activeColor: FineTheme.palettes.emerald25,
                                     value: model.isAllChecked,
                                     onChanged: model.splitOrder != null &&
-                                            model
-                                                .splitOrder!
-                                                .productTotalDetailList!
-                                                .isNotEmpty
+                                            model.splitOrder!
+                                                    .productTotalDetailList !=
+                                                null
                                         ? (bool? value) {
                                             model.onCheckAll(value!, 2);
                                             setState(() {});
@@ -262,7 +260,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 ////////////////////
 
   Widget orderFilterSection() {
-    SplitOrderDTO? splitOrder = model.splitOrder;
+    // SplitOrderDTO? splitOrder = model.splitOrder;
     return ScopedModelDescendant<OrderListViewModel>(
       builder: (context, child, model) {
         if (model.splitOrder == null) {
@@ -329,32 +327,34 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       tabs: [
                         Stack(
                           children: [
-                            Positioned(
-                                top: 0,
-                                right: 0,
-                                child: Material(
-                                  color: Colors.red,
-                                  shape: const CircleBorder(
-                                      side: BorderSide(
-                                          color: Colors.red, width: 2)),
-                                  child: SizedBox(
-                                    width:
-                                        splitOrder!.totalProductPending! >= 10
+                            model.notifierPending.value != null
+                                ? Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Material(
+                                      color: Colors.red,
+                                      shape: const CircleBorder(
+                                          side: BorderSide(
+                                              color: Colors.red, width: 2)),
+                                      child: SizedBox(
+                                        width: model.notifierPending.value >= 10
                                             ? 24
                                             : 20,
-                                    height:
-                                        splitOrder.totalProductPending! >= 10
-                                            ? 24
-                                            : 20,
-                                    child: Center(
-                                      child: Text(
-                                        '${splitOrder.totalProductPending}',
-                                        style: FineTheme.typograhpy.subtitle2
-                                            .copyWith(color: Colors.white),
+                                        height:
+                                            model.notifierPending.value >= 10
+                                                ? 24
+                                                : 20,
+                                        child: Center(
+                                          child: Text(
+                                            '${model.notifierPending.value}',
+                                            style: FineTheme
+                                                .typograhpy.subtitle2
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                )),
+                                    ))
+                                : const SizedBox.shrink(),
                             Padding(
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
@@ -367,30 +367,33 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         ),
                         Stack(
                           children: [
-                            Positioned(
-                                top: 0,
-                                right: 0,
-                                child: Material(
-                                  color: Colors.red,
-                                  shape: const CircleBorder(
-                                      side: BorderSide(
-                                          color: Colors.red, width: 2)),
-                                  child: SizedBox(
-                                    width: splitOrder.totalProductReady! >= 10
-                                        ? 24
-                                        : 20,
-                                    height: splitOrder.totalProductReady! >= 10
-                                        ? 24
-                                        : 20,
-                                    child: Center(
-                                      child: Text(
-                                        '${splitOrder.totalProductReady}',
-                                        style: FineTheme.typograhpy.subtitle2
-                                            .copyWith(color: Colors.white),
+                            model.notifierReady.value != null
+                                ? Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Material(
+                                      color: Colors.red,
+                                      shape: const CircleBorder(
+                                          side: BorderSide(
+                                              color: Colors.red, width: 2)),
+                                      child: SizedBox(
+                                        width: model.notifierReady.value >= 10
+                                            ? 24
+                                            : 20,
+                                        height: model.notifierReady.value >= 10
+                                            ? 24
+                                            : 20,
+                                        child: Center(
+                                          child: Text(
+                                            '${model.notifierReady.value}',
+                                            style: FineTheme
+                                                .typograhpy.subtitle2
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                        ),
                                       ),
-                                    ),
-                                  ),
-                                )),
+                                    ))
+                                : const SizedBox.shrink(),
                             Padding(
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
@@ -403,7 +406,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         ),
                         Stack(
                           children: [
-                            splitOrder.totalProductError! > 0
+                            model.notifierError.value != 0
                                 ? const Positioned(
                                     top: 0,
                                     right: 0,
@@ -452,14 +455,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || pendingProductList!.isEmpty) {
+      } else if (status == ViewStatus.Empty || pendingProductList == null) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
               const Text('Hiện tại chưa có món nào cần xử lý.'),
               Padding(
-                padding: EdgeInsets.all(15),
+                padding: const EdgeInsets.all(15),
                 child: InkWell(
                   onTap: () async {
                     refreshFetchOrder();
@@ -539,7 +542,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || confirmedProductList!.isEmpty) {
+      } else if (status == ViewStatus.Empty || confirmedProductList == null) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -626,7 +629,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
         return const Center(
           child: SkeletonListItem(itemCount: 8),
         );
-      } else if (status == ViewStatus.Empty || reportedProductList!.isEmpty) {
+      } else if (status == ViewStatus.Empty || reportedProductList == null) {
         return Center(
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
@@ -744,7 +747,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                 SizedBox(
                     child: Row(
                   children: [
-                    Text('${product.pendingQuantity}',
+                    Text('x${product.pendingQuantity}',
                         style: FineTheme.typograhpy.caption1),
                   ],
                 )),

@@ -36,7 +36,7 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FineTheme.palettes.primary100,
-      appBar: DefaultAppBar(
+      appBar: StationPackageDetailAppBar(
           title:
               "Chi tiết tủ ${model.boxList.firstWhere((box) => box.id == widget.orderBox.boxId).code}"),
       body: ScopedModel(

@@ -37,6 +37,7 @@ class StationPackageViewModel extends BaseModel {
   ScrollController? scrollController;
   bool isDelivering = false;
   PackageViewDTO? currentDeliveryPackage;
+  List<bool> selections = [true, false];
 
   StationPackageViewModel() {
     _stationDAO = StationDAO();
@@ -51,9 +52,15 @@ class StationPackageViewModel extends BaseModel {
     notifyListeners();
   }
 
+  Future<void> changeStatus(int index) async {
+    selections = selections.map((e) => false).toList();
+    selections[index] = true;
+    notifyListeners();
+  }
+
   Future<void> getSplitOrdersByStation() async {
     try {
-      setState(ViewStatus.Loading);
+      setState(ViewStatus.Completed);
       selectedTimeSlotId = Get.find<OrderListViewModel>().selectedTimeSlotId;
       print('selectedTimeSlotId: $selectedTimeSlotId');
 
@@ -62,6 +69,8 @@ class StationPackageViewModel extends BaseModel {
       );
       if (data != null) {
         splitProductsByStation = data;
+      } else {
+        splitProductsByStation = [];
       }
 
       notifyListeners();

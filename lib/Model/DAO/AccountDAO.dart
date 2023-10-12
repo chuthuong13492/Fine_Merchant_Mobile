@@ -43,7 +43,7 @@ class AccountDAO extends BaseDAO {
 
         final accessToken = user["accessToken"] as String;
         requestObj.setToken = accessToken;
-        await setToken(accessToken);
+        setToken(accessToken);
         return accessToken;
       }
     } catch (e) {

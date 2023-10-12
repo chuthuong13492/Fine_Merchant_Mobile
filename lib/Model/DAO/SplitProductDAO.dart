@@ -11,7 +11,7 @@ import 'package:fine_merchant_mobile/Utils/request.dart';
 class SplitProductDAO extends BaseDAO {
   Future<SplitOrderDTO?> getSplitProductsForStaff({String? timeSlotId}) async {
     final res = await request.get(
-      'staff',
+      'staff/package',
       queryParameters: {"timeSlotId": timeSlotId},
     );
     if (res.data['data'] != null) {
@@ -23,7 +23,7 @@ class SplitProductDAO extends BaseDAO {
 
   Future<int?> confirmSplitProduct(
       {required UpdateSplitProductRequestModel requestModel}) async {
-    final res = await request.put('staff', data: requestModel.toJson());
+    final res = await request.put('staff/package', data: requestModel.toJson());
 
     return res.statusCode;
   }
@@ -31,14 +31,15 @@ class SplitProductDAO extends BaseDAO {
   Future<List<StationSplitProductDTO>?> getStationSplitProductsForStaff(
       {String? timeSlotId}) async {
     final res = await request.get(
-      'staff/station',
+      'staff/package/station',
       queryParameters: {"timeSlotId": timeSlotId},
     );
-    if (res.data['data'] != null) {
-      var listJson = res.data['data'] as List;
-      // metaDataDTO = MetaDataDTO.fromJson(res.data["metadata"]);
+
+    var listJson = res.data['data'] as List;
+    if (!listJson.isEmpty) {
       return listJson.map((e) => StationSplitProductDTO.fromJson(e)).toList();
     }
+
     return null;
   }
 }

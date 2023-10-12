@@ -34,7 +34,7 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
   late Timer periodicTimer;
   bool isDelivering = false;
   MissingProductReportDTO? currentReport;
-  StationPackageViewModel model = Get.put(StationPackageViewModel());
+  StationPackageViewModel model = Get.find<StationPackageViewModel>();
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       GlobalKey<RefreshIndicatorState>();
 
@@ -45,7 +45,7 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
     model.timeSlotList = Get.find<OrderListViewModel>().timeSlotList;
     model.storeList = Get.find<OrderListViewModel>().storeList;
     model.selectedStoreId = Get.find<OrderListViewModel>().staffStore?.id;
-    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       refreshFetchApi();
     });
   }
@@ -57,7 +57,7 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
   }
 
   Future<void> refreshFetchApi() async {
-    model.getSplitOrdersByStation();
+    await model.getSplitOrdersByStation();
   }
 
   @override
@@ -252,7 +252,9 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
       children: [
         InkWell(
           onTap: () {
-            _dialogBuilder(context, stationPackage);
+            // _dialogBuilder(context, stationPackage);
+            Get.toNamed(RouteHandler.STATION_PACKAGE_DETAIL,
+                arguments: stationPackage);
           },
           child: Container(
               // height: 80,
@@ -271,6 +273,12 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                     ),
                     child: Column(
                       children: [
+                        Center(
+                          child: Text('Xem chi tiết',
+                              style: FineTheme.typograhpy.subtitle2.copyWith(
+                                  color: FineTheme.palettes.emerald25,
+                                  fontWeight: FontWeight.bold)),
+                        ),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
@@ -288,12 +296,12 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text('Số món:',
+                            Text('Đã chuẩn bị:',
                                 style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.neutral900,
                                     fontWeight: FontWeight.bold)),
                             Text(
-                                '${stationPackage.packageStationDetails!.length}',
+                                '${stationPackage.readyQuantity}/${stationPackage.totalQuantity} Món',
                                 overflow: TextOverflow.ellipsis,
                                 style: FineTheme.typograhpy.body1),
                           ],
@@ -301,11 +309,31 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                         const SizedBox(
                           height: 12,
                         ),
-                        Center(
-                          child: Text('Xem chi tiết',
-                              style: FineTheme.typograhpy.subtitle2.copyWith(
-                                  color: FineTheme.palettes.emerald25,
-                                  fontWeight: FontWeight.bold)),
+                        InkWell(
+                          onTap: () {},
+                          child: Container(
+                            width: 200,
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: Colors.white,
+                              borderRadius: BorderRadius.circular(12),
+                              border: Border.all(
+                                  color: FineTheme.palettes.primary100),
+                              boxShadow: [
+                                BoxShadow(
+                                  color: FineTheme.palettes.primary100,
+                                  offset: const Offset(0, 3),
+                                ),
+                              ],
+                            ),
+                            child: Center(
+                              child: Text(
+                                "Sẵn sàng để giao",
+                                style: FineTheme.typograhpy.subtitle1.copyWith(
+                                    color: FineTheme.palettes.primary100),
+                              ),
+                            ),
+                          ),
                         ),
                       ],
                     )),

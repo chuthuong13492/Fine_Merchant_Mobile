@@ -32,7 +32,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FineTheme.palettes.primary100,
-      appBar: DefaultAppBar(title: "Thông tin giao hàng"),
+      appBar: StationPackageDetailAppBar(title: "Thông tin giao hàng"),
       body: ScopedModel(
           model: Get.find<HomeViewModel>(),
           child: ScopedModelDescendant<HomeViewModel>(

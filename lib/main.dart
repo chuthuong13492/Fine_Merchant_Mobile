@@ -27,6 +27,8 @@ import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'View/stationPackageDetail_screen.dart';
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
   // if (!GetPlatform.isWeb) {
@@ -101,6 +103,11 @@ class MyApp extends StatelessWidget {
             return CupertinoPageRoute<bool>(
                 builder: (context) => ProductBoxesScreen(
                     detail: settings.arguments as OrderDetail),
+                settings: settings);
+          case RouteHandler.STATION_PACKAGE_DETAIL:
+            return CupertinoPageRoute<bool>(
+                builder: (context) => StationPackageDetail(
+                    stationSplitProductDTO: settings.arguments as dynamic),
                 settings: settings);
           default:
             return CupertinoPageRoute(

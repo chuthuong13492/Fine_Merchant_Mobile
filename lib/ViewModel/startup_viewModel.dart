@@ -17,10 +17,7 @@ class StartUpViewModel extends BaseModel {
     await Future.delayed(const Duration(seconds: 1));
     var hasLoggedInUser = await accountDAO.isUserLoggedIn();
     bool isFirstOnBoard = await getIsFirstOnboard() ?? true;
-    if (isFirstOnBoard) {
-      // await Get.find<RootViewModel>().startUp();
-      Get.offAndToNamed(RouteHandler.WELCOME_SCREEN);
-    } else if (hasLoggedInUser) {
+    if (hasLoggedInUser) {
       await Get.find<RootViewModel>().startUp();
       Get.offAndToNamed(RouteHandler.NAV);
     } else {
