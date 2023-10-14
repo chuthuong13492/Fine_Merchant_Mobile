@@ -338,7 +338,7 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                             child: Center(
                               child: Text(
                                 stationPackage.isShipperAssign == true
-                                    ? "Shipper đã nhận"
+                                    ? "Đã giao cho shipper"
                                     : "Sẵn sàng để giao",
                                 style: FineTheme.typograhpy.subtitle1.copyWith(
                                     color:

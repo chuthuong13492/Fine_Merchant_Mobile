@@ -169,7 +169,7 @@ class HomeViewModel extends BaseModel {
   Future<void> getDeliveryPackageListForDriver() async {
     try {
       setState(ViewStatus.Loading);
-      List<PackageViewDTO> newPackageList = [];
+
       var currentUser = Get.find<AccountViewModel>().currentUser;
       if (currentUser != null) {
         final data = await _splitProductDAO?.getDeliveryPackageListForDriver(
@@ -195,41 +195,17 @@ class HomeViewModel extends BaseModel {
     try {
       setState(ViewStatus.Loading);
       List<PackageViewDTO> newPackageList = [];
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      ;
-      if (currentUser != null) {
-        // final data = await _orderDAO?.getSplitOrderListByStoreForDriver(
-        //     orderStatus: OrderStatusEnum.DELIVERING,
-        //     timeSlotId: selectedTimeSlotId,
-        //     stationId: selectedStationId);
-        // if (data != null) {
-        //   packageList = data;
-        //   for (TimeSlotDTO timeSlot in timeSlotList) {
-        //     var groupByTimeSlot = packageList
-        //         .where((item) => item.timeSlotId == timeSlot.id)
-        //         .toList();
-        //     for (StoreDTO store in storeList) {
-        //       var groupByTimeSlotAndStore = groupByTimeSlot
-        //           .where((item) => item.storeId == store.id)
-        //           .toList();
-        //       if (groupByTimeSlotAndStore.isNotEmpty) {
-        //         List<ListProduct> products = [];
-        //         for (DeliveryPackageDTO package in groupByTimeSlotAndStore) {
-        //           products.add(ListProduct(
-        //               productName: package.productName,
-        //               quantity: package.quantity));
-        //         }
-        //         newPackageList.add(PackageViewDTO(
-        //             listProducts: products,
-        //             storeId: store.id,
-        //             timeSlotId: timeSlot.id));
-        //       }
-        //     }
-        //   }
-        //   deliveredPackageList = newPackageList;
-        //   notifyListeners();
-        // }
+
+      final data = await _orderDAO?.getSplitOrderListByStoreForDriver(
+          orderStatus: OrderStatusEnum.DELIVERING,
+          timeSlotId: selectedTimeSlotId,
+          stationId: selectedStationId);
+      if (data != null) {
+        packageList = data;
+
+        notifyListeners();
       }
+
       setState(ViewStatus.Completed);
     } catch (e) {
       bool result = await showErrorDialog();
@@ -241,42 +217,42 @@ class HomeViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> confirmDelivery(PackageViewDTO package) async {
+  Future<void> confirmDelivery(DeliveryPackageDTO package) async {
     int option = await showOptionDialog("Xác nhận đã lấy hàng này?");
     if (option == 1) {
       try {
-        List<ListStoreAndOrder> updateListStoreAndOrders = [];
-        List<UpdateOrderStatusRequestModel> updatedOrders = [];
-        showLoadingDialog();
-        int newOrderStatus = OrderStatusEnum.DELIVERING;
+        // List<ListStoreAndOrder> updateListStoreAndOrders = [];
+        // List<UpdateOrderStatusRequestModel> updatedOrders = [];
+        // showLoadingDialog();
+        // int newOrderStatus = OrderStatusEnum.DELIVERING;
 
-        currentDeliveryPackage = package;
-        if (orderDetailList.isNotEmpty) {
-          for (final order in orderDetailList) {
-            ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
-                orderId: order.orderId, storeId: order.storeId);
-            updateListStoreAndOrders.add(updateListStoreAndOrder);
-          }
-          UpdateOrderStatusRequestModel updatedOrders =
-              UpdateOrderStatusRequestModel(
-                  orderDetailStoreStatus: newOrderStatus,
-                  listStoreAndOrder: updateListStoreAndOrders);
-          final statusCode =
-              await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
-          if (statusCode == 200) {
-            await showStatusDialog(
-                "assets/images/icon-success.png", "Lấy hàng thành công", "");
-            Get.back();
-          } else {
-            await showStatusDialog(
-              "assets/images/error.png",
-              "Thất bại",
-              "",
-            );
-          }
-        } else {
-          Get.back();
-        }
+        // currentDeliveryPackage = package;
+        // if (orderDetailList.isNotEmpty) {
+        //   for (final order in orderDetailList) {
+        //     ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
+        //         orderId: order.orderId, storeId: order.storeId);
+        //     updateListStoreAndOrders.add(updateListStoreAndOrder);
+        //   }
+        //   UpdateOrderStatusRequestModel updatedOrders =
+        //       UpdateOrderStatusRequestModel(
+        //           orderDetailStoreStatus: newOrderStatus,
+        //           listStoreAndOrder: updateListStoreAndOrders);
+        //   final statusCode =
+        //       await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
+        //   if (statusCode == 200) {
+        //     await showStatusDialog(
+        //         "assets/images/icon-success.png", "Lấy hàng thành công", "");
+        //     Get.back();
+        //   } else {
+        //     await showStatusDialog(
+        //       "assets/images/error.png",
+        //       "Thất bại",
+        //       "",
+        //     );
+        //   }
+        // } else {
+        //   Get.back();
+        // }
       } catch (e) {
         await showStatusDialog(
           "assets/images/error.png",
@@ -285,7 +261,7 @@ class HomeViewModel extends BaseModel {
         );
       } finally {
         await getDeliveryPackageListForDriver();
-        await getDeliveredOrdersForDriver();
+        // await getDeliveredOrdersForDriver();
         notifyListeners();
       }
     }

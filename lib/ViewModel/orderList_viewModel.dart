@@ -254,21 +254,23 @@ class OrderListViewModel extends BaseModel {
               splitOrder!.productTotalDetailList;
 
           if (currentSplitProductList != null) {
+            numsOfCheck = 0;
             for (ProductTotalDetail splitProduct in currentSplitProductList) {
               if (splitProduct.isChecked == true &&
                   splitProduct.pendingQuantity! > 0) {
-                numsOfCheck = 0;
-                final updateIndex = newSplitProductList!.indexWhere(
-                    (e) => e.productName == splitProduct.productName);
+                final updateIndex = newSplitProductList!.indexWhere((e) =>
+                    e.productName == splitProduct.productName &&
+                    e.pendingQuantity! > 0);
                 if (updateIndex > -1) {
                   newSplitProductList[updateIndex].isChecked = true;
-                  newSplitProductList[updateIndex].currentMissing =
-                      splitProduct.currentMissing;
                   numsOfCheck = numsOfCheck + 1;
                 }
               }
             }
-            if (numsOfCheck == newSplitProductList!.length) {
+            int numsOfPendingProducts = newSplitProductList!
+                .where((e) => e.pendingQuantity! > 0)
+                .length;
+            if (numsOfCheck == numsOfPendingProducts) {
               isAllChecked = true;
             } else {
               isAllChecked = false;
@@ -439,7 +441,7 @@ class OrderListViewModel extends BaseModel {
             isAllChecked = false;
             notifyListeners();
             await showStatusDialog(
-                "assets/images/icon-success.png", "Xác nhận thành công", "");
+                "assets/images/icon-success.png", "Báo cáo thành công", "");
             Get.back();
           } else {
             await showStatusDialog(

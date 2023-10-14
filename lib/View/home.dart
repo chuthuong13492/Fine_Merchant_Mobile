@@ -26,7 +26,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final double HEIGHT = 48;
   late Timer periodicTimer;
   bool isDelivering = false;
-  PackageViewDTO? currentPackage;
+  DeliveryPackageDTO? currentPackage;
   HomeViewModel model = Get.put(HomeViewModel());
   final ValueNotifier<double> notifier = ValueNotifier(0);
   final PageController controller = PageController();
@@ -46,10 +46,10 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> refreshFetchData() async {
-    // await model.getSplitOrdersForDriver();
-    await model.getDeliveredOrdersForDriver();
     await model.getStationList();
     await model.getTimeSlotList();
+    await model.getDeliveryPackageListForDriver();
+
     if (mounted) {
       setState(() {});
     }
@@ -80,32 +80,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       color: FineTheme.palettes.emerald25,
                     ),
                   ),
-                )
-                // Column(
-                //   children: [
-                //     DropdownButton<String>(
-                //       value: model.selectedStationId,
-                //       onChanged: (String? value) {
-                //         model.onChangeStation(value!);
-                //         setState(() {});
-                //       },
-                //       items: model.stationList
-                //           .map<DropdownMenuItem<String>>(
-                //               (StationDTO station) {
-                //         return DropdownMenuItem<String>(
-                //           value: station.id,
-                //           child: Text(
-                //             "${station.name}",
-                //             style: FineTheme.typograhpy.h2.copyWith(
-                //               color: FineTheme.palettes.emerald25,
-                //             ),
-                //           ),
-                //         );
-                //       }).toList(),
-                //     ),
-                //   ],
-                // ),
-                )),
+                ))),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.center,
           children: [
@@ -131,9 +106,6 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                     }).toList(),
                   ),
-                  // Text(
-                  // '${currentTimeSlot.arriveTime?.substring(0, 5)} - ${currentTimeSlot.checkoutTime?.substring(0, 5)}',
-                  // style: FineTheme.typograhpy.body1)
                 ],
               ),
             ),
@@ -274,10 +246,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
-      List<PackageViewDTO> packageList = model.packageViewList;
+      List<DeliveryPackageDTO> packageList = model.packageList;
       List<PackageViewDTO> deliveredPackageList = model.deliveredPackageList;
-      bool isDelivering = model.isDelivering;
-      PackageViewDTO? currentPackage = model.currentDeliveryPackage;
       if (status == ViewStatus.Loading) {
         return const Center(
           // child: SkeletonListItem(itemCount: 8),
@@ -349,9 +319,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 onPressed: () {
                                   _onTapDetail();
-                                  // setState(() {
-                                  //   isDelivering = !isDelivering;
-                                  // });
                                 },
                                 child: Text(
                                   "Xem thông tin giao hàng!",
@@ -380,21 +347,6 @@ class _HomeScreenState extends State<HomeScreen> {
               width: 24,
             ),
           ),
-        );
-      }
-
-      if (isDelivering && currentPackage != null) {
-        return Column(
-          children: [
-            Center(
-              child: _buildOrderPackage(currentPackage),
-            ),
-            Image.asset(
-              "assets/images/package_delivery.png",
-              width: 400,
-              height: 400,
-            ),
-          ],
         );
       }
 
@@ -436,16 +388,9 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Widget _buildOrderPackage(PackageViewDTO package) {
-    // final isToday = DateTime.parse(orderSummary.checkInDate!)
-    //         .difference(DateTime.now())
-    //         .inDays ==
-    //     0;
+  Widget _buildOrderPackage(DeliveryPackageDTO package) {
     TimeSlotDTO? timeSlot = model.timeSlotList
-        .firstWhere((timeSlot) => timeSlot.id == package.timeSlotId);
-    String? storeName = model.storeList
-        .firstWhere((store) => store.id == package.storeId)
-        .storeName;
+        .firstWhere((timeSlot) => timeSlot.id == model.selectedTimeSlotId);
     return Column(
       children: [
         Padding(
@@ -453,7 +398,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text('${storeName}',
+              Text('${package.storeName}',
                   style: FineTheme.typograhpy.h2.copyWith(
                     color: FineTheme.palettes.emerald25,
                     fontWeight: FontWeight.bold,
@@ -494,7 +439,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               _dialogBuilder(context)
                             },
                             child: Text(
-                              'Xem chi tiết (${package.listProducts?.length})',
+                              'Xem chi tiết (${package.packageShipperDetails?.length})',
                               style: TextStyle(
                                   fontSize: 16,
                                   fontWeight: FontWeight.w400,
@@ -604,7 +549,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ListView(
                     children: [
                       const SizedBox(height: 8),
-                      ...?currentPackage?.listProducts
+                      ...?currentPackage?.packageShipperDetails
                           ?.map((product) => _buildPackageProducts(product)),
                     ],
                   ),
@@ -615,7 +560,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPackageProducts(ListProduct product) {
+  Widget _buildPackageProducts(PackageShipperDetails product) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(

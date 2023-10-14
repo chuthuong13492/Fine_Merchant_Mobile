@@ -38,14 +38,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
-      refreshFetchOrder();
-    });
+    // periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+    //   refreshFetchOrder();
+    // });
   }
 
   @override
   void dispose() {
-    periodicTimer.cancel();
+    // periodicTimer.cancel();
     super.dispose();
   }
 
@@ -206,35 +206,15 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Text(
-                                'Sản phẩm',
-                                style: FineTheme.typograhpy.h2.copyWith(
-                                  color: FineTheme.palettes.emerald50,
+                              Padding(
+                                padding:
+                                    const EdgeInsets.only(top: 12, bottom: 12),
+                                child: Text(
+                                  'Sản phẩm',
+                                  style: FineTheme.typograhpy.h2.copyWith(
+                                    color: FineTheme.palettes.emerald50,
+                                  ),
                                 ),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    '${model.numsOfCheck == 0 ? "Chọn tất cả" : "Đã chọn " + model.numsOfCheck.toString() + " món"} ',
-                                    style: FineTheme.typograhpy.body2.copyWith(
-                                      color: FineTheme.palettes.neutral900,
-                                    ),
-                                  ),
-                                  Checkbox(
-                                    checkColor: Colors.white,
-                                    activeColor: FineTheme.palettes.emerald25,
-                                    value: model.isAllChecked,
-                                    onChanged: model.splitOrder != null &&
-                                            model.splitOrder!
-                                                    .productTotalDetailList !=
-                                                null
-                                        ? (bool? value) {
-                                            model.onCheckAll(value!);
-                                            setState(() {});
-                                          }
-                                        : null,
-                                  ),
-                                ],
                               ),
                             ],
                           ),
@@ -740,9 +720,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   onChanged: (bool? value) {
                     int index = splitProductList!.indexOf(product);
                     model.onCheck(index, value!);
-
-                    if (model.numsOfCheck ==
-                        model.splitOrder!.productTotalDetailList!.length) {
+                    int numsOfPendingProducts = splitProductList!
+                        .where((e) => e.pendingQuantity! > 0)
+                        .length;
+                    if (model.numsOfCheck == numsOfPendingProducts) {
                       model.isAllChecked = true;
                     } else {
                       model.isAllChecked = false;
