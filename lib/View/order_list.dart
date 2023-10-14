@@ -38,14 +38,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void initState() {
     super.initState();
-    // periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
-    //   refreshFetchOrder();
-    // });
+    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      refreshFetchOrder();
+    });
   }
 
   @override
   void dispose() {
-    // periodicTimer.cancel();
+    periodicTimer.cancel();
     super.dispose();
   }
 
