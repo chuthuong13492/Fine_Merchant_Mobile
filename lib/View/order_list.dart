@@ -38,7 +38,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       refreshFetchOrder();
     });
   }
@@ -265,9 +265,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
     // SplitOrderDTO? splitOrder = model.splitOrder;
     return ScopedModelDescendant<OrderListViewModel>(
       builder: (context, child, model) {
-        if (model.splitOrder == null) {
-          return const SizedBox.shrink();
-        }
         return Center(
           child: Container(
             padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),

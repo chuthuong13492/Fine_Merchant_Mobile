@@ -58,6 +58,39 @@ class StationPackageViewModel extends BaseModel {
     notifyListeners();
   }
 
+  Future<void> confirmDeliveryPackage({required String stationId}) async {
+    try {
+      int option = await showOptionDialog("Sẵn sàng giao cho trạm này?");
+
+      if (option == 1) {
+        showLoadingDialog();
+
+        final statusCode = await _splitProductDAO?.confirmDeliveryProduct(
+            stationId: stationId, timeSlotId: selectedTimeSlotId!);
+        if (statusCode == 200) {
+          notifyListeners();
+          await showStatusDialog(
+              "assets/images/icon-success.png", "Xác nhận thành công", "");
+          Get.back();
+        } else {
+          await showStatusDialog(
+            "assets/images/error.png",
+            "Thất bại",
+            "",
+          );
+        }
+      }
+    } catch (e) {
+      await showStatusDialog(
+        "assets/images/error.png",
+        "Thất bại",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+      );
+    } finally {
+      await getSplitOrdersByStation();
+    }
+  }
+
   Future<void> getSplitOrdersByStation() async {
     try {
       setState(ViewStatus.Completed);

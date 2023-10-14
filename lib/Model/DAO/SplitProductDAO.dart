@@ -29,9 +29,9 @@ class SplitProductDAO extends BaseDAO {
   }
 
   Future<int?> confirmDeliveryProduct(
-      {required UpdateSplitProductRequestModel requestModel}) async {
-    final res = await request.put('staff/package/confirmDelivery',
-        data: requestModel.toJson());
+      {required String timeSlotId, required String stationId}) async {
+    final res = await request.put('staff/package/cofirmDelivery',
+        queryParameters: {"timeSlotId": timeSlotId, "stationId": stationId});
 
     return res.statusCode;
   }

@@ -313,6 +313,7 @@ class OrderListViewModel extends BaseModel {
       notifyListeners();
       setState(ViewStatus.Completed);
     } catch (e) {
+      print(e);
       bool result = await showErrorDialog();
       if (result) {
         await getSplitOrders();
@@ -406,7 +407,6 @@ class OrderListViewModel extends BaseModel {
       );
     } finally {
       await getSplitOrders();
-      // await getSplitOrdersByStation();
     }
   }
 
@@ -460,7 +460,6 @@ class OrderListViewModel extends BaseModel {
       );
     } finally {
       await getSplitOrders();
-      // await getSplitOrdersByStation();
     }
   }
 

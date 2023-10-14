@@ -62,7 +62,7 @@ class LoginViewModel extends BaseModel {
       await Future.delayed(const Duration(microseconds: 500));
       // await Get.find<RootViewModel>().startUp();
       // await Get.offAllNamed(RouteHandler.NAV);
-      print(user);
+      // print(user);
       setState(ViewStatus.Completed);
     } on FirebaseAuthException catch (e) {
       log(e.message!);

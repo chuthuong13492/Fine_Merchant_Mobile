@@ -195,6 +195,9 @@ class StationSplitProductDTO {
   StationSplitProductDTO(
       {this.stationId,
       this.stationName,
+      this.isShipperAssign,
+      this.readyQuantity,
+      this.totalQuantity,
       this.packageStationDetails,
       this.listPackageMissing});
 
@@ -203,6 +206,7 @@ class StationSplitProductDTO {
     stationName = json['stationName'];
     totalQuantity = json["totalQuantity"];
     readyQuantity = json["readyQuantity"];
+    isShipperAssign = json["isShipperAssign"];
     packageStationDetails = json["packageStationDetails"] == null
         ? null
         : (json["packageStationDetails"] as List)

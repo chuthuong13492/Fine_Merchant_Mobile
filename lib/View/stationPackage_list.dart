@@ -45,7 +45,7 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
     model.timeSlotList = Get.find<OrderListViewModel>().timeSlotList;
     model.storeList = Get.find<OrderListViewModel>().storeList;
     model.selectedStoreId = Get.find<OrderListViewModel>().staffStore?.id;
-    periodicTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       refreshFetchApi();
     });
   }
@@ -310,7 +310,12 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                           height: 12,
                         ),
                         InkWell(
-                          onTap: () {},
+                          onTap: stationPackage.isShipperAssign == true
+                              ? null
+                              : () async {
+                                  await model.confirmDeliveryPackage(
+                                      stationId: stationPackage.stationId!);
+                                },
                           child: Container(
                             width: 200,
                             padding: const EdgeInsets.all(8),
@@ -318,19 +323,28 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: FineTheme.palettes.primary100),
+                                  color: stationPackage.isShipperAssign == true
+                                      ? FineTheme.palettes.neutral700
+                                      : FineTheme.palettes.primary100),
                               boxShadow: [
                                 BoxShadow(
-                                  color: FineTheme.palettes.primary100,
+                                  color: stationPackage.isShipperAssign == true
+                                      ? FineTheme.palettes.neutral700
+                                      : FineTheme.palettes.primary100,
                                   offset: const Offset(0, 3),
                                 ),
                               ],
                             ),
                             child: Center(
                               child: Text(
-                                "Sẵn sàng để giao",
+                                stationPackage.isShipperAssign == true
+                                    ? "Shipper đã nhận"
+                                    : "Sẵn sàng để giao",
                                 style: FineTheme.typograhpy.subtitle1.copyWith(
-                                    color: FineTheme.palettes.primary100),
+                                    color:
+                                        stationPackage.isShipperAssign == true
+                                            ? FineTheme.palettes.neutral700
+                                            : FineTheme.palettes.primary100),
                               ),
                             ),
                           ),
