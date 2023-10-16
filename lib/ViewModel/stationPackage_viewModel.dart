@@ -70,7 +70,7 @@ class StationPackageViewModel extends BaseModel {
         if (statusCode == 200) {
           notifyListeners();
           await showStatusDialog(
-              "assets/images/icon-success.png", "Xác nhận thành công", "");
+              "assets/images/icon-success.png", "Chuẩn bị thành công", "");
           Get.back();
         } else {
           await showStatusDialog(

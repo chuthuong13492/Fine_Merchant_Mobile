@@ -21,7 +21,9 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey1 =
+      new GlobalKey<RefreshIndicatorState>();
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey2 =
       new GlobalKey<RefreshIndicatorState>();
   final double HEIGHT = 48;
   late Timer periodicTimer;
@@ -34,15 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 60), (Timer timer) {
-      refreshFetchData();
-    });
+    // periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+    //   refreshFetchData();
+    // });
   }
 
   @override
   void dispose() {
     super.dispose();
-    periodicTimer.cancel();
+    // periodicTimer.cancel();
   }
 
   Future<void> refreshFetchData() async {
@@ -66,60 +68,215 @@ class _HomeScreenState extends State<HomeScreen> {
 
     return ScopedModel(
       model: Get.find<HomeViewModel>(),
-      child: Scaffold(
-        appBar: DefaultAppBar(
-            title: "Gói hàng Chờ giao",
-            backButton: const SizedBox.shrink(),
-            bottom: PreferredSize(
-                preferredSize: const Size.fromHeight(120),
-                child: Padding(
-                  padding: const EdgeInsets.only(bottom: 8),
-                  child: Text(
-                    "${station!.name}",
-                    style: FineTheme.typograhpy.h2.copyWith(
-                      color: FineTheme.palettes.emerald25,
+      child: DefaultTabController(
+        length: 2,
+        child: Scaffold(
+          appBar: DefaultAppBar(
+              title: "Gói hàng Chờ giao",
+              backButton: const SizedBox.shrink(),
+              bottom: PreferredSize(
+                  preferredSize: const Size.fromHeight(120),
+                  child: Padding(
+                    padding: const EdgeInsets.only(bottom: 8),
+                    child: Text(
+                      "${station != null ? station.name : ""}",
+                      style: FineTheme.typograhpy.h2.copyWith(
+                        color: FineTheme.palettes.emerald25,
+                      ),
+                    ),
+                  ))),
+          body: Column(
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              filterSection(),
+              SizedBox(
+                height: Get.height * 0.675,
+                child: TabBarView(
+                  children: [
+                    Column(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            // ignore: sort_child_properties_last
+                            child: _buildPendingPackageList(),
+                            color: const Color(0xffefefef),
+                          ),
+                        ),
+                        const SizedBox(height: 64),
+                      ],
+                    ),
+                    Column(
+                      children: [
+                        Expanded(
+                          child: Container(
+                            // ignore: sort_child_properties_last
+                            child: _buildReadyPackageList(),
+                            color: const Color(0xffefefef),
+                          ),
+                        ),
+                        const SizedBox(height: 64),
+                      ],
+                    )
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget filterSection() {
+    // SplitOrderDTO? splitOrder = model.splitOrder;
+    return ScopedModelDescendant<HomeViewModel>(
+      builder: (context, child, model) {
+        return Center(
+          child: Container(
+            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+            width: double.infinity,
+            decoration: const BoxDecoration(
+              color: Colors.white,
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.grey,
+                  offset: Offset(0.0, 1.0), //(x,y)
+                  blurRadius: 6.0,
+                ),
+              ],
+            ),
+            child: Center(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(16, 0, 16, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Text('Khung giờ:', style: FineTheme.typograhpy.h2),
+                        DropdownButton<String>(
+                          value: model.selectedTimeSlotId,
+                          onChanged: (String? value) async {
+                            await model.onChangeTimeSlot(value!);
+                            setState(() {});
+                          },
+                          items: model.timeSlotList
+                              .map<DropdownMenuItem<String>>(
+                                  (TimeSlotDTO timeSlot) {
+                            return DropdownMenuItem<String>(
+                              value: timeSlot.id,
+                              child: Text(
+                                  '${timeSlot.arriveTime?.substring(0, 5)} - ${timeSlot.checkoutTime?.substring(0, 5)}',
+                                  style: FineTheme.typograhpy.body1),
+                            );
+                          }).toList(),
+                        ),
+                      ],
                     ),
                   ),
-                ))),
-        body: Column(
-          crossAxisAlignment: CrossAxisAlignment.center,
-          children: [
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Text('Khung giờ:', style: FineTheme.typograhpy.h2),
-                  DropdownButton<String>(
-                    value: model.selectedTimeSlotId,
-                    onChanged: (String? value) async {
-                      await model.onChangeTimeSlot(value!);
-                      setState(() {});
-                    },
-                    items: model.timeSlotList
-                        .map<DropdownMenuItem<String>>((TimeSlotDTO timeSlot) {
-                      return DropdownMenuItem<String>(
-                        value: timeSlot.id,
-                        child: Text(
-                            '${timeSlot.arriveTime?.substring(0, 5)} - ${timeSlot.checkoutTime?.substring(0, 5)}',
-                            style: FineTheme.typograhpy.body1),
-                      );
-                    }).toList(),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: TabBar(
+                      indicatorColor: FineTheme.palettes.emerald25,
+                      overlayColor: MaterialStateColor.resolveWith(
+                          (Set<MaterialState> states) {
+                        if (states.contains(MaterialState.focused)) {
+                          return FineTheme.palettes.emerald25;
+                        }
+                        if (states.contains(MaterialState.error)) {
+                          return Colors.red;
+                        }
+                        return FineTheme.palettes.emerald25;
+                      }),
+                      tabs: [
+                        Stack(
+                          children: [
+                            model.notifierPending.value != null
+                                ? Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Material(
+                                      color: Colors.red,
+                                      shape: const CircleBorder(
+                                          side: BorderSide(
+                                              color: Colors.red, width: 2)),
+                                      child: SizedBox(
+                                        width: model.notifierPending.value >= 10
+                                            ? 24
+                                            : 20,
+                                        height:
+                                            model.notifierPending.value >= 10
+                                                ? 24
+                                                : 20,
+                                        child: Center(
+                                          child: Text(
+                                            '${model.notifierPending.value}',
+                                            style: FineTheme
+                                                .typograhpy.subtitle2
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                : const SizedBox.shrink(),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 18, bottom: 12, right: 18),
+                              child: Text("Đang xử lý",
+                                  style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.emerald25,
+                                  )),
+                            ),
+                          ],
+                        ),
+                        Stack(
+                          children: [
+                            model.notifierReady.value != null
+                                ? Positioned(
+                                    top: 0,
+                                    right: 0,
+                                    child: Material(
+                                      color: Colors.red,
+                                      shape: const CircleBorder(
+                                          side: BorderSide(
+                                              color: Colors.red, width: 2)),
+                                      child: SizedBox(
+                                        width: model.notifierReady.value >= 10
+                                            ? 24
+                                            : 20,
+                                        height: model.notifierReady.value >= 10
+                                            ? 24
+                                            : 20,
+                                        child: Center(
+                                          child: Text(
+                                            '${model.notifierReady.value}',
+                                            style: FineTheme
+                                                .typograhpy.subtitle2
+                                                .copyWith(color: Colors.white),
+                                          ),
+                                        ),
+                                      ),
+                                    ))
+                                : const SizedBox.shrink(),
+                            Padding(
+                              padding: const EdgeInsets.only(
+                                  top: 18, bottom: 12, right: 18),
+                              child: Text("Đã xử lý",
+                                  style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.emerald25,
+                                  )),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
                   ),
                 ],
               ),
             ),
-            Expanded(
-              child: Container(
-                // ignore: sort_child_properties_last
-                child: _buildPackageList(),
-                color: const Color(0xffefefef),
-              ),
-            ),
-            const SizedBox(height: 64),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 
@@ -242,7 +399,7 @@ class _HomeScreenState extends State<HomeScreen> {
         ));
   }
 
-  Widget _buildPackageList() {
+  Widget _buildPendingPackageList() {
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
@@ -255,7 +412,7 @@ class _HomeScreenState extends State<HomeScreen> {
         );
       } else if (status == ViewStatus.Empty || packageList.isEmpty) {
         return RefreshIndicator(
-          key: _refreshIndicatorKey,
+          key: _refreshIndicatorKey1,
           onRefresh: refreshFetchData,
           child: ListView(children: [
             Column(
@@ -351,7 +508,153 @@ class _HomeScreenState extends State<HomeScreen> {
       }
 
       return RefreshIndicator(
-        key: _refreshIndicatorKey,
+        key: _refreshIndicatorKey1,
+        onRefresh: refreshFetchData,
+        child: Scrollbar(
+          child: Padding(
+            padding: const EdgeInsets.only(bottom: 28.0),
+            child: ListView(
+              physics: const AlwaysScrollableScrollPhysics(),
+              controller: Get.find<HomeViewModel>().scrollController,
+              padding: const EdgeInsets.all(8),
+              children: [
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.center,
+                  children: [
+                    // Center(
+                    //   child: Text(
+                    //       'Số gói hàng đã lấy: ${deliveredPackageList.length}/${packageList.length} ',
+                    //       style: FineTheme.typograhpy.h2.copyWith(
+                    //         color: FineTheme.palettes.emerald25,
+                    //       )),
+                    // ),
+                    ...packageList
+                        .map((package) => _buildOrderPackage(package))
+                        .toList(),
+                    loadMoreIcon(),
+                    const SizedBox(
+                      height: 80,
+                    ),
+                  ],
+                )
+              ],
+            ),
+          ),
+        ),
+      );
+    });
+  }
+
+  Widget _buildReadyPackageList() {
+    return ScopedModelDescendant<HomeViewModel>(
+        builder: (context, child, model) {
+      final status = model.status;
+      List<DeliveryPackageDTO> packageList = model.packageList;
+      List<PackageViewDTO> deliveredPackageList = model.deliveredPackageList;
+      if (status == ViewStatus.Loading) {
+        return const Center(
+          // child: SkeletonListItem(itemCount: 8),
+          child: LoadingFine(),
+        );
+      } else if (status == ViewStatus.Empty || packageList.isEmpty) {
+        return RefreshIndicator(
+          key: _refreshIndicatorKey2,
+          onRefresh: refreshFetchData,
+          child: ListView(children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                // Padding(
+                //   padding: const EdgeInsets.all(15),
+                //   child: InkWell(
+                //     onTap: () async {
+                //       await refreshFetchData();
+                //     },
+                //     child: Icon(
+                //       Icons.replay,
+                //       color: FineTheme.palettes.primary300,
+                //       size: 26,
+                //     ),
+                //   ),
+                // ),
+                Padding(
+                  padding: const EdgeInsets.only(left: 48, right: 48),
+                  child: Text(
+                    'Hiện tại chưa có cửa hàng nào có hàng cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name}!',
+                    style: FineTheme.typograhpy.body1,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
+                const SizedBox(
+                  height: 32,
+                ),
+                deliveredPackageList.isNotEmpty
+                    ? Column(
+                        children: [
+                          const Image(
+                            image: AssetImage(
+                                "assets/images/package_delivery.png"),
+                            width: 300,
+                            height: 300,
+                          ),
+                          const SizedBox(height: 16),
+                          Padding(
+                            padding: const EdgeInsets.only(left: 48, right: 48),
+                            child: Text(
+                              '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này',
+                              style: FineTheme.typograhpy.body1,
+                              textAlign: TextAlign.center,
+                            ),
+                          ),
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                            child: Center(
+                              child: ElevatedButton(
+                                style: ElevatedButton.styleFrom(
+                                  backgroundColor: Colors.white,
+                                  shape: const RoundedRectangleBorder(
+                                      borderRadius:
+                                          // BorderRadius.only(
+                                          //     bottomRight: Radius.circular(16),
+                                          //     bottomLeft: Radius.circular(16))
+                                          BorderRadius.all(Radius.circular(8))),
+                                ),
+                                onPressed: () {
+                                  _onTapDetail();
+                                },
+                                child: Text(
+                                  "Xem thông tin giao hàng!",
+                                  style: FineTheme.typograhpy.subtitle2
+                                      .copyWith(
+                                          color: FineTheme.palettes.emerald25),
+                                ),
+                              ),
+                            ),
+                          )
+                        ],
+                      )
+                    : const SizedBox.shrink(),
+              ],
+            ),
+          ]),
+        );
+      }
+
+      if (status == ViewStatus.Error) {
+        return Center(
+          child: AspectRatio(
+            aspectRatio: 1 / 4,
+            child: Image.asset(
+              'assets/images/error.png',
+              width: 24,
+            ),
+          ),
+        );
+      }
+
+      return RefreshIndicator(
+        key: _refreshIndicatorKey2,
         onRefresh: refreshFetchData,
         child: Scrollbar(
           child: Padding(
@@ -393,22 +696,6 @@ class _HomeScreenState extends State<HomeScreen> {
         .firstWhere((timeSlot) => timeSlot.id == model.selectedTimeSlotId);
     return Column(
       children: [
-        Padding(
-          padding: const EdgeInsets.all(8.0),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              Text('${package.storeName}',
-                  style: FineTheme.typograhpy.h2.copyWith(
-                    color: FineTheme.palettes.emerald25,
-                    fontWeight: FontWeight.bold,
-                  )),
-            ],
-          ),
-        ),
-        const SizedBox(
-          height: 8,
-        ),
         Container(
             // height: 80,
             margin: const EdgeInsets.all(8),
@@ -426,75 +713,96 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Column(
                     children: [
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Số món:',
-                              style: FineTheme.typograhpy.body1.copyWith(
-                                  color: FineTheme.palettes.neutral900,
-                                  fontWeight: FontWeight.bold)),
-                          OutlinedButton(
-                            onPressed: () => {
-                              currentPackage = package,
-                              _dialogBuilder(context)
-                            },
-                            child: Text(
-                              'Xem chi tiết (${package.packageShipperDetails?.length})',
-                              style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w400,
-                                  fontStyle: FontStyle.normal,
-                                  color: FineTheme.palettes.emerald25),
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.all(8.0),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('${package.storeName}',
+                                style: FineTheme.typograhpy.h2.copyWith(
+                                  color: FineTheme.palettes.emerald25,
+                                  fontWeight: FontWeight.bold,
+                                )),
+                          ],
+                        ),
                       ),
                       const SizedBox(
                         height: 8,
                       ),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text('Vào lúc:',
-                              style: FineTheme.typograhpy.body1.copyWith(
-                                  color: FineTheme.palettes.neutral900,
-                                  fontWeight: FontWeight.bold)),
-                          Text('${timeSlot.checkoutTime}',
-                              style: FineTheme.typograhpy.body1),
-                        ],
+                      Padding(
+                        padding: const EdgeInsets.only(left: 16, right: 16),
+                        child: Column(
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Số món:',
+                                    style: FineTheme.typograhpy.body1.copyWith(
+                                        color: FineTheme.palettes.neutral900,
+                                        fontWeight: FontWeight.bold)),
+                                OutlinedButton(
+                                  onPressed: () => {
+                                    currentPackage = package,
+                                    _dialogBuilder(context)
+                                  },
+                                  child: Text(
+                                    'Xem chi tiết (${package.packageShipperDetails?.length})',
+                                    style: TextStyle(
+                                        fontSize: 16,
+                                        fontWeight: FontWeight.w400,
+                                        fontStyle: FontStyle.normal,
+                                        color: FineTheme.palettes.emerald25),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(
+                              height: 8,
+                            ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text('Vào lúc:',
+                                    style: FineTheme.typograhpy.body1.copyWith(
+                                        color: FineTheme.palettes.neutral900,
+                                        fontWeight: FontWeight.bold)),
+                                Text('${timeSlot.checkoutTime}',
+                                    style: FineTheme.typograhpy.body1),
+                              ],
+                            ),
+                          ],
+                        ),
                       ),
                       const SizedBox(
-                        height: 24,
+                        height: 12,
                       ),
+                      Center(
+                        child: ElevatedButton(
+                          style: ElevatedButton.styleFrom(
+                            backgroundColor: Colors.white,
+                            shape: const RoundedRectangleBorder(
+                                borderRadius:
+                                    // BorderRadius.only(
+                                    //     bottomRight: Radius.circular(16),
+                                    //     bottomLeft: Radius.circular(16))
+                                    BorderRadius.all(Radius.circular(8))),
+                          ),
+                          onPressed: () async {
+                            await model.confirmTakenPackage(
+                                storeId: package.storeId!);
+                            setState(() {});
+                          },
+                          child: Text(
+                            "${"Đã lấy hàng"}",
+                            style: FineTheme.typograhpy.subtitle2
+                                .copyWith(color: FineTheme.palettes.emerald25),
+                          ),
+                        ),
+                      )
                     ],
                   )),
             )),
-        Padding(
-          padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-          child: Center(
-            child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                    borderRadius:
-                        // BorderRadius.only(
-                        //     bottomRight: Radius.circular(16),
-                        //     bottomLeft: Radius.circular(16))
-                        BorderRadius.all(Radius.circular(8))),
-              ),
-              onPressed: () async {
-                await model.confirmDelivery(package);
-                setState(() {});
-              },
-              child: Text(
-                "${"Đã lấy hàng"}",
-                style: FineTheme.typograhpy.subtitle2
-                    .copyWith(color: FineTheme.palettes.emerald25),
-              ),
-            ),
-          ),
-        )
       ],
     );
   }
@@ -567,7 +875,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 160,
+            width: 180,
             child: Text(
               '${product.productName}',
               overflow: TextOverflow.ellipsis,

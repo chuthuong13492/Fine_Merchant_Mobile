@@ -4,10 +4,12 @@ import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/Utils/format_time.dart';
+import 'package:fine_merchant_mobile/Utils/text_fields.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
 import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
 import 'package:fine_merchant_mobile/widgets/skeleton_list.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:get/get.dart';
@@ -81,158 +83,162 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       ),
                     ),
                   ))),
-          body: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              orderFilterSection(),
-              const SizedBox(height: 16),
-              SizedBox(
-                height: Get.height * 0.675,
-                child: TabBarView(
-                  children: [
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Text(
-                                'Sản phẩm',
-                                style: FineTheme.typograhpy.h2.copyWith(
-                                  color: FineTheme.palettes.emerald50,
+          body: SingleChildScrollView(
+            physics: const NeverScrollableScrollPhysics(),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.center,
+              children: [
+                orderFilterSection(),
+                const SizedBox(height: 16),
+                SizedBox(
+                  height: Get.height * 0.675,
+                  child: TabBarView(
+                    children: [
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Text(
+                                  'Sản phẩm',
+                                  style: FineTheme.typograhpy.h2.copyWith(
+                                    color: FineTheme.palettes.emerald50,
+                                  ),
                                 ),
-                              ),
-                              Row(
-                                children: [
-                                  Text(
-                                    '${model.numsOfCheck == 0 ? "Chọn tất cả" : "Đã chọn " + model.numsOfCheck.toString() + " món"} ',
-                                    style: FineTheme.typograhpy.body2.copyWith(
-                                      color: FineTheme.palettes.neutral900,
+                                Row(
+                                  children: [
+                                    Text(
+                                      '${model.numsOfCheck == 0 ? "Chọn tất cả" : "Đã chọn " + model.numsOfCheck.toString() + " món"} ',
+                                      style:
+                                          FineTheme.typograhpy.body2.copyWith(
+                                        color: FineTheme.palettes.neutral900,
+                                      ),
                                     ),
-                                  ),
-                                  Checkbox(
-                                    checkColor: Colors.white,
-                                    activeColor: FineTheme.palettes.emerald25,
-                                    value: model.isAllChecked,
-                                    onChanged: model.splitOrder != null &&
-                                            model.splitOrder!
-                                                    .productTotalDetailList !=
-                                                null
-                                        ? (bool? value) {
-                                            model.onCheckAll(value!);
-                                            setState(() {});
-                                          }
-                                        : null,
-                                  ),
-                                ],
-                              ),
-                            ],
-                          ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            // ignore: sort_child_properties_last
-                            child: _buildPendingProducts(),
-                            color: const Color(0xffefefef),
-                          ),
-                        ),
-                        const SizedBox(height: 16),
-                        ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: FineTheme.palettes.emerald25,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    // BorderRadius.only(
-                                    //     bottomRight: Radius.circular(16),
-                                    //     bottomLeft: Radius.circular(16))
-                                    BorderRadius.all(Radius.circular(8))),
-                          ),
-                          onPressed: model.numsOfCheck < 1 ||
-                                  status == ViewStatus.Loading
-                              ? null
-                              : () async {
-                                  await model.updateSplitProductsStatus(
-                                      statusType:
-                                          UpdateSplitProductTypeEnum.CONFIRM);
-                                  setState(() {});
-                                },
-                          child: Padding(
-                            padding: const EdgeInsets.only(top: 8, bottom: 8),
-                            child: Text(
-                              "Xác nhận",
-                              style: FineTheme.typograhpy.subtitle2
-                                  .copyWith(color: Colors.white),
+                                    Checkbox(
+                                      checkColor: Colors.white,
+                                      activeColor: FineTheme.palettes.emerald25,
+                                      value: model.isAllChecked,
+                                      onChanged: model.splitOrder != null &&
+                                              model.splitOrder!
+                                                      .productTotalDetailList !=
+                                                  null
+                                          ? (bool? value) {
+                                              model.onCheckAll(value!);
+                                              setState(() {});
+                                            }
+                                          : null,
+                                    ),
+                                  ],
+                                ),
+                              ],
                             ),
                           ),
-                        ),
-                        const SizedBox(height: 50),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 12, bottom: 12),
-                                child: Text(
-                                  'Sản phẩm',
-                                  style: FineTheme.typograhpy.h2.copyWith(
-                                    color: FineTheme.palettes.emerald50,
+                          Expanded(
+                            child: Container(
+                              // ignore: sort_child_properties_last
+                              child: _buildPendingProducts(),
+                              color: const Color(0xffefefef),
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          ElevatedButton(
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: FineTheme.palettes.emerald25,
+                              shape: const RoundedRectangleBorder(
+                                  borderRadius:
+                                      // BorderRadius.only(
+                                      //     bottomRight: Radius.circular(16),
+                                      //     bottomLeft: Radius.circular(16))
+                                      BorderRadius.all(Radius.circular(8))),
+                            ),
+                            onPressed: model.numsOfCheck < 1 ||
+                                    status == ViewStatus.Loading
+                                ? null
+                                : () async {
+                                    await model.updateSplitProductsStatus(
+                                        statusType:
+                                            UpdateSplitProductTypeEnum.CONFIRM);
+                                    setState(() {});
+                                  },
+                            child: Padding(
+                              padding: const EdgeInsets.only(top: 8, bottom: 8),
+                              child: Text(
+                                "Xác nhận",
+                                style: FineTheme.typograhpy.subtitle2
+                                    .copyWith(color: Colors.white),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 50),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 12, bottom: 12),
+                                  child: Text(
+                                    'Sản phẩm',
+                                    style: FineTheme.typograhpy.h2.copyWith(
+                                      color: FineTheme.palettes.emerald50,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            // ignore: sort_child_properties_last
-                            child: _buildConfirmedProducts(),
-                            color: const Color(0xffefefef),
+                          Expanded(
+                            child: Container(
+                              // ignore: sort_child_properties_last
+                              child: _buildConfirmedProducts(),
+                              color: const Color(0xffefefef),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 50),
-                      ],
-                    ),
-                    Column(
-                      children: [
-                        Padding(
-                          padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            children: [
-                              Padding(
-                                padding:
-                                    const EdgeInsets.only(top: 12, bottom: 12),
-                                child: Text(
-                                  'Sản phẩm',
-                                  style: FineTheme.typograhpy.h2.copyWith(
-                                    color: FineTheme.palettes.emerald50,
+                          const SizedBox(height: 50),
+                        ],
+                      ),
+                      Column(
+                        children: [
+                          Padding(
+                            padding: const EdgeInsets.fromLTRB(24, 0, 24, 0),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Padding(
+                                  padding: const EdgeInsets.only(
+                                      top: 12, bottom: 12),
+                                  child: Text(
+                                    'Sản phẩm',
+                                    style: FineTheme.typograhpy.h2.copyWith(
+                                      color: FineTheme.palettes.emerald50,
+                                    ),
                                   ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
-                        ),
-                        Expanded(
-                          child: Container(
-                            // ignore: sort_child_properties_last
-                            child: _buildReportedProducts(),
-                            color: const Color(0xffefefef),
+                          Expanded(
+                            child: Container(
+                              // ignore: sort_child_properties_last
+                              child: _buildReportedProducts(),
+                              color: const Color(0xffefefef),
+                            ),
                           ),
-                        ),
-                        const SizedBox(height: 50),
-                      ],
-                    ),
-                  ],
+                          const SizedBox(height: 50),
+                        ],
+                      ),
+                    ],
+                  ),
                 ),
-              ),
-            ],
+              ],
+            ),
           ),
         ),
       ),
@@ -558,7 +564,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
       return RefreshIndicator(
         key: _refreshIndicatorKey2,
-        onRefresh: model.getSplitOrders,
+        onRefresh: refreshFetchOrder,
         child: Scrollbar(
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -645,7 +651,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
       return RefreshIndicator(
         key: _refreshIndicatorKey3,
-        onRefresh: model.getSplitOrders,
+        onRefresh: refreshFetchOrder,
         child: Scrollbar(
           child: ListView(
             physics: const AlwaysScrollableScrollPhysics(),
@@ -690,7 +696,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
     return InkWell(
       onLongPress: product.isChecked!
           ? () {
-              model.currentMissing = product.currentMissing!;
               _dialogBuilder(context, product);
             }
           : null,
@@ -766,7 +771,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
           .firstWhere((station) => station.id == product.stationId)
           .name;
     }
-
+    int productIndex = model.errorProductList!
+        .indexWhere((e) => e.productId == product.productId);
     return Column(
       children: [
         Container(
@@ -816,7 +822,26 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         ),
                       ),
                       SizedBox(
-                          child: Text('x ${product.quantity}',
+                          child: Text('${product.quantity}',
+                              style: FineTheme.typograhpy.subtitle2)),
+                    ],
+                  ),
+                  const SizedBox(
+                    height: 8,
+                  ),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
+                    children: [
+                      SizedBox(
+                        width: 150,
+                        child: Text(
+                          'Số lượng đã xử lý:',
+                          style: FineTheme.typograhpy.subtitle2,
+                        ),
+                      ),
+                      SizedBox(
+                          child: Text('${product.reConfirmQuantity}',
                               style: FineTheme.typograhpy.subtitle2)),
                     ],
                   ),
@@ -864,36 +889,93 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   const SizedBox(
                     height: 12,
                   ),
-                  InkWell(
-                    onTap: () async {
-                      await model.updateReportProduct(
-                          productId: product.productId!,
-                          quantity: product.quantity!,
-                          type: UpdateSplitProductTypeEnum.RECONFIRM);
-                    },
-                    child: Container(
-                      width: 150,
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.white,
-                        borderRadius: BorderRadius.circular(12),
-                        border:
-                            Border.all(color: FineTheme.palettes.primary100),
-                        boxShadow: [
-                          BoxShadow(
-                            color: FineTheme.palettes.primary100,
-                            offset: const Offset(0, 3),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      SizedBox(
+                        width: 120,
+                        height: 40,
+                        child: TextFormField(
+                          initialValue: product.numsToSolve.toString(),
+                          onChanged: (value) {
+                            model.onChangeNumberToSolve(productIndex, value);
+
+                            setState(() {});
+                          },
+                          keyboardType: TextInputType.number,
+                          inputFormatters: <TextInputFormatter>[
+                            FilteringTextInputFormatter.digitsOnly,
+                            // FilteringTextInputFormatter.allow(digitValidator),
+                            NumericalRangeFormatter(
+                                min: 0, max: product.quantity!)
+                          ],
+                          style: const TextStyle(
+                              fontSize: 16,
+                              fontWeight: FontWeight.w500,
+                              color: Colors.black),
+                          decoration: InputDecoration(
+                            label: const Text('Số lượng xử lý'),
+                            floatingLabelStyle: TextStyle(
+                                fontWeight: FontWeight.w500,
+                                color: FineTheme.palettes.primary100),
+                            focusColor: FineTheme.palettes.primary100,
+                            fillColor: FineTheme.palettes.primary100,
+                            hoverColor: FineTheme.palettes.primary100,
+                            focusedBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                  color: FineTheme.palettes.primary100,
+                                  width: 2),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(16),
+                              borderSide: BorderSide(
+                                  color: FineTheme.palettes.primary100,
+                                  width: 1),
+                            ),
                           ),
-                        ],
-                      ),
-                      child: Center(
-                        child: Text(
-                          "Đã xử lý",
-                          style: FineTheme.typograhpy.subtitle1
-                              .copyWith(color: FineTheme.palettes.primary100),
                         ),
                       ),
-                    ),
+                      InkWell(
+                        onTap: product.numsToSolve! > 0
+                            ? () async {
+                                await model.updateReportProduct(
+                                    productId: product.productId!,
+                                    quantity: product.numsToSolve!,
+                                    type: UpdateSplitProductTypeEnum.RECONFIRM);
+                              }
+                            : null,
+                        child: Container(
+                          width: 150,
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(12),
+                            border: Border.all(
+                                color: product.numsToSolve! > 0
+                                    ? FineTheme.palettes.primary100
+                                    : FineTheme.palettes.neutral700),
+                            boxShadow: [
+                              BoxShadow(
+                                color: product.numsToSolve! > 0
+                                    ? FineTheme.palettes.primary100
+                                    : FineTheme.palettes.neutral700,
+                                offset: const Offset(0, 3),
+                              ),
+                            ],
+                          ),
+                          child: Center(
+                            child: Text(
+                              "Đã xử lý",
+                              style: FineTheme.typograhpy.subtitle1.copyWith(
+                                  color: product.numsToSolve! > 0
+                                      ? FineTheme.palettes.primary100
+                                      : FineTheme.palettes.neutral700),
+                            ),
+                          ),
+                        ),
+                      ),
+                    ],
                   ),
                 ],
               ),
@@ -909,9 +991,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   Future<void> _dialogBuilder(
       BuildContext context, ProductTotalDetail product) {
-    int splitProductIndex = model.pendingProductList!
-        .indexWhere((e) => e.productName == product.productName);
-
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -953,20 +1032,22 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      IconButton(
-                        splashRadius: 24,
-                        icon: const Icon(
-                          Icons.remove,
-                          size: 32,
-                        ),
-                        onPressed: () {
-                          if (model.currentMissing > -1) {
-                            model.currentMissing--;
-                            setState(() {});
-                          }
-                        },
-                        color: FineTheme.palettes.emerald25,
-                      ),
+                      product.pendingQuantity! > 1
+                          ? IconButton(
+                              splashRadius: 24,
+                              icon: const Icon(
+                                Icons.remove,
+                                size: 32,
+                              ),
+                              onPressed: () {
+                                if (model.currentMissing > 1) {
+                                  model.currentMissing--;
+                                  setState(() {});
+                                }
+                              },
+                              color: FineTheme.palettes.emerald25,
+                            )
+                          : const SizedBox.shrink(),
                       Padding(
                         padding: const EdgeInsets.only(left: 16, right: 16),
                         child: Text(
@@ -978,17 +1059,20 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               fontStyle: FontStyle.normal),
                         ),
                       ),
-                      IconButton(
-                        splashRadius: 24,
-                        icon: const Icon(Icons.add, size: 32),
-                        onPressed: () {
-                          if (model.currentMissing < product.pendingQuantity!) {
-                            model.currentMissing++;
-                            setState(() {});
-                          }
-                        },
-                        color: FineTheme.palettes.emerald25,
-                      ),
+                      product.pendingQuantity! > 1
+                          ? IconButton(
+                              splashRadius: 24,
+                              icon: const Icon(Icons.add, size: 32),
+                              onPressed: () {
+                                if (model.currentMissing <
+                                    product.pendingQuantity!) {
+                                  model.currentMissing++;
+                                  setState(() {});
+                                }
+                              },
+                              color: FineTheme.palettes.emerald25,
+                            )
+                          : const SizedBox.shrink(),
                     ],
                   )
                 ],

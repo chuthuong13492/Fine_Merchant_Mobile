@@ -206,25 +206,28 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
       return RefreshIndicator(
         key: _refreshIndicatorKey,
         onRefresh: refreshFetchApi,
-        child: ListView(
-          physics: const AlwaysScrollableScrollPhysics(),
-          controller: Get.find<StationPackageViewModel>().scrollController,
-          padding: const EdgeInsets.all(8),
-          children: [
-            Column(
-              crossAxisAlignment: CrossAxisAlignment.center,
-              children: [
-                ...model.splitProductsByStation
-                    .map((stationPackage) =>
-                        _buildStationPackage(stationPackage))
-                    .toList(),
-                loadMoreIcon(),
-                const SizedBox(
-                  height: 80,
-                ),
-              ],
-            )
-          ],
+        child: SizedBox(
+          height: Get.height * 0.7,
+          child: ListView(
+            physics: const AlwaysScrollableScrollPhysics(),
+            controller: Get.find<StationPackageViewModel>().scrollController,
+            padding: const EdgeInsets.all(8),
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  ...model.splitProductsByStation
+                      .map((stationPackage) =>
+                          _buildStationPackage(stationPackage))
+                      .toList(),
+                  loadMoreIcon(),
+                  const SizedBox(
+                    height: 90,
+                  ),
+                ],
+              )
+            ],
+          ),
         ),
       );
     });

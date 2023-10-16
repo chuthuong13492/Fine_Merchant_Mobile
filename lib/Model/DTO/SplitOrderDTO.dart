@@ -63,7 +63,6 @@ class ProductTotalDetail {
   int? errorQuantity;
   List<ProductDetails>? productDetails;
   bool? isChecked;
-  int? currentMissing;
 
   ProductTotalDetail(
       {this.productId,
@@ -73,7 +72,6 @@ class ProductTotalDetail {
       this.readyQuantity,
       this.errorQuantity,
       this.productDetails,
-      this.currentMissing,
       this.isChecked});
 
   ProductTotalDetail.fromJson(Map<String, dynamic> json) {
@@ -89,7 +87,7 @@ class ProductTotalDetail {
         productDetails!.add(ProductDetails.fromJson(v));
       });
     }
-    currentMissing = 1;
+
     isChecked = false;
   }
 
@@ -135,8 +133,10 @@ class ErrorProducts {
   String? productInMenuId;
   String? productName;
   int? quantity;
+  int? reConfirmQuantity;
   String? stationId;
   int? reportMemType;
+  int? numsToSolve;
 
   ErrorProducts() {
     this.productId;
@@ -145,6 +145,7 @@ class ErrorProducts {
     this.quantity;
     this.stationId;
     this.reportMemType;
+    this.numsToSolve;
   }
 
   ErrorProducts.fromJson(Map<String, dynamic> json) {
@@ -152,8 +153,10 @@ class ErrorProducts {
     productInMenuId = json['productInMenuId'];
     productName = json['productName'];
     quantity = json['quantity'];
+    reConfirmQuantity = json['reConfirmQuantity'];
     stationId = json['stationId'];
     reportMemType = json['reportMemType'];
+    numsToSolve = quantity! - reConfirmQuantity!;
   }
 }
 

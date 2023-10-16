@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
@@ -81,7 +82,7 @@ class OrderListViewModel extends BaseModel {
     if (index >= 0 && splitProductList != null && splitProductList.isNotEmpty) {
       if (newValue > -1 &&
           (splitProductList[index].pendingQuantity! - newValue > 0)) {
-        splitProductList[index].currentMissing = newValue;
+        // splitProductList[index].currentMissing = newValue;
       }
     }
 
@@ -96,7 +97,7 @@ class OrderListViewModel extends BaseModel {
         numsOfCheck++;
       } else {
         numsOfCheck--;
-        productList[index].currentMissing = 0;
+        // productList[index].currentMissing = 0;
       }
     } else {
       print('No index found');
@@ -119,6 +120,27 @@ class OrderListViewModel extends BaseModel {
       numsOfCheck = 0;
       isAllChecked = false;
     }
+    notifyListeners();
+  }
+
+  Future<void> onChangeNumberToSolve(int index, String value) async {
+    int newValue = 0;
+    if (value != "") {
+      newValue = int.parse(value);
+    }
+    if (index >= 0 &&
+        errorProductList != null &&
+        errorProductList!.isNotEmpty) {
+      if (newValue > -1) {
+        if (errorProductList![index].quantity! - newValue > -1) {
+          errorProductList![index].numsToSolve = newValue;
+        } else {
+          errorProductList![index].numsToSolve =
+              errorProductList![index].quantity;
+        }
+      }
+    }
+
     notifyListeners();
   }
 
@@ -153,7 +175,6 @@ class OrderListViewModel extends BaseModel {
 
   Future<void> getTimeSlotList() async {
     try {
-      setState(ViewStatus.Completed);
       final data = await _timeSlotDAO?.getTimeSlots(
           destinationId: selectedDestinationId);
       if (data != null) {
@@ -172,21 +193,18 @@ class OrderListViewModel extends BaseModel {
           selectedTimeSlotId = timeSlotList.first.id!;
         }
       }
-      setState(ViewStatus.Completed);
+      // setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getTimeSlotList();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getTimeSlotList();
+      // }
     }
   }
 
   Future<void> getStationList() async {
     try {
-      setState(ViewStatus.Loading);
       final data = await _stationDAO?.getStationsByDestination(
           destinationId: selectedDestinationId);
       if (data != null) {
@@ -197,41 +215,36 @@ class OrderListViewModel extends BaseModel {
             .toList();
         selectedStation = data.first;
       }
-      setState(ViewStatus.Completed);
+      // setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getStationList();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getStationList();
+      // }
     } finally {}
   }
 
   Future<void> getStoreList() async {
     try {
-      setState(ViewStatus.Loading);
       final data = await _storeDAO?.getStores();
       if (data != null) {
         storeList = data;
         selectedStoreId = data.first.id!;
       }
-      setState(ViewStatus.Completed);
+
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getStoreList();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getStoreList();
+      // }
     } finally {}
   }
 
   Future<void> getSplitOrders() async {
     try {
-      setState(ViewStatus.Completed);
+      // setState(ViewStatus.Loading);
       print('selectedTimeSlotId: $selectedTimeSlotId');
       // var currentUser = Get.find<AccountViewModel>().currentUser;
       List<ProductTotalDetail>? newPendingProductList = [];
@@ -241,12 +254,26 @@ class OrderListViewModel extends BaseModel {
         timeSlotId: selectedTimeSlotId,
       );
       if (data != null) {
-        List<ProductTotalDetail>? newSplitProductList =
-            data.productTotalDetailList;
+        List<ProductTotalDetail>? newSplitProductList = [];
+        if (data.productTotalDetailList != null) {
+          newSplitProductList = data.productTotalDetailList;
+        }
+        // Function eq = const ListEquality().equals;
+        // print(eq(data.errorProducts, errorProductList));
         if (data.errorProducts != null && data.errorProducts!.isNotEmpty) {
-          errorProductList = data.errorProducts;
-        } else {
-          errorProductList = [];
+          List<ErrorProducts>? newErrorProducts = data.errorProducts;
+          if (errorProductList != null && errorProductList!.isNotEmpty) {
+            for (ErrorProducts errorProduct in errorProductList!) {
+              final updateIndex = errorProductList!
+                  .indexWhere((e) => e.productId == errorProduct.productId);
+              if (updateIndex > -1) {
+                newErrorProducts![updateIndex].numsToSolve =
+                    errorProduct.numsToSolve;
+              }
+            }
+          }
+
+          errorProductList = newErrorProducts;
         }
 
         if (splitOrder != null) {
@@ -259,7 +286,7 @@ class OrderListViewModel extends BaseModel {
               if (splitProduct.isChecked == true &&
                   splitProduct.pendingQuantity! > 0) {
                 final updateIndex = newSplitProductList!.indexWhere((e) =>
-                    e.productName == splitProduct.productName &&
+                    e.productId == splitProduct.productId &&
                     e.pendingQuantity! > 0);
                 if (updateIndex > -1) {
                   newSplitProductList[updateIndex].isChecked = true;
@@ -270,7 +297,8 @@ class OrderListViewModel extends BaseModel {
             int numsOfPendingProducts = newSplitProductList!
                 .where((e) => e.pendingQuantity! > 0)
                 .length;
-            if (numsOfCheck == numsOfPendingProducts) {
+            if (numsOfCheck == numsOfPendingProducts &&
+                numsOfPendingProducts != 0) {
               isAllChecked = true;
             } else {
               isAllChecked = false;
@@ -279,11 +307,6 @@ class OrderListViewModel extends BaseModel {
         }
         if (newSplitProductList != null && newSplitProductList.isNotEmpty) {
           data.productTotalDetailList = newSplitProductList;
-          splitOrder = data;
-          notifierPending.value = splitOrder!.totalProductPending!;
-          notifierReady.value = splitOrder!.totalProductReady!;
-          notifierError.value = splitOrder!.totalProductError!;
-
           for (ProductTotalDetail product in newSplitProductList) {
             if (product.pendingQuantity! > 0) {
               newPendingProductList.add(product);
@@ -294,12 +317,19 @@ class OrderListViewModel extends BaseModel {
               newConfirmedProductList.add(product);
             }
           }
-          // for (ProductTotalDetail product in newSplitProductList) {
-          //   if (product.errorQuantity! > 0) {
-          //     newReportedProductList.add(product);
-          //   }
-          // }
         }
+
+        splitOrder = data;
+        notifierPending.value = splitOrder!.totalProductPending!;
+        notifierReady.value = splitOrder!.totalProductReady!;
+        notifierError.value = splitOrder!.totalProductError!;
+
+        // for (ProductTotalDetail product in newSplitProductList) {
+        //   if (product.errorQuantity! > 0) {
+        //     newReportedProductList.add(product);
+        //   }
+        // }
+
         pendingProductList = newPendingProductList;
         confirmedProductList = newConfirmedProductList;
 
@@ -313,15 +343,16 @@ class OrderListViewModel extends BaseModel {
         confirmedProductList = null;
       }
       notifyListeners();
-      setState(ViewStatus.Completed);
+      // setState(ViewStatus.Completed);
     } catch (e) {
       print(e);
-      bool result = await showErrorDialog();
-      if (result) {
-        await getSplitOrders();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getSplitOrders();
+      // }
+      // else {
+      //   setState(ViewStatus.Error);
+      // }
     } finally {}
   }
 
@@ -347,17 +378,6 @@ class OrderListViewModel extends BaseModel {
         await getOrders();
       }
     } finally {}
-  }
-
-  Future<void> getOrderByOrderId({String? id}) async {
-    try {
-      setState(ViewStatus.Loading);
-      orderDTO = await _orderDAO?.getOrderById(id);
-      setState(ViewStatus.Completed);
-      notifyListeners();
-    } catch (e) {
-      setState(ViewStatus.Error, e.toString());
-    }
   }
 
   Future<void> updateSplitProductsStatus({required int statusType}) async {

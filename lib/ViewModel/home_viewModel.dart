@@ -43,6 +43,8 @@ class HomeViewModel extends BaseModel {
   String selectedStationId = '';
   String selectedTimeSlotId = 'e8d529d4-6a51-4fdb-b9db-e29f54c0486e';
   String selectedStoreId = '';
+  final ValueNotifier<int> notifierPending = ValueNotifier(0);
+  final ValueNotifier<int> notifierReady = ValueNotifier(0);
 
   HomeViewModel() {
     _orderDAO = OrderDAO();
@@ -62,21 +64,20 @@ class HomeViewModel extends BaseModel {
 
   Future<void> onChangeStation(String value) async {
     selectedStationId = value;
-    await getDeliveredOrdersForDriver();
+    // await getDeliveredOrdersForDriver();
     await getDeliveryPackageListForDriver();
     notifyListeners();
   }
 
   Future<void> onChangeTimeSlot(String value) async {
     selectedTimeSlotId = value;
-    await getDeliveredOrdersForDriver();
+    // await getDeliveredOrdersForDriver();
     await getDeliveryPackageListForDriver();
     notifyListeners();
   }
 
   Future<void> getTimeSlotList() async {
     try {
-      setState(ViewStatus.Loading);
       final data = await _timeSlotDAO?.getTimeSlots(
           destinationId: selectedDestinationId);
       if (data != null) {
@@ -95,21 +96,18 @@ class HomeViewModel extends BaseModel {
           selectedTimeSlotId = timeSlotList.first.id!;
         }
       }
-      setState(ViewStatus.Completed);
+
       notifyListeners();
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
         await getTimeSlotList();
-      } else {
-        setState(ViewStatus.Error);
       }
     }
   }
 
   Future<void> getStationList() async {
     try {
-      setState(ViewStatus.Loading);
       var currentUser = Get.find<AccountViewModel>().currentUser;
       print(currentUser);
       final data = await _stationDAO?.getStationsByDestination(
@@ -132,21 +130,18 @@ class HomeViewModel extends BaseModel {
         selectedStationId = foundStation.id!;
         // selectedStationId = data.first.id!;
       }
-      setState(ViewStatus.Completed);
+
       notifyListeners();
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
         await getStationList();
-      } else {
-        setState(ViewStatus.Error);
       }
     } finally {}
   }
 
   Future<void> getStoreList() async {
     try {
-      setState(ViewStatus.Loading);
       final data = await _storeDAO?.getStores();
       if (data != null) {
         storeList = data;
@@ -154,14 +149,12 @@ class HomeViewModel extends BaseModel {
           selectedStoreId = data.first.id!;
         }
       }
-      setState(ViewStatus.Completed);
+
       notifyListeners();
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
         await getStoreList();
-      } else {
-        setState(ViewStatus.Error);
       }
     } finally {}
   }
@@ -319,60 +312,38 @@ class HomeViewModel extends BaseModel {
     } finally {}
   }
 
-  // Future<void> confirmSplitProducts() async {
-  //   int option = await showOptionDialog("Xác nhận những món này?");
-  //   if (option == 1) {
-  //     try {
-  //       var currentUser = Get.find<AccountViewModel>().currentUser;
-  //       List<String> updatedOrderDetailIdList = [];
+  Future<void> confirmTakenPackage({required String storeId}) async {
+    try {
+      int option = await showOptionDialog("Đã lấy món ở cửa hàng này?");
 
-  //       showLoadingDialog();
-  //       var newOrderStatus = OrderStatusEnum.PREPARED;
-  //       if (splitOrderList.isNotEmpty) {
-  //         for (final splitOrder in splitOrderList) {
-  //           if (splitOrder.isChecked == true) {
-  //             List<String>? orderDetailIdList = splitOrder.orderDetailIdList;
-  //             for (final orderDetailId in orderDetailIdList!) {
-  //               updatedOrderDetailIdList.add(orderDetailId);
-  //             }
-  //           }
-  //         }
-  //         UpdateSplitProductsRequestModel updatedProducts =
-  //             UpdateSplitProductsRequestModel(
-  //                 productStatus: newOrderStatus,
-  //                 orderDetailId: updatedOrderDetailIdList);
+      if (option == 1) {
+        showLoadingDialog();
 
-  //         final statusCode =
-  //             await _orderDAO?.confirmSplitProduct(products: updatedProducts);
-  //         if (statusCode == 200) {
-  //           numsOfChecked = 0;
-  //           notifyListeners();
-  //           await showStatusDialog(
-  //               "assets/images/icon-success.png", "Xác nhận thành công", "");
-  //           Get.back();
-  //         } else {
-  //           await showStatusDialog(
-  //             "assets/images/error.png",
-  //             "Thất bại",
-  //             "",
-  //           );
-  //         }
-  //       } else {
-  //         Get.back();
-  //       }
-  //     } catch (e) {
-  //       await showStatusDialog(
-  //         "assets/images/error.png",
-  //         "Thất bại",
-  //         "Có lỗi xảy ra, vui lòng thử lại sau 😓",
-  //       );
-  //       print(e);
-  //     } finally {
-  //       await getOrders();
-  //       await getSplitOrders();
-  //     }
-  //   }
-  // }
+        final statusCode = await _splitProductDAO?.confirmTakenProduct(
+            storeId: storeId, timeSlotId: selectedTimeSlotId);
+        if (statusCode == 200) {
+          notifyListeners();
+          await showStatusDialog(
+              "assets/images/icon-success.png", "Lấy thành công", "");
+          Get.back();
+        } else {
+          await showStatusDialog(
+            "assets/images/error.png",
+            "Thất bại",
+            "",
+          );
+        }
+      }
+    } catch (e) {
+      await showStatusDialog(
+        "assets/images/error.png",
+        "Thất bại",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+      );
+    } finally {
+      await getDeliveryPackageListForDriver();
+    }
+  }
 
   Future<void> confirmAllBoxStored() async {
     int option = await showOptionDialog(
