@@ -400,6 +400,12 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildPendingPackageList() {
+    String? stationName = '';
+    if (model.stationList.isNotEmpty) {
+      stationName = model.stationList
+          .firstWhere((station) => station.id == model.selectedStationId)
+          .name;
+    }
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
@@ -435,7 +441,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 48, right: 48),
                   child: Text(
-                    'Hiện tại chưa có cửa hàng nào có hàng cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name}!',
+                    'Hiện tại chưa có cửa hàng nào có hàng cho trạm ${stationName}!',
                     style: FineTheme.typograhpy.body1,
                     textAlign: TextAlign.center,
                   ),
@@ -546,6 +552,13 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Widget _buildReadyPackageList() {
+    String? stationName = '';
+    if (model.stationList.isNotEmpty) {
+      stationName = model.stationList
+          .firstWhere((station) => station.id == model.selectedStationId)
+          .name;
+    }
+
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
@@ -581,7 +594,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 Padding(
                   padding: const EdgeInsets.only(left: 48, right: 48),
                   child: Text(
-                    'Hiện tại chưa có cửa hàng nào có hàng cho trạm ${model.stationList.firstWhere((station) => station.id == model.selectedStationId).name}!',
+                    'Hiện tại chưa có cửa hàng nào có hàng cho trạm ${stationName}!',
                     style: FineTheme.typograhpy.body1,
                     textAlign: TextAlign.center,
                   ),
