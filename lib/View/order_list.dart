@@ -696,6 +696,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
     return InkWell(
       onLongPress: product.isChecked!
           ? () {
+              model.numsOfCheck = 1;
               _dialogBuilder(context, product);
             }
           : null,
