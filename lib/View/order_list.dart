@@ -696,7 +696,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
     return InkWell(
       onLongPress: product.isChecked!
           ? () {
-              model.numsOfCheck = 1;
+              setState(() {
+                model.currentMissing = 1;
+              });
               _dialogBuilder(context, product);
             }
           : null,
@@ -992,6 +994,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
 
   Future<void> _dialogBuilder(
       BuildContext context, ProductTotalDetail product) {
+    // int productIndex = model.pendingProductList!
+    //     .indexWhere((e) => e.productId == product.productId);
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -1042,6 +1046,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               ),
                               onPressed: () {
                                 if (model.currentMissing > 1) {
+                                  // model.onChangeMissing(productIndex,
+                                  //     product.currentMissing! - 1);
                                   model.currentMissing--;
                                   setState(() {});
                                 }
@@ -1067,6 +1073,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               onPressed: () {
                                 if (model.currentMissing <
                                     product.pendingQuantity!) {
+                                  // model.onChangeMissing(productIndex,
+                                  //     product.currentMissing! + 1);
                                   model.currentMissing++;
                                   setState(() {});
                                 }
@@ -1108,60 +1116,59 @@ class _OrderListScreenState extends State<OrderListScreen> {
   }
 }
 
-
-         // Column(
-                    //   children: [
-                    //     Container(
-                    //       color: Colors.white70,
-                    //       child: SingleChildScrollView(
-                    //         scrollDirection: Axis.horizontal,
-                    //         child: Padding(
-                    //           padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
-                    //           child: ToggleButtons(
-                    //               renderBorder: false,
-                    //               selectedColor: FineTheme.palettes.emerald25,
-                    //               onPressed: (int index) async {
-                    //                 await model.onChangeSelectStation(index);
-                    //                 setState(() {});
-                    //               },
-                    //               borderRadius: BorderRadius.circular(24),
-                    //               isSelected: model.stationSelections,
-                    //               children: [
-                    //                 ...model.stationList.map(
-                    //                   (e) => Stack(
-                    //                     children: [
-                    //                       Container(
-                    //                         margin: const EdgeInsets.only(
-                    //                             top: 16, bottom: 16),
-                    //                         width: MediaQuery.of(context)
-                    //                                 .size
-                    //                                 .width /
-                    //                             3,
-                    //                         child: Text("${e.name}",
-                    //                             textAlign: TextAlign.center,
-                    //                             style: FineTheme
-                    //                                 .typograhpy.caption1
-                    //                                 .copyWith(
-                    //                                     color: FineTheme
-                    //                                         .palettes
-                    //                                         .neutral900,
-                    //                                     fontWeight:
-                    //                                         FontWeight.bold)),
-                    //                       ),
-                    //                     ],
-                    //                   ),
-                    //                 )
-                    //               ]),
-                    //         ),
-                    //       ),
-                    //     ),
-                    //     Expanded(
-                    //       child: Container(
-                    //         // ignore: sort_child_properties_last
-                    //         child: _buildOrdersByStation(),
-                    //         color: const Color(0xffefefef),
-                    //       ),
-                    //     ),
-                    //     const SizedBox(height: 50),
-                    //   ],
-                    // ),
+// Column(
+//   children: [
+//     Container(
+//       color: Colors.white70,
+//       child: SingleChildScrollView(
+//         scrollDirection: Axis.horizontal,
+//         child: Padding(
+//           padding: const EdgeInsets.fromLTRB(8, 8, 8, 0),
+//           child: ToggleButtons(
+//               renderBorder: false,
+//               selectedColor: FineTheme.palettes.emerald25,
+//               onPressed: (int index) async {
+//                 await model.onChangeSelectStation(index);
+//                 setState(() {});
+//               },
+//               borderRadius: BorderRadius.circular(24),
+//               isSelected: model.stationSelections,
+//               children: [
+//                 ...model.stationList.map(
+//                   (e) => Stack(
+//                     children: [
+//                       Container(
+//                         margin: const EdgeInsets.only(
+//                             top: 16, bottom: 16),
+//                         width: MediaQuery.of(context)
+//                                 .size
+//                                 .width /
+//                             3,
+//                         child: Text("${e.name}",
+//                             textAlign: TextAlign.center,
+//                             style: FineTheme
+//                                 .typograhpy.caption1
+//                                 .copyWith(
+//                                     color: FineTheme
+//                                         .palettes
+//                                         .neutral900,
+//                                     fontWeight:
+//                                         FontWeight.bold)),
+//                       ),
+//                     ],
+//                   ),
+//                 )
+//               ]),
+//         ),
+//       ),
+//     ),
+//     Expanded(
+//       child: Container(
+//         // ignore: sort_child_properties_last
+//         child: _buildOrdersByStation(),
+//         color: const Color(0xffefefef),
+//       ),
+//     ),
+//     const SizedBox(height: 50),
+//   ],
+// ),

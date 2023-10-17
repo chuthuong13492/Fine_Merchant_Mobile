@@ -77,12 +77,11 @@ class OrderListViewModel extends BaseModel {
   }
 
   void onChangeMissing(int index, int newValue) {
-    List<ProductTotalDetail>? splitProductList =
-        splitOrder?.productTotalDetailList;
-    if (index >= 0 && splitProductList != null && splitProductList.isNotEmpty) {
-      if (newValue > -1 &&
-          (splitProductList[index].pendingQuantity! - newValue > 0)) {
-        // splitProductList[index].currentMissing = newValue;
+    if (index >= 0 &&
+        pendingProductList != null &&
+        pendingProductList!.isNotEmpty) {
+      if (newValue > -1) {
+        pendingProductList![index].currentMissing = newValue;
       }
     }
 
@@ -274,6 +273,8 @@ class OrderListViewModel extends BaseModel {
           }
 
           errorProductList = newErrorProducts;
+        } else {
+          errorProductList = [];
         }
 
         if (splitOrder != null) {
@@ -290,6 +291,8 @@ class OrderListViewModel extends BaseModel {
                     e.pendingQuantity! > 0);
                 if (updateIndex > -1) {
                   newSplitProductList[updateIndex].isChecked = true;
+                  newSplitProductList[updateIndex].currentMissing =
+                      splitProduct.currentMissing;
                   numsOfCheck = numsOfCheck + 1;
                 }
               }

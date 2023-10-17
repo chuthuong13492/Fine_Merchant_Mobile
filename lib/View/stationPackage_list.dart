@@ -45,7 +45,7 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
     model.timeSlotList = Get.find<OrderListViewModel>().timeSlotList;
     model.storeList = Get.find<OrderListViewModel>().storeList;
     model.selectedStoreId = Get.find<OrderListViewModel>().staffStore?.id;
-    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 1), (Timer timer) {
       refreshFetchApi();
     });
   }

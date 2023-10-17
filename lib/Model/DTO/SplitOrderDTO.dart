@@ -63,6 +63,7 @@ class ProductTotalDetail {
   int? errorQuantity;
   List<ProductDetails>? productDetails;
   bool? isChecked;
+  int? currentMissing;
 
   ProductTotalDetail(
       {this.productId,
@@ -72,7 +73,8 @@ class ProductTotalDetail {
       this.readyQuantity,
       this.errorQuantity,
       this.productDetails,
-      this.isChecked});
+      this.isChecked,
+      this.currentMissing});
 
   ProductTotalDetail.fromJson(Map<String, dynamic> json) {
     productId = json['productId'];
@@ -86,6 +88,7 @@ class ProductTotalDetail {
       json['productDetails'].forEach((v) {
         productDetails!.add(ProductDetails.fromJson(v));
       });
+      currentMissing = 1;
     }
 
     isChecked = false;
