@@ -146,7 +146,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               OutlinedButton(
                 onPressed: () => _dialogBuilder(context),
                 child: Text(
-                  'Xem chi tiết (${model.deliveredPackageList.length})',
+                  'Xem chi tiết (${model.takenPackageList.length})',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
@@ -286,7 +286,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         ));
   }
 
-  Widget _buildPackageSection(PackageViewDTO package) {
+  Widget _buildPackageSection(DeliveryPackageDTO package) {
     String? storeName = model.storeList
         .firstWhere((store) => store.id == package.storeId)
         .storeName;
@@ -307,14 +307,14 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
           const SizedBox(
             height: 16,
           ),
-          ...?package.listProducts
+          ...?package.packageShipperDetails
               ?.map((product) => _buildPackageProducts(product)),
         ],
       ),
     );
   }
 
-  Widget _buildPackageProducts(ListProduct product) {
+  Widget _buildPackageProducts(PackageShipperDetails product) {
     // var campus = Get.find<RootViewModel>().currentStore;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -353,7 +353,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
-          List<PackageViewDTO>? packageList = model.deliveredPackageList;
+          List<DeliveryPackageDTO>? packageList = model.takenPackageList;
           return AlertDialog(
             title: Stack(
               clipBehavior: Clip.none,

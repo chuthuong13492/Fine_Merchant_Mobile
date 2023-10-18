@@ -18,9 +18,8 @@ class HomeViewModel extends BaseModel {
 
   // local properties
   static String selectedDestinationId = '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB';
-  List<DeliveryPackageDTO> packageList = [];
-  List<PackageViewDTO> packageViewList = [];
-  List<PackageViewDTO> deliveredPackageList = [];
+  List<DeliveryPackageDTO> pendingPackageList = [];
+  List<DeliveryPackageDTO> takenPackageList = [];
   List<ShipperOrderBoxDTO> orderBoxList = [];
   List<OrderDTO> orderDetailList = [];
   List<OrderDTO> filteredOrderList = [];
@@ -44,7 +43,7 @@ class HomeViewModel extends BaseModel {
   String selectedTimeSlotId = 'e8d529d4-6a51-4fdb-b9db-e29f54c0486e';
   String selectedStoreId = '';
   final ValueNotifier<int> notifierPending = ValueNotifier(0);
-  final ValueNotifier<int> notifierReady = ValueNotifier(0);
+  final ValueNotifier<int> notifierTaken = ValueNotifier(0);
 
   HomeViewModel() {
     _orderDAO = OrderDAO();
@@ -161,7 +160,7 @@ class HomeViewModel extends BaseModel {
 
   Future<void> getDeliveryPackageListForDriver() async {
     try {
-      setState(ViewStatus.Loading);
+      // setState(ViewStatus.Loading);
 
       var currentUser = Get.find<AccountViewModel>().currentUser;
       if (currentUser != null) {
@@ -169,95 +168,31 @@ class HomeViewModel extends BaseModel {
           timeSlotId: selectedTimeSlotId,
         );
         if (data != null) {
-          packageList = data;
+          List<DeliveryPackageDTO> newTakenPackages = [];
+          List<DeliveryPackageDTO> newPendingPackages = [];
+          for (DeliveryPackageDTO package in data) {
+            if (package.isTaken == true) {
+              newTakenPackages.add(package);
+            } else {
+              newPendingPackages.add(package);
+            }
+          }
+          takenPackageList = newTakenPackages;
+          pendingPackageList = newPendingPackages;
+          notifierPending.value = newPendingPackages.length;
+          notifierTaken.value = newTakenPackages.length;
         }
       }
-      setState(ViewStatus.Completed);
+      // setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
       bool result = await showErrorDialog();
       if (result) {
         await getDeliveryPackageListForDriver();
       } else {
-        setState(ViewStatus.Error);
+        // setState(ViewStatus.Error);
       }
     } finally {}
-  }
-
-  Future<void> getDeliveredOrdersForDriver() async {
-    try {
-      setState(ViewStatus.Loading);
-      List<PackageViewDTO> newPackageList = [];
-
-      final data = await _orderDAO?.getSplitOrderListByStoreForDriver(
-          orderStatus: OrderStatusEnum.DELIVERING,
-          timeSlotId: selectedTimeSlotId,
-          stationId: selectedStationId);
-      if (data != null) {
-        packageList = data;
-
-        notifyListeners();
-      }
-
-      setState(ViewStatus.Completed);
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getDeliveredOrdersForDriver();
-      } else {
-        setState(ViewStatus.Error);
-      }
-    } finally {}
-  }
-
-  Future<void> confirmDelivery(DeliveryPackageDTO package) async {
-    int option = await showOptionDialog("Xác nhận đã lấy hàng này?");
-    if (option == 1) {
-      try {
-        // List<ListStoreAndOrder> updateListStoreAndOrders = [];
-        // List<UpdateOrderStatusRequestModel> updatedOrders = [];
-        // showLoadingDialog();
-        // int newOrderStatus = OrderStatusEnum.DELIVERING;
-
-        // currentDeliveryPackage = package;
-        // if (orderDetailList.isNotEmpty) {
-        //   for (final order in orderDetailList) {
-        //     ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
-        //         orderId: order.orderId, storeId: order.storeId);
-        //     updateListStoreAndOrders.add(updateListStoreAndOrder);
-        //   }
-        //   UpdateOrderStatusRequestModel updatedOrders =
-        //       UpdateOrderStatusRequestModel(
-        //           orderDetailStoreStatus: newOrderStatus,
-        //           listStoreAndOrder: updateListStoreAndOrders);
-        //   final statusCode =
-        //       await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
-        //   if (statusCode == 200) {
-        //     await showStatusDialog(
-        //         "assets/images/icon-success.png", "Lấy hàng thành công", "");
-        //     Get.back();
-        //   } else {
-        //     await showStatusDialog(
-        //       "assets/images/error.png",
-        //       "Thất bại",
-        //       "",
-        //     );
-        //   }
-        // } else {
-        //   Get.back();
-        // }
-      } catch (e) {
-        await showStatusDialog(
-          "assets/images/error.png",
-          "Thất bại",
-          "Có lỗi xảy ra, vui lòng thử lại sau 😓",
-        );
-      } finally {
-        await getDeliveryPackageListForDriver();
-        // await getDeliveredOrdersForDriver();
-        notifyListeners();
-      }
-    }
   }
 
   Future<void> getShipperOrderBoxes() async {
@@ -283,32 +218,6 @@ class HomeViewModel extends BaseModel {
       } else {
         setState(ViewStatus.Error);
       }
-    } finally {}
-  }
-
-  Future<void> addOrdersToBoxes() async {
-    try {
-      var requestModel = AddToBoxesRequestModel(orderId: []);
-
-      if (orderDetailList.isNotEmpty) {
-        var orderIdList = requestModel.orderId;
-        for (final order in orderDetailList) {
-          if (orderIdList
-                  ?.firstWhereOrNull((orderId) => orderId == order.orderId) ==
-              null) {
-            requestModel.orderId?.add(order.orderId!);
-          }
-        }
-
-        final status =
-            await _stationDAO?.addOrdersToBoxes(requestData: requestModel);
-        if (status == 200) {
-          print('add orders to boxes successfully');
-        }
-      }
-    } catch (e) {
-      print(e);
-      await showErrorDialog();
     } finally {}
   }
 
@@ -383,8 +292,6 @@ class HomeViewModel extends BaseModel {
           final statusCode =
               await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
           if (statusCode == 200) {
-            await getShipperOrderBoxes();
-            await getDeliveredOrdersForDriver();
             notifyListeners();
             await showStatusDialog("assets/images/icon-success.png",
                 "Xác nhận giao thành công", "");
@@ -405,7 +312,9 @@ class HomeViewModel extends BaseModel {
           "Thất bại",
           "Có lỗi xảy ra, vui lòng thử lại sau 😓",
         );
-      } finally {}
+      } finally {
+        await getDeliveryPackageListForDriver();
+      }
     }
   }
 

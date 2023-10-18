@@ -1,6 +1,8 @@
 class DeliveryPackageDTO {
   String? storeId;
   String? storeName;
+  bool? isTaken;
+  int? totalQuantity;
   List<PackageShipperDetails>? packageShipperDetails;
 
   DeliveryPackageDTO(
@@ -9,6 +11,8 @@ class DeliveryPackageDTO {
   DeliveryPackageDTO.fromJson(Map<String, dynamic> json) {
     storeId = json['storeId'];
     storeName = json['storeName'];
+    isTaken = json['isTaken'];
+    totalQuantity = json['totalQuantity'];
     if (json['packageShipperDetails'] != null) {
       packageShipperDetails = <PackageShipperDetails>[];
       json['packageShipperDetails'].forEach((v) {

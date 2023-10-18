@@ -58,9 +58,12 @@ class StationPackageViewModel extends BaseModel {
     notifyListeners();
   }
 
-  Future<void> confirmDeliveryPackage({required String stationId}) async {
+  Future<void> confirmDeliveryPackage(
+      {required String stationId, required bool isEnoughProduct}) async {
     try {
-      int option = await showOptionDialog("Sẵn sàng giao cho trạm này?");
+      int option = await showOptionDialog(isEnoughProduct
+          ? "Sẵn sàng giao cho trạm này?"
+          : "Gói hàng này vẫn chưa đủ món và bạn sẽ chịu trách nhiệm cho việc thiếu món, vẫn giao cho trạm này?");
 
       if (option == 1) {
         showLoadingDialog();

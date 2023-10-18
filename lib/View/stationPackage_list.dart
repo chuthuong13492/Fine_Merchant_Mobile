@@ -316,8 +316,12 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                           onTap: stationPackage.isShipperAssign == true
                               ? null
                               : () async {
+                                  bool isEnoughProduct =
+                                      stationPackage.readyQuantity ==
+                                          stationPackage.totalQuantity;
                                   await model.confirmDeliveryPackage(
-                                      stationId: stationPackage.stationId!);
+                                      stationId: stationPackage.stationId!,
+                                      isEnoughProduct: isEnoughProduct);
                                 },
                           child: Container(
                             width: 200,
@@ -446,7 +450,5 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
     );
   }
 
-  void _onTapDetail(PackageViewDTO package) async {
-    // model.getOrders();
-  }
+  void _onTapDetail(PackageViewDTO package) async {}
 }

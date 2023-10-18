@@ -231,7 +231,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Stack(
                           children: [
-                            model.notifierReady.value != null
+                            model.notifierTaken.value != null
                                 ? Positioned(
                                     top: 0,
                                     right: 0,
@@ -241,15 +241,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                           side: BorderSide(
                                               color: Colors.red, width: 2)),
                                       child: SizedBox(
-                                        width: model.notifierReady.value >= 10
+                                        width: model.notifierTaken.value >= 10
                                             ? 24
                                             : 20,
-                                        height: model.notifierReady.value >= 10
+                                        height: model.notifierTaken.value >= 10
                                             ? 24
                                             : 20,
                                         child: Center(
                                           child: Text(
-                                            '${model.notifierReady.value}',
+                                            '${model.notifierTaken.value}',
                                             style: FineTheme
                                                 .typograhpy.subtitle2
                                                 .copyWith(color: Colors.white),
@@ -409,8 +409,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
-      List<DeliveryPackageDTO> packageList = model.packageList;
-      List<PackageViewDTO> deliveredPackageList = model.deliveredPackageList;
+      List<DeliveryPackageDTO> packageList = model.pendingPackageList;
       if (status == ViewStatus.Loading) {
         return const Center(
           // child: SkeletonListItem(itemCount: 8),
@@ -438,6 +437,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 //     ),
                 //   ),
                 // ),
+                const SizedBox(
+                  height: 32,
+                ),
                 Padding(
                   padding: const EdgeInsets.only(left: 48, right: 48),
                   child: Text(
@@ -449,52 +451,52 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(
                   height: 32,
                 ),
-                deliveredPackageList.isNotEmpty
-                    ? Column(
-                        children: [
-                          const Image(
-                            image: AssetImage(
-                                "assets/images/package_delivery.png"),
-                            width: 300,
-                            height: 300,
-                          ),
-                          const SizedBox(height: 16),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 48, right: 48),
-                            child: Text(
-                              '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này',
-                              style: FineTheme.typograhpy.body1,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                            child: Center(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius:
-                                          // BorderRadius.only(
-                                          //     bottomRight: Radius.circular(16),
-                                          //     bottomLeft: Radius.circular(16))
-                                          BorderRadius.all(Radius.circular(8))),
-                                ),
-                                onPressed: () {
-                                  _onTapDetail();
-                                },
-                                child: Text(
-                                  "Xem thông tin giao hàng!",
-                                  style: FineTheme.typograhpy.subtitle2
-                                      .copyWith(
-                                          color: FineTheme.palettes.emerald25),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                    : const SizedBox.shrink(),
+                // takenPackageList.isNotEmpty
+                //     ? Column(
+                //         children: [
+                //           const Image(
+                //             image: AssetImage(
+                //                 "assets/images/package_delivery.png"),
+                //             width: 300,
+                //             height: 300,
+                //           ),
+                //           const SizedBox(height: 16),
+                //           Padding(
+                //             padding: const EdgeInsets.only(left: 48, right: 48),
+                //             child: Text(
+                //               '${takenPackageList.length} gói hàng đã được lấy ở trạm này',
+                //               style: FineTheme.typograhpy.body1,
+                //               textAlign: TextAlign.center,
+                //             ),
+                //           ),
+                //           Padding(
+                //             padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                //             child: Center(
+                //               child: ElevatedButton(
+                //                 style: ElevatedButton.styleFrom(
+                //                   backgroundColor: Colors.white,
+                //                   shape: const RoundedRectangleBorder(
+                //                       borderRadius:
+                //                           // BorderRadius.only(
+                //                           //     bottomRight: Radius.circular(16),
+                //                           //     bottomLeft: Radius.circular(16))
+                //                           BorderRadius.all(Radius.circular(8))),
+                //                 ),
+                //                 onPressed: () {
+                //                   _onTapDetail();
+                //                 },
+                //                 child: Text(
+                //                   "Xem thông tin giao hàng!",
+                //                   style: FineTheme.typograhpy.subtitle2
+                //                       .copyWith(
+                //                           color: FineTheme.palettes.emerald25),
+                //                 ),
+                //               ),
+                //             ),
+                //           )
+                //         ],
+                //       )
+                //     : const SizedBox.shrink(),
               ],
             ),
           ]),
@@ -529,7 +531,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Center(
                     //   child: Text(
-                    //       'Số gói hàng đã lấy: ${deliveredPackageList.length}/${packageList.length} ',
+                    //       'Số gói hàng đã lấy: ${takenPackageList.length}/${packageList.length} ',
                     //       style: FineTheme.typograhpy.h2.copyWith(
                     //         color: FineTheme.palettes.emerald25,
                     //       )),
@@ -562,8 +564,8 @@ class _HomeScreenState extends State<HomeScreen> {
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
-      List<DeliveryPackageDTO> packageList = model.packageList;
-      List<PackageViewDTO> deliveredPackageList = model.deliveredPackageList;
+      List<DeliveryPackageDTO> packageList = model.takenPackageList;
+
       if (status == ViewStatus.Loading) {
         return const Center(
           // child: SkeletonListItem(itemCount: 8),
@@ -591,10 +593,13 @@ class _HomeScreenState extends State<HomeScreen> {
                 //     ),
                 //   ),
                 // ),
+                const SizedBox(
+                  height: 32,
+                ),
                 Padding(
                   padding: const EdgeInsets.only(left: 48, right: 48),
                   child: Text(
-                    'Hiện tại chưa có cửa hàng nào có hàng cho trạm ${stationName}!',
+                    'Hiện tại chưa lấy hàng ở cửa hàng nào cho trạm ${stationName}!',
                     style: FineTheme.typograhpy.body1,
                     textAlign: TextAlign.center,
                   ),
@@ -602,52 +607,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(
                   height: 32,
                 ),
-                deliveredPackageList.isNotEmpty
-                    ? Column(
-                        children: [
-                          const Image(
-                            image: AssetImage(
-                                "assets/images/package_delivery.png"),
-                            width: 300,
-                            height: 300,
-                          ),
-                          const SizedBox(height: 16),
-                          Padding(
-                            padding: const EdgeInsets.only(left: 48, right: 48),
-                            child: Text(
-                              '${deliveredPackageList.length} gói hàng đã được lấy ở trạm này',
-                              style: FineTheme.typograhpy.body1,
-                              textAlign: TextAlign.center,
-                            ),
-                          ),
-                          Padding(
-                            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-                            child: Center(
-                              child: ElevatedButton(
-                                style: ElevatedButton.styleFrom(
-                                  backgroundColor: Colors.white,
-                                  shape: const RoundedRectangleBorder(
-                                      borderRadius:
-                                          // BorderRadius.only(
-                                          //     bottomRight: Radius.circular(16),
-                                          //     bottomLeft: Radius.circular(16))
-                                          BorderRadius.all(Radius.circular(8))),
-                                ),
-                                onPressed: () {
-                                  _onTapDetail();
-                                },
-                                child: Text(
-                                  "Xem thông tin giao hàng!",
-                                  style: FineTheme.typograhpy.subtitle2
-                                      .copyWith(
-                                          color: FineTheme.palettes.emerald25),
-                                ),
-                              ),
-                            ),
-                          )
-                        ],
-                      )
-                    : const SizedBox.shrink(),
               ],
             ),
           ]),
@@ -682,7 +641,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   children: [
                     // Center(
                     //   child: Text(
-                    //       'Số gói hàng đã lấy: ${deliveredPackageList.length}/${packageList.length} ',
+                    //       'Số gói hàng đã lấy: ${takenPackageList.length}/${packageList.length} ',
                     //       style: FineTheme.typograhpy.h2.copyWith(
                     //         color: FineTheme.palettes.emerald25,
                     //       )),
@@ -759,7 +718,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     _dialogBuilder(context)
                                   },
                                   child: Text(
-                                    'Xem chi tiết (${package.packageShipperDetails?.length})',
+                                    'Xem chi tiết (${package.totalQuantity})',
                                     style: TextStyle(
                                         fontSize: 16,
                                         fontWeight: FontWeight.w400,
@@ -770,20 +729,20 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ],
                             ),
-                            const SizedBox(
-                              height: 8,
-                            ),
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text('Vào lúc:',
-                                    style: FineTheme.typograhpy.body1.copyWith(
-                                        color: FineTheme.palettes.neutral900,
-                                        fontWeight: FontWeight.bold)),
-                                Text('${timeSlot.checkoutTime}',
-                                    style: FineTheme.typograhpy.body1),
-                              ],
-                            ),
+                            // const SizedBox(
+                            //   height: 8,
+                            // ),
+                            // Row(
+                            //   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            //   children: [
+                            //     Text('Vào lúc:',
+                            //         style: FineTheme.typograhpy.body1.copyWith(
+                            //             color: FineTheme.palettes.neutral900,
+                            //             fontWeight: FontWeight.bold)),
+                            //     Text('${timeSlot.checkoutTime}',
+                            //         style: FineTheme.typograhpy.body1),
+                            //   ],
+                            // ),
                           ],
                         ),
                       ),
