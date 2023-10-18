@@ -12,8 +12,8 @@ class StationDAO extends BaseDAO {
   Future<List<StationDTO>?> getStationsByDestination(
       {required String destinationId}) async {
     final res = await request.get(
-      '/admin/station/destination/$destinationId',
-      // queryParameters: {"destinationId": destinationId},
+      'station/destination',
+      queryParameters: {"destinationId": destinationId},
     );
     if (res.data['data'] != null) {
       var listJson = res.data['data'] as List;

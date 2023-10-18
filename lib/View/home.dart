@@ -36,15 +36,15 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    // periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
-    //   refreshFetchData();
-    // });
+    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      refreshFetchData();
+    });
   }
 
   @override
   void dispose() {
     super.dispose();
-    // periodicTimer.cancel();
+    periodicTimer.cancel();
   }
 
   Future<void> refreshFetchData() async {
