@@ -108,7 +108,7 @@ class HomeViewModel extends BaseModel {
   Future<void> getStationList() async {
     try {
       var currentUser = Get.find<AccountViewModel>().currentUser;
-      print(currentUser);
+
       final data = await _stationDAO?.getStationsByDestination(
           destinationId: selectedDestinationId);
       if (data != null) {
@@ -123,10 +123,12 @@ class HomeViewModel extends BaseModel {
         selectedStationCodeByName =
             ("${selectedStationCodeByName!}L${findNumber!}").toUpperCase();
 
-        StationDTO foundStation = stationList
-            .firstWhere((station) => station.code == selectedStationCodeByName);
+        StationDTO? foundStation = stationList.firstWhereOrNull(
+            (station) => station.code == selectedStationCodeByName);
+        if (foundStation != null) {
+          selectedStationId = foundStation.id!;
+        }
 
-        selectedStationId = foundStation.id!;
         // selectedStationId = data.first.id!;
       }
 

@@ -63,7 +63,7 @@ class _HomeScreenState extends State<HomeScreen> {
     var stationList = model.stationList;
     if (stationList != null && stationList.isNotEmpty) {
       station = stationList
-          .firstWhere((station) => station.id == model.selectedStationId);
+          .firstWhereOrNull((station) => station.id == model.selectedStationId);
     }
 
     return ScopedModel(
