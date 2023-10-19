@@ -122,11 +122,7 @@ class OrderListViewModel extends BaseModel {
     notifyListeners();
   }
 
-  Future<void> onChangeNumberToSolve(int index, String value) async {
-    int newValue = 0;
-    if (value != "") {
-      newValue = int.parse(value);
-    }
+  Future<void> onChangeNumberToSolve(int index, int newValue) async {
     if (index >= 0 &&
         errorProductList != null &&
         errorProductList!.isNotEmpty) {

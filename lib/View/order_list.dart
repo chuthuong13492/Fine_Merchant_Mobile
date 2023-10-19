@@ -901,16 +901,23 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         child: TextFormField(
                           initialValue: product.numsToSolve.toString(),
                           onChanged: (value) {
-                            model.onChangeNumberToSolve(productIndex, value);
-
-                            setState(() {});
+                            if (value != "") {
+                              int? newValue = int.tryParse(value);
+                              if (newValue != null && newValue >= 1) {
+                                model.onChangeNumberToSolve(
+                                    productIndex, newValue);
+                              } else {
+                                model.onChangeNumberToSolve(productIndex, 1);
+                              }
+                              setState(() {});
+                            }
                           },
                           keyboardType: TextInputType.number,
                           inputFormatters: <TextInputFormatter>[
                             FilteringTextInputFormatter.digitsOnly,
                             // FilteringTextInputFormatter.allow(digitValidator),
                             NumericalRangeFormatter(
-                                min: 0, max: product.quantity!)
+                                min: 1, max: product.quantity!)
                           ],
                           style: const TextStyle(
                               fontSize: 16,

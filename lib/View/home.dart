@@ -403,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
     String? stationName = '';
     if (model.stationList.isNotEmpty) {
       stationName = model.stationList
-          .firstWhere((station) => station.id == model.selectedStationId)
+          .firstWhereOrNull((station) => station.id == model.selectedStationId)!
           .name;
     }
     return ScopedModelDescendant<HomeViewModel>(
