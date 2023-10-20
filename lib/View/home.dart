@@ -191,7 +191,8 @@ class _HomeScreenState extends State<HomeScreen> {
                       tabs: [
                         Stack(
                           children: [
-                            model.notifierPending.value != null
+                            model.notifierPending.value != null &&
+                                    model.notifierPending.value > 0
                                 ? Positioned(
                                     top: 0,
                                     right: 0,
@@ -231,7 +232,8 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         Stack(
                           children: [
-                            model.notifierTaken.value != null
+                            model.notifierTaken.value != null &&
+                                    model.notifierTaken.value > 0
                                 ? Positioned(
                                     top: 0,
                                     right: 0,
@@ -746,32 +748,41 @@ class _HomeScreenState extends State<HomeScreen> {
                           ],
                         ),
                       ),
-                      const SizedBox(
-                        height: 12,
-                      ),
-                      Center(
-                        child: ElevatedButton(
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.white,
-                            shape: const RoundedRectangleBorder(
-                                borderRadius:
-                                    // BorderRadius.only(
-                                    //     bottomRight: Radius.circular(16),
-                                    //     bottomLeft: Radius.circular(16))
-                                    BorderRadius.all(Radius.circular(8))),
-                          ),
-                          onPressed: () async {
-                            await model.confirmTakenPackage(
-                                storeId: package.storeId!);
-                            setState(() {});
-                          },
-                          child: Text(
-                            "${"Đã lấy hàng"}",
-                            style: FineTheme.typograhpy.subtitle2
-                                .copyWith(color: FineTheme.palettes.emerald25),
-                          ),
-                        ),
-                      )
+                      package.isTaken == true
+                          ? const SizedBox.shrink()
+                          : Column(
+                              children: [
+                                const SizedBox(
+                                  height: 12,
+                                ),
+                                Center(
+                                  child: ElevatedButton(
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      shape: const RoundedRectangleBorder(
+                                          borderRadius:
+                                              // BorderRadius.only(
+                                              //     bottomRight: Radius.circular(16),
+                                              //     bottomLeft: Radius.circular(16))
+                                              BorderRadius.all(
+                                                  Radius.circular(8))),
+                                    ),
+                                    onPressed: () async {
+                                      await model.confirmTakenPackage(
+                                          storeId: package.storeId!);
+                                      setState(() {});
+                                    },
+                                    child: Text(
+                                      "${"Đã lấy hàng"}",
+                                      style: FineTheme.typograhpy.subtitle2
+                                          .copyWith(
+                                              color:
+                                                  FineTheme.palettes.emerald25),
+                                    ),
+                                  ),
+                                )
+                              ],
+                            )
                     ],
                   )),
             )),
@@ -847,7 +858,7 @@ class _HomeScreenState extends State<HomeScreen> {
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
           SizedBox(
-            width: 180,
+            width: Get.width * 0.4,
             child: Text(
               '${product.productName}',
               overflow: TextOverflow.ellipsis,
@@ -858,7 +869,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
           ),
           SizedBox(
-            width: 50,
+            width: Get.width * 0.2,
             child: Text(
               'x ${product.quantity}',
               textAlign: TextAlign.end,

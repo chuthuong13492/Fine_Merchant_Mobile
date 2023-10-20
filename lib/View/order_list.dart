@@ -312,7 +312,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       tabs: [
                         Stack(
                           children: [
-                            model.notifierPending.value != null
+                            model.notifierPending.value != null &&
+                                    model.notifierPending.value > 0
                                 ? Positioned(
                                     top: 0,
                                     right: 0,
@@ -352,7 +353,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         ),
                         Stack(
                           children: [
-                            model.notifierReady.value != null
+                            model.notifierReady.value != null &&
+                                    model.notifierReady.value > 0
                                 ? Positioned(
                                     top: 0,
                                     right: 0,
