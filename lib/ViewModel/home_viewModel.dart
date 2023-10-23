@@ -6,7 +6,6 @@ import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
-import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 
@@ -18,8 +17,9 @@ class HomeViewModel extends BaseModel {
 
   // local properties
   static String selectedDestinationId = '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB';
-  List<DeliveryPackageDTO> pendingPackageList = [];
-  List<DeliveryPackageDTO> takenPackageList = [];
+  DeliveryPackageDTO? shipperPackages;
+  List<PackageStoreShipperResponses> pendingPackageList = [];
+  List<PackageStoreShipperResponses> takenPackageList = [];
   List<ShipperOrderBoxDTO> orderBoxList = [];
   List<OrderDTO> orderDetailList = [];
   List<OrderDTO> filteredOrderList = [];
@@ -38,7 +38,6 @@ class HomeViewModel extends BaseModel {
   // Widget
   ScrollController? scrollController;
   bool isDelivering = false;
-  PackageViewDTO? currentDeliveryPackage;
   String selectedStationId = '';
   String selectedTimeSlotId = 'e8d529d4-6a51-4fdb-b9db-e29f54c0486e';
   String selectedStoreId = '';
@@ -172,15 +171,21 @@ class HomeViewModel extends BaseModel {
           timeSlotId: selectedTimeSlotId,
         );
         if (data != null) {
-          List<DeliveryPackageDTO> newTakenPackages = [];
-          List<DeliveryPackageDTO> newPendingPackages = [];
-          for (DeliveryPackageDTO package in data) {
-            if (package.isTaken == true) {
-              newTakenPackages.add(package);
-            } else {
-              newPendingPackages.add(package);
+          List<PackageStoreShipperResponses> newTakenPackages = [];
+          List<PackageStoreShipperResponses> newPendingPackages = [];
+          List<PackageStoreShipperResponses>? storePackageList =
+              data.packageStoreShipperResponses;
+          if (storePackageList != null) {
+            for (PackageStoreShipperResponses package in storePackageList) {
+              if (package.isTaken == true) {
+                newTakenPackages.add(package);
+              } else {
+                newPendingPackages.add(package);
+              }
             }
           }
+
+          shipperPackages = data;
           takenPackageList = newTakenPackages;
           pendingPackageList = newPendingPackages;
           notifierPending.value = newPendingPackages.length;

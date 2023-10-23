@@ -145,18 +145,18 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                     color: FineTheme.palettes.shades200),
               ),
               OutlinedButton(
-                onPressed: model.orderBoxList.isNotEmpty
+                onPressed: model.takenPackageList.isNotEmpty
                     ? () => _dialogBuilder(context)
                     : null,
                 child: Text(
-                  model.orderBoxList.isNotEmpty
+                  model.takenPackageList.isNotEmpty
                       ? 'Xem chi tiết (${model.takenPackageList.length})'
                       : 'Chưa lấy gói hàng nào',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                       fontStyle: FontStyle.normal,
-                      color: model.orderBoxList.isNotEmpty
+                      color: model.takenPackageList.isNotEmpty
                           ? FineTheme.palettes.emerald25
                           : FineTheme.palettes.neutral700),
                   overflow: TextOverflow.ellipsis,
@@ -173,7 +173,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
-              onPressed: model.orderBoxList.isNotEmpty
+              onPressed: model.takenPackageList.isNotEmpty
                   ? () {
                       _onTapToProductBoxes();
                     }
@@ -181,7 +181,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               child: Text(
                 'Xem danh sách tủ theo món',
                 style: FineTheme.typograhpy.body1.copyWith(
-                  color: model.orderBoxList.isNotEmpty
+                  color: model.takenPackageList.isNotEmpty
                       ? FineTheme.palettes.emerald25
                       : FineTheme.palettes.neutral700,
                 ),
@@ -197,7 +197,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         child: ScopedModelDescendant<HomeViewModel>(
           builder: (context, child, model) {
             if (model.status == ViewStatus.Loading ||
-                model.orderBoxList.isEmpty) {
+                model.takenPackageList.isEmpty) {
               return Container(
                 padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
                 width: Get.width,
@@ -297,7 +297,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         ));
   }
 
-  Widget _buildPackageSection(DeliveryPackageDTO package) {
+  Widget _buildPackageSection(PackageStoreShipperResponses package) {
     String? storeName = model.storeList
         .firstWhere((store) => store.id == package.storeId)
         .storeName;
@@ -318,14 +318,14 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
           const SizedBox(
             height: 16,
           ),
-          ...?package.packageShipperDetails
+          ...?package.packStationDetailGroupByProducts
               ?.map((product) => _buildPackageProducts(product)),
         ],
       ),
     );
   }
 
-  Widget _buildPackageProducts(PackageShipperDetails product) {
+  Widget _buildPackageProducts(PackStationDetailGroupByProducts product) {
     // var campus = Get.find<RootViewModel>().currentStore;
     return Padding(
       padding: const EdgeInsets.all(8.0),
@@ -346,7 +346,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
           SizedBox(
             width: 50,
             child: Text(
-              'x ${product.quantity}',
+              'x ${product.totalQuantity}',
               overflow: TextOverflow.ellipsis,
               style: TextStyle(
                   fontSize: 16,
@@ -364,7 +364,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
       context: context,
       builder: (BuildContext context) {
         return StatefulBuilder(builder: (context, setState) {
-          List<DeliveryPackageDTO>? packageList = model.takenPackageList;
+          List<PackageStoreShipperResponses>? packageList =
+              model.takenPackageList;
           return AlertDialog(
             title: Stack(
               clipBehavior: Clip.none,

@@ -36,7 +36,7 @@ class StationPackageViewModel extends BaseModel {
   // Widget
   ScrollController? scrollController;
   bool isDelivering = false;
-  PackageViewDTO? currentDeliveryPackage;
+
   List<bool> selections = [true, false];
 
   StationPackageViewModel() {

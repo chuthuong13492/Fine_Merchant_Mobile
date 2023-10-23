@@ -28,7 +28,7 @@ class _HomeScreenState extends State<HomeScreen> {
   final double HEIGHT = 48;
   late Timer periodicTimer;
   bool isDelivering = false;
-  DeliveryPackageDTO? currentPackage;
+  PackageStoreShipperResponses? currentPackage;
   HomeViewModel model = Get.put(HomeViewModel());
   final ValueNotifier<double> notifier = ValueNotifier(0);
   final PageController controller = PageController();
@@ -411,7 +411,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
-      List<DeliveryPackageDTO> packageList = model.pendingPackageList;
+      List<PackageStoreShipperResponses> packageList = model.pendingPackageList;
       if (status == ViewStatus.Loading) {
         return const Center(
           // child: SkeletonListItem(itemCount: 8),
@@ -566,7 +566,7 @@ class _HomeScreenState extends State<HomeScreen> {
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
       final status = model.status;
-      List<DeliveryPackageDTO> packageList = model.takenPackageList;
+      List<PackageStoreShipperResponses> packageList = model.takenPackageList;
 
       if (status == ViewStatus.Loading) {
         return const Center(
@@ -665,7 +665,7 @@ class _HomeScreenState extends State<HomeScreen> {
     });
   }
 
-  Widget _buildOrderPackage(DeliveryPackageDTO package) {
+  Widget _buildOrderPackage(PackageStoreShipperResponses package) {
     TimeSlotDTO? timeSlot = model.timeSlotList
         .firstWhere((timeSlot) => timeSlot.id == model.selectedTimeSlotId);
     return Column(
@@ -840,7 +840,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: ListView(
                     children: [
                       const SizedBox(height: 8),
-                      ...?currentPackage?.packageShipperDetails
+                      ...?currentPackage?.packStationDetailGroupByProducts
                           ?.map((product) => _buildPackageProducts(product)),
                     ],
                   ),
@@ -851,7 +851,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  Widget _buildPackageProducts(PackageShipperDetails product) {
+  Widget _buildPackageProducts(PackStationDetailGroupByProducts product) {
     return Padding(
       padding: const EdgeInsets.all(8.0),
       child: Row(
@@ -871,7 +871,7 @@ class _HomeScreenState extends State<HomeScreen> {
           SizedBox(
             width: Get.width * 0.2,
             child: Text(
-              'x ${product.quantity}',
+              'x ${product.totalQuantity}',
               textAlign: TextAlign.end,
               overflow: TextOverflow.ellipsis,
               style: const TextStyle(

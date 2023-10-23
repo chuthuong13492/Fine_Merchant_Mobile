@@ -51,7 +51,7 @@ class SplitProductDAO extends BaseDAO {
     return null;
   }
 
-  Future<List<DeliveryPackageDTO>?> getDeliveryPackageListForDriver({
+  Future<DeliveryPackageDTO?> getDeliveryPackageListForDriver({
     required String timeSlotId,
   }) async {
     final res = await request.get(
@@ -64,9 +64,7 @@ class SplitProductDAO extends BaseDAO {
       },
     );
     if (res.data['data'] != null) {
-      var listJson = res.data['data'] as List;
-
-      return listJson.map((e) => DeliveryPackageDTO.fromJson(e)).toList();
+      return DeliveryPackageDTO.fromJson(res.data['data']);
     }
     return null;
   }

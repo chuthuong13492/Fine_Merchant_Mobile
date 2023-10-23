@@ -313,7 +313,9 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                           height: 12,
                         ),
                         InkWell(
-                          onTap: stationPackage.isShipperAssign == true
+                          onTap: stationPackage.isShipperAssign == true ||
+                                  (stationPackage.readyQuantity !=
+                                      stationPackage.totalQuantity)
                               ? null
                               : () async {
                                   bool isEnoughProduct =
@@ -450,5 +452,5 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
     );
   }
 
-  void _onTapDetail(PackageViewDTO package) async {}
+  void _onTapDetail() async {}
 }
