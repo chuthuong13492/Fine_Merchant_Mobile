@@ -127,6 +127,8 @@ class HomeViewModel extends BaseModel {
             (station) => station.code == selectedStationCodeByName);
         if (foundStation != null) {
           selectedStationId = foundStation.id!;
+        } else {
+          selectedStationId = "";
         }
 
         // selectedStationId = data.first.id!;
@@ -262,51 +264,20 @@ class HomeViewModel extends BaseModel {
     if (option == 1) {
       try {
         showLoadingDialog();
-        List<ListStoreAndOrder> updateListStoreAndOrders = [];
-        List<UpdateOrderStatusRequestModel> updatedOrders = [];
-        int newOrderStatus = OrderStatusEnum.BOX_STORED;
 
-        if (orderBoxList.isNotEmpty) {
-          for (ShipperOrderBoxDTO orderBox in orderBoxList) {
-            List<OrderDetail>? orderDetails = orderBox.orderDetails;
-            for (OrderDetail detail in orderDetails!) {
-              if (updateListStoreAndOrders.isEmpty) {
-                ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
-                    orderId: detail.orderId, storeId: detail.storeId);
-                updateListStoreAndOrders.add(updateListStoreAndOrder);
-              } else {
-                if (updateListStoreAndOrders.firstWhereOrNull((item) =>
-                        item.storeId == detail.storeId &&
-                        item.orderId == detail.orderId) ==
-                    null) {
-                  ListStoreAndOrder updateListStoreAndOrder = ListStoreAndOrder(
-                      orderId: detail.orderId, storeId: detail.storeId);
-                  updateListStoreAndOrders.add(updateListStoreAndOrder);
-                }
-              }
-            }
-          }
-          UpdateOrderStatusRequestModel updatedOrders =
-              UpdateOrderStatusRequestModel(
-                  orderDetailStoreStatus: newOrderStatus,
-                  listStoreAndOrder: updateListStoreAndOrders);
-
-          final statusCode =
-              await _orderDAO?.confirmStoreOrderDetail(orders: updatedOrders);
-          if (statusCode == 200) {
-            notifyListeners();
-            await showStatusDialog("assets/images/icon-success.png",
-                "Xác nhận giao thành công", "");
-            Get.back();
-          } else {
-            await showStatusDialog(
-              "assets/images/error.png",
-              "Thất bại",
-              "",
-            );
-          }
-        } else {
+        final statusCode = await _splitProductDAO?.confirmAllInBoxes(
+            timeSlotId: selectedTimeSlotId);
+        if (statusCode == 200) {
+          notifyListeners();
+          await showStatusDialog(
+              "assets/images/icon-success.png", "Giao thành công", "");
           Get.back();
+        } else {
+          await showStatusDialog(
+            "assets/images/error.png",
+            "Thất bại",
+            "",
+          );
         }
       } catch (e) {
         await showStatusDialog(

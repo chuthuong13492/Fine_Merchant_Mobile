@@ -32,7 +32,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: FineTheme.palettes.primary100,
-      appBar: StationPackageDetailAppBar(title: "Thông tin giao hàng"),
+      appBar: StationPackageDetailAppBar(
+          title: "Thông tin giao hàng", backButton: const SizedBox.shrink()),
       body: ScopedModel(
           model: Get.find<HomeViewModel>(),
           child: ScopedModelDescendant<HomeViewModel>(
@@ -64,7 +65,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       width: Get.width,
-      height: 250,
+      height: Get.height * 0.275,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(
@@ -122,7 +123,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       color: FineTheme.palettes.shades200),
                 ),
                 Text(
-                  '${timeSlot?.checkoutTime}',
+                  '${timeSlot?.checkoutTime!.substring(0, 5)}',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
@@ -144,14 +145,20 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                     color: FineTheme.palettes.shades200),
               ),
               OutlinedButton(
-                onPressed: () => _dialogBuilder(context),
+                onPressed: model.orderBoxList.isNotEmpty
+                    ? () => _dialogBuilder(context)
+                    : null,
                 child: Text(
-                  'Xem chi tiết (${model.takenPackageList.length})',
+                  model.orderBoxList.isNotEmpty
+                      ? 'Xem chi tiết (${model.takenPackageList.length})'
+                      : 'Chưa lấy gói hàng nào',
                   style: TextStyle(
                       fontSize: 16,
                       fontWeight: FontWeight.w400,
                       fontStyle: FontStyle.normal,
-                      color: FineTheme.palettes.emerald25),
+                      color: model.orderBoxList.isNotEmpty
+                          ? FineTheme.palettes.emerald25
+                          : FineTheme.palettes.neutral700),
                   overflow: TextOverflow.ellipsis,
                 ),
               ),
@@ -166,13 +173,17 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 shape: const RoundedRectangleBorder(
                     borderRadius: BorderRadius.all(Radius.circular(8))),
               ),
-              onPressed: () {
-                _onTapToProductBoxes();
-              },
+              onPressed: model.orderBoxList.isNotEmpty
+                  ? () {
+                      _onTapToProductBoxes();
+                    }
+                  : null,
               child: Text(
                 'Xem danh sách tủ theo món',
                 style: FineTheme.typograhpy.body1.copyWith(
-                  color: FineTheme.palettes.emerald25,
+                  color: model.orderBoxList.isNotEmpty
+                      ? FineTheme.palettes.emerald25
+                      : FineTheme.palettes.neutral700,
                 ),
               )),
         ],
@@ -185,11 +196,12 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         model: Get.find<HomeViewModel>(),
         child: ScopedModelDescendant<HomeViewModel>(
           builder: (context, child, model) {
-            if (model.status == ViewStatus.Loading) {
+            if (model.status == ViewStatus.Loading ||
+                model.orderBoxList.isEmpty) {
               return Container(
                 padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
                 width: Get.width,
-                height: 460,
+                height: Get.height * 0.6,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.all(
@@ -210,7 +222,6 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         ],
                       ),
                     ),
-                    const SizedBox(height: 50),
                   ],
                 ),
               );
@@ -218,7 +229,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
             return Container(
               padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
               width: Get.width,
-              height: 460,
+              height: Get.height * 0.6,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.all(

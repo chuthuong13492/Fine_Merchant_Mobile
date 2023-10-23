@@ -4,6 +4,7 @@ import 'dart:ui';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
+import 'package:fine_merchant_mobile/View/packageDetail_screen.dart';
 import 'package:fine_merchant_mobile/View/stationPackage_list.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/root_viewModel.dart';
@@ -57,6 +58,11 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
       "page": const HomeScreen(),
     },
     {
+      "icon": "assets/icons/Order.svg",
+      "active_icon": "assets/icons/Box.svg",
+      "page": const PackageDetailScreen(),
+    },
+    {
       "icon": "assets/icons/Profile.svg",
       "active_icon": "assets/icons/Profile_fill.svg",
       "page": const ProfileScreen(),
@@ -67,7 +73,11 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
     const StationPackagesScreen(),
     const ProfileScreen()
   ];
-  final shipperScreens = [const HomeScreen(), const ProfileScreen()];
+  final shipperScreens = [
+    const HomeScreen(),
+    const PackageDetailScreen(),
+    const ProfileScreen()
+  ];
   final staffItems = <Widget>[
     SvgPicture.asset(
       "assets/icons/Order.svg",
@@ -88,6 +98,11 @@ class _RootScreenState extends State<RootScreen> with TickerProviderStateMixin {
   final shipperItems = <Widget>[
     SvgPicture.asset(
       "assets/icons/Order.svg",
+      width: 32,
+      height: 32,
+    ),
+    SvgPicture.asset(
+      "assets/icons/Box.svg",
       width: 32,
       height: 32,
     ),

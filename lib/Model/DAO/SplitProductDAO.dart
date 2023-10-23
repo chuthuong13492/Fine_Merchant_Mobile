@@ -78,4 +78,11 @@ class SplitProductDAO extends BaseDAO {
 
     return res.statusCode;
   }
+
+  Future<int?> confirmAllInBoxes({required String timeSlotId}) async {
+    final res = await request.put('staff/package/confirmAllBox',
+        queryParameters: {"timeSlotId": timeSlotId});
+
+    return res.statusCode;
+  }
 }

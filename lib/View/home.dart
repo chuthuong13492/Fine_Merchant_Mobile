@@ -223,7 +223,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Padding(
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
-                              child: Text("Đang xử lý",
+                              child: Text("Hàng đang chờ",
                                   style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.emerald25,
                                   )),
@@ -263,7 +263,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             Padding(
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
-                              child: Text("Đã xử lý",
+                              child: Text("Hàng đã lấy",
                                   style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.emerald25,
                                   )),
@@ -403,7 +403,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPendingPackageList() {
     String? stationName = '';
-    if (model.stationList.isNotEmpty) {
+    if (model.stationList.isNotEmpty && model.selectedStationId != "") {
       stationName = model.stationList
           .firstWhereOrNull((station) => station.id == model.selectedStationId)!
           .name;
@@ -557,7 +557,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildReadyPackageList() {
     String? stationName = '';
-    if (model.stationList.isNotEmpty) {
+    if (model.stationList.isNotEmpty && model.selectedStationId != "") {
       stationName = model.stationList
           .firstWhere((station) => station.id == model.selectedStationId)
           .name;
