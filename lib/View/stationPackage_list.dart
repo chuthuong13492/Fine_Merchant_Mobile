@@ -128,9 +128,11 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                         Text(formatDateType(DateTime.now().toString()),
                             style: FineTheme.typograhpy.h2),
                         DropdownButton<String>(
-                          value: model.selectedTimeSlotId,
+                          value:
+                              Get.find<OrderListViewModel>().selectedTimeSlotId,
                           onChanged: (String? value) {
-                            model.onChangeTimeSlot(value!);
+                            Get.find<OrderListViewModel>()
+                                .onChangeTimeSlot(value!);
                             setState(() {});
                           },
                           items: model.timeSlotList
@@ -314,8 +316,7 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                         ),
                         InkWell(
                           onTap: stationPackage.isShipperAssign == true ||
-                                  (stationPackage.readyQuantity !=
-                                      stationPackage.totalQuantity)
+                                  (stationPackage.readyQuantity! < 1)
                               ? null
                               : () async {
                                   bool isEnoughProduct =
@@ -332,12 +333,16 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(12),
                               border: Border.all(
-                                  color: stationPackage.isShipperAssign == true
+                                  color: stationPackage.isShipperAssign ==
+                                              true ||
+                                          (stationPackage.readyQuantity! < 1)
                                       ? FineTheme.palettes.neutral700
                                       : FineTheme.palettes.primary100),
                               boxShadow: [
                                 BoxShadow(
-                                  color: stationPackage.isShipperAssign == true
+                                  color: stationPackage.isShipperAssign ==
+                                              true ||
+                                          (stationPackage.readyQuantity! < 1)
                                       ? FineTheme.palettes.neutral700
                                       : FineTheme.palettes.primary100,
                                   offset: const Offset(0, 3),
@@ -350,10 +355,11 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                                     ? "Đã giao cho shipper"
                                     : "Sẵn sàng để giao",
                                 style: FineTheme.typograhpy.subtitle1.copyWith(
-                                    color:
-                                        stationPackage.isShipperAssign == true
-                                            ? FineTheme.palettes.neutral700
-                                            : FineTheme.palettes.primary100),
+                                    color: stationPackage.isShipperAssign ==
+                                                true ||
+                                            (stationPackage.readyQuantity! < 1)
+                                        ? FineTheme.palettes.neutral700
+                                        : FineTheme.palettes.primary100),
                               ),
                             ),
                           ),

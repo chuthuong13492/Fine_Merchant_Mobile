@@ -33,7 +33,7 @@ class QrScreenViewModel extends BaseModel {
     try {
       setState(ViewStatus.Loading);
       imageBytes = null;
-      orderBoxList = Get.find<StationViewModel>().orderBoxList;
+
       List<StationQrCodeRequestModel> requestData = [];
       for (ShipperOrderBoxDTO orderBox in orderBoxList) {
         List<OrderDetail>? orderDetails = orderBox.orderDetails;

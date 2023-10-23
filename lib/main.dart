@@ -87,8 +87,9 @@ class MyApp extends StatelessWidget {
                 settings: settings);
           case RouteHandler.STATION_SCREEN:
             return CupertinoPageRoute(
-                builder: (context) =>
-                    StationScreen(isRouted: settings.arguments as bool),
+                builder: (context) => StationScreen(
+                    takenPackageList: settings.arguments
+                        as List<PackageStoreShipperResponses>),
                 settings: settings);
           case RouteHandler.QRCODE_SCREEN:
             return CupertinoPageRoute<bool>(
@@ -102,7 +103,8 @@ class MyApp extends StatelessWidget {
           case RouteHandler.PRODUCT_BOXES_SCREEN:
             return CupertinoPageRoute<bool>(
                 builder: (context) => ProductBoxesScreen(
-                    detail: settings.arguments as OrderDetail),
+                    product:
+                        settings.arguments as PackStationDetailGroupByProducts),
                 settings: settings);
           case RouteHandler.STATION_PACKAGE_DETAIL:
             return CupertinoPageRoute<bool>(

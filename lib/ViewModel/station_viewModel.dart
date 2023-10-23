@@ -18,7 +18,7 @@ class StationViewModel extends BaseModel {
   // constant
 
   // local properties
-  List<ShipperOrderBoxDTO> orderBoxList = [];
+  List<PackStationDetailGroupByProducts> productList = [];
   List<StationDTO> stationList = [];
   List<BoxDTO> boxList = [];
   List<TimeSlotDTO> timeSlotList = [];
@@ -59,32 +59,29 @@ class StationViewModel extends BaseModel {
     notifyListeners();
   }
 
-  void onChangeMissing(int index, int newValue) {
+  void onChangeMissing(String productId, int index, int newValue) {
     if (index >= 0) {
-      OrderDetail foundDetail = orderBoxList
-          .firstWhere((e) => e.boxId == selectedBoxId)
-          .orderDetails![index];
-      if (newValue > 0 && (foundDetail.quantity! - newValue >= 0)) {
-        foundDetail.missing = newValue;
-      }
-      if (newValue == 0) {
-        onSelectProductMissing(index, false);
+      PackStationDetailGroupByProducts foundProduct =
+          productList.firstWhere((e) => e.productId == productId);
+      BoxProducts? foundBoxProduct = foundProduct.boxProducts![index];
+      if (newValue > 0 && (foundBoxProduct.quantity! - newValue >= 0)) {
+        foundBoxProduct.currentMissing = newValue;
       }
     }
 
     notifyListeners();
   }
 
-  void onSelectProductMissing(int index, bool newValue) {
-    OrderDetail foundDetail = orderBoxList
-        .firstWhere((e) => e.boxId == selectedBoxId)
-        .orderDetails![index];
-    if (newValue == true) {
-      foundDetail.missing = 1;
-    }
-    foundDetail.isChecked = newValue;
-    notifyListeners();
-  }
+  // void onSelectProductMissing(int index, bool isNewValue) {
+  //   OrderDetail foundDetail = orderBoxList
+  //       .firstWhere((e) => e.boxId == selectedBoxId)
+  //       .orderDetails![index];
+  //   if (isNewValue == true) {
+  //     foundDetail.missing = 1;
+  //   }
+  //   foundDetail.isChecked = isNewValue;
+  //   notifyListeners();
+  // }
 
   Future<void> getBoxListByStation() async {
     try {
@@ -112,38 +109,38 @@ class StationViewModel extends BaseModel {
       int option = await showOptionDialog("Xác nhận gửi báo cáo?");
       if (option == 1) {
         showLoadingDialog();
-        List<ListBoxAndQuantity> listBoxAndQuantity = [];
-        for (BoxDTO box in boxList) {
-          if (box.isSelected == true) {
-            listBoxAndQuantity
-                .add(ListBoxAndQuantity(boxId: box.id, quantity: 0));
-          }
-        }
+        // List<ListBoxAndQuantity> listBoxAndQuantity = [];
+        // for (BoxDTO box in boxList) {
+        //   if (box.isSelected == true) {
+        //     listBoxAndQuantity
+        //         .add(ListBoxAndQuantity(boxId: box.id, quantity: 0));
+        //   }
+        // }
 
-        for (ListBoxAndQuantity reportBox in listBoxAndQuantity) {
-          ShipperOrderBoxDTO? foundOrderBox = orderBoxList.firstWhereOrNull(
-              (orderBox) => orderBox.boxId == reportBox.boxId);
-          if (foundOrderBox != null) {
-            var foundDetail = foundOrderBox.orderDetails?.firstWhereOrNull(
-                (detail) => detail.productName == productName);
-            if (foundDetail != null) {
-              reportBox.quantity = foundDetail.quantity;
-            }
-          }
-        }
+        // for (ListBoxAndQuantity reportBox in listBoxAndQuantity) {
+        //   ShipperOrderBoxDTO? foundOrderBox = orderBoxList.firstWhereOrNull(
+        //       (orderBox) => orderBox.boxId == reportBox.boxId);
+        //   if (foundOrderBox != null) {
+        //     var foundDetail = foundOrderBox.orderDetails?.firstWhereOrNull(
+        //         (detail) => detail.productName == productName);
+        //     if (foundDetail != null) {
+        //       reportBox.quantity = foundDetail.quantity;
+        //     }
+        //   }
+        // }
 
-        var requestModel = MissingProductReportRequestModel(
-            stationId: selectedStationId,
-            timeSlotId: selectedTimeSlotId,
-            productName: productName,
-            listBoxAndQuantity: listBoxAndQuantity);
+        // var requestModel = MissingProductReportRequestModel(
+        //     stationId: selectedStationId,
+        //     timeSlotId: selectedTimeSlotId,
+        //     productName: productName,
+        //     listBoxAndQuantity: listBoxAndQuantity);
 
-        final status =
-            await _stationDAO?.reportMissingProduct(requestData: requestModel);
-        if (status == 200) {
-          await showStatusDialog(
-              "assets/images/icon-success.png", "Báo cáo thành công", "");
-        }
+        // final status =
+        //     await _stationDAO?.reportMissingProduct(requestData: requestModel);
+        // if (status == 200) {
+        //   await showStatusDialog(
+        //       "assets/images/icon-success.png", "Báo cáo thành công", "");
+        // }
         setState(ViewStatus.Completed);
         notifyListeners();
       }

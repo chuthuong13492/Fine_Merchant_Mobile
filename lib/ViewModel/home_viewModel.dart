@@ -97,10 +97,11 @@ class HomeViewModel extends BaseModel {
 
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getTimeSlotList();
-      }
+      print(e);
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getTimeSlotList();
+      // }
     }
   }
 
@@ -135,10 +136,11 @@ class HomeViewModel extends BaseModel {
 
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getStationList();
-      }
+      print(e);
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getStationList();
+      // }
     } finally {}
   }
 
@@ -195,12 +197,13 @@ class HomeViewModel extends BaseModel {
       // setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getDeliveryPackageListForDriver();
-      } else {
-        // setState(ViewStatus.Error);
-      }
+      print(e);
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getDeliveryPackageListForDriver();
+      // } else {
+      // setState(ViewStatus.Error);
+      // }
     } finally {}
   }
 

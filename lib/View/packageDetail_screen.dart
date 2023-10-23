@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:fine_merchant_mobile/Accessories/appbar.dart';
 import 'package:fine_merchant_mobile/Accessories/loading.dart';
 import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
@@ -21,11 +23,28 @@ class PackageDetailScreen extends StatefulWidget {
 
 class _PackageDetailScreenState extends State<PackageDetailScreen> {
   HomeViewModel model = Get.find<HomeViewModel>();
-
+  late Timer periodicTimer;
   @override
   void initState() {
     super.initState();
     model.imageBytes = Get.find<HomeViewModel>().imageBytes;
+    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+      refreshFetchData();
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    periodicTimer.cancel();
+  }
+
+  Future<void> refreshFetchData() async {
+    await model.getDeliveryPackageListForDriver();
+
+    if (mounted) {
+      setState(() {});
+    }
   }
 
   @override
@@ -175,7 +194,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               ),
               onPressed: model.takenPackageList.isNotEmpty
                   ? () {
-                      _onTapToProductBoxes();
+                      _onTapToProductBoxes(model.takenPackageList);
                     }
                   : null,
               child: Text(
@@ -302,7 +321,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         .firstWhere((store) => store.id == package.storeId)
         .storeName;
     return Padding(
-      padding: const EdgeInsets.all(8.0),
+      padding: const EdgeInsets.only(bottom: 24),
       child: Column(
         children: [
           SizedBox(
@@ -327,35 +346,32 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
 
   Widget _buildPackageProducts(PackStationDetailGroupByProducts product) {
     // var campus = Get.find<RootViewModel>().currentStore;
-    return Padding(
-      padding: const EdgeInsets.all(8.0),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 160,
-            child: Text(
-              '${product.productName}',
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal),
-            ),
+    return Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        SizedBox(
+          width: Get.width * 0.4,
+          child: Text(
+            '${product.productName}',
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.normal),
           ),
-          SizedBox(
-            width: 50,
-            child: Text(
-              'x ${product.totalQuantity}',
-              overflow: TextOverflow.ellipsis,
-              style: TextStyle(
-                  fontSize: 16,
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal),
-            ),
+        ),
+        SizedBox(
+          width: Get.width * 0.1,
+          child: Text(
+            'x ${product.totalQuantity}',
+            overflow: TextOverflow.ellipsis,
+            style: TextStyle(
+                fontSize: 16,
+                fontWeight: FontWeight.w400,
+                fontStyle: FontStyle.normal),
           ),
-        ],
-      ),
+        ),
+      ],
     );
   }
 
@@ -402,7 +418,6 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 child: Scrollbar(
                   child: ListView(
                     children: [
-                      const SizedBox(height: 8),
                       ...packageList
                           .map((package) => _buildPackageSection(package)),
                     ],
@@ -414,10 +429,11 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     );
   }
 
-  void _onTapToProductBoxes() async {
+  void _onTapToProductBoxes(
+      List<PackageStoreShipperResponses> takenPackageList) async {
     bool isRouted = true;
-    await Get.find<StationViewModel>().getBoxListByStation();
-    await Future.delayed(const Duration(milliseconds: 300));
-    await Get.toNamed(RouteHandler.STATION_SCREEN, arguments: isRouted);
+    // await Get.find<StationViewModel>().getBoxListByStation();
+    // await Future.delayed(const Duration(milliseconds: 300));
+    await Get.toNamed(RouteHandler.STATION_SCREEN, arguments: takenPackageList);
   }
 }

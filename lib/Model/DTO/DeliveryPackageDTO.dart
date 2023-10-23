@@ -73,19 +73,56 @@ class ListProduct {
   String? productId;
   String? productName;
   int? quantity;
+  List<BoxProducts>? boxProducts;
 
-  ListProduct({this.productId, this.productName, this.quantity});
+  ListProduct(
+      {this.productId, this.productName, this.quantity, this.boxProducts});
 
   ListProduct.fromJson(Map<String, dynamic> json) {
     productId = json['productId'];
     productName = json['productName'];
     quantity = json['quantity'];
+    if (json['boxProducts'] != null) {
+      boxProducts = <BoxProducts>[];
+      json['boxProducts'].forEach((v) {
+        boxProducts!.add(BoxProducts.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
     final Map<String, dynamic> data = <String, dynamic>{};
     data['productId'] = productId;
     data['productName'] = productName;
+    data['quantity'] = quantity;
+    if (boxProducts != null) {
+      data['boxProducts'] = boxProducts!.map((v) => v.toJson()).toList();
+    }
+    return data;
+  }
+}
+
+class BoxProducts {
+  String? boxId;
+  String? boxCode;
+  int? quantity;
+  bool? isChecked;
+  int? currentMissing;
+
+  BoxProducts({this.boxId, this.boxCode, this.quantity, this.currentMissing});
+
+  BoxProducts.fromJson(Map<String, dynamic> json) {
+    boxId = json['boxId'];
+    boxCode = json['boxCode'];
+    quantity = json['quantity'];
+    isChecked = false;
+    currentMissing = 0;
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['boxId'] = boxId;
+    data['boxCode'] = boxCode;
     data['quantity'] = quantity;
     return data;
   }
@@ -145,16 +182,21 @@ class PackStationDetailGroupByProducts {
   String? productId;
   String? productName;
   int? totalQuantity;
-  List<String>? boxCode;
+  List<BoxProducts>? boxProducts;
 
   PackStationDetailGroupByProducts(
-      {this.productId, this.productName, this.totalQuantity, this.boxCode});
+      {this.productId, this.productName, this.totalQuantity, this.boxProducts});
 
   PackStationDetailGroupByProducts.fromJson(Map<String, dynamic> json) {
     productId = json['productId'];
     productName = json['productName'];
     totalQuantity = json['totalQuantity'];
-    boxCode = json['boxCode'].cast<String>();
+    if (json['boxProducts'] != null) {
+      boxProducts = <BoxProducts>[];
+      json['boxProducts'].forEach((v) {
+        boxProducts!.add(BoxProducts.fromJson(v));
+      });
+    }
   }
 
   Map<String, dynamic> toJson() {
@@ -162,7 +204,9 @@ class PackStationDetailGroupByProducts {
     data['productId'] = productId;
     data['productName'] = productName;
     data['totalQuantity'] = totalQuantity;
-    data['boxCode'] = boxCode;
+    if (boxProducts != null) {
+      data['boxProducts'] = boxProducts!.map((v) => v.toJson()).toList();
+    }
     return data;
   }
 }

@@ -22,9 +22,9 @@ import 'package:scoped_model/scoped_model.dart';
 import 'package:shimmer/shimmer.dart';
 
 class StationScreen extends StatefulWidget {
-  final bool isRouted;
+  final List<PackageStoreShipperResponses> takenPackageList;
 
-  const StationScreen({super.key, required this.isRouted});
+  const StationScreen({super.key, required this.takenPackageList});
 
   @override
   State<StationScreen> createState() => _StationScreenState();
@@ -35,7 +35,6 @@ class _StationScreenState extends State<StationScreen> {
 
   int numsOfChecked = 0;
 
-  List<OrderDetail> totalOrderDetailList = [];
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
 
@@ -48,21 +47,29 @@ class _StationScreenState extends State<StationScreen> {
     super.initState();
     model.stationList = Get.find<HomeViewModel>().stationList;
     model.timeSlotList = Get.find<HomeViewModel>().timeSlotList;
-    model.orderBoxList = Get.find<HomeViewModel>().orderBoxList;
     model.selectedStationId = Get.find<HomeViewModel>().selectedStationId;
     model.selectedStoreId = Get.find<HomeViewModel>().selectedStoreId;
     model.selectedTimeSlotId = Get.find<HomeViewModel>().selectedTimeSlotId;
-    model.selectedBoxId = model.orderBoxList.first.boxId!;
+    for (PackageStoreShipperResponses package in widget.takenPackageList) {
+      List<PackStationDetailGroupByProducts>? newProductList =
+          package.packStationDetailGroupByProducts;
+      if (newProductList != null && newProductList.isNotEmpty) {
+        for (PackStationDetailGroupByProducts product in newProductList) {
+          model.productList.add(product);
+        }
+        setState(() {});
+      }
+    }
   }
 
   Future<void> _refresh() async {
     model.getBoxListByStation();
   }
 
-  void _onTapToBoxList(OrderDetail detail) async {
-    await Get.find<StationViewModel>().getBoxListByStation();
-    await Future.delayed(const Duration(milliseconds: 300));
-    await Get.toNamed(RouteHandler.PRODUCT_BOXES_SCREEN, arguments: detail);
+  void _onTapToBoxList(PackStationDetailGroupByProducts product) async {
+    // await Get.find<StationViewModel>().getBoxListByStation();
+    // await Future.delayed(const Duration(milliseconds: 300));
+    await Get.toNamed(RouteHandler.PRODUCT_BOXES_SCREEN, arguments: product);
   }
 
   @override
@@ -71,8 +78,8 @@ class _StationScreenState extends State<StationScreen> {
       resizeToAvoidBottomInset: false,
       backgroundColor: FineTheme.palettes.shades100,
       appBar: StationPackageDetailAppBar(
-          title: "Danh sách món cần giao",
-          backButton: widget.isRouted ? null : SizedBox.shrink()),
+        title: "Danh sách món cần giao",
+      ),
       body: SafeArea(
         // ignore: sized_box_for_whitespace
         child: Container(
@@ -155,8 +162,6 @@ class _StationScreenState extends State<StationScreen> {
   }
 
   List<Widget> renderHomeSections() {
-    var currentUser = Get.find<AccountViewModel>().currentUser;
-
     return [
       _buildStationSection(),
       _buildBoxProductList(),
@@ -169,6 +174,7 @@ class _StationScreenState extends State<StationScreen> {
     String? stationName = model.stationList
         .firstWhere((station) => station.id == model.selectedStationId)
         .name;
+
     return ScopedModel(
         model: Get.find<StationViewModel>(),
         child: ScopedModelDescendant<StationViewModel>(
@@ -187,7 +193,7 @@ class _StationScreenState extends State<StationScreen> {
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
-                      Text('${totalOrderDetailList.length}',
+                      Text('${model.productList.length}',
                           style: FineTheme.typograhpy.body1),
                     ],
                   ),
@@ -245,120 +251,7 @@ class _StationScreenState extends State<StationScreen> {
         ));
   }
 
-  Widget buildBoxListSection() {
-    List<BoxDTO> boxList = model.boxList;
-    return ScopedModel(
-        model: Get.find<StationViewModel>(),
-        child: ScopedModelDescendant<StationViewModel>(
-          builder: (context, child, model) {
-            ViewStatus status = model.status;
-            if (status == ViewStatus.Loading) {
-              return const SizedBox.shrink();
-            }
-            return Container(
-              padding: const EdgeInsets.only(top: 10, bottom: 10),
-              color: FineTheme.palettes.emerald25,
-              height: 480,
-              width: Get.width,
-              child: Container(
-                // height: 300,
-                padding: const EdgeInsets.only(top: 17, bottom: 17),
-                color: FineTheme.palettes.neutral200,
-                child: Center(
-                  child: Column(
-                    children: model.orderBoxList.isNotEmpty
-                        ? [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                              child: Text(
-                                "Chọn tủ để xem những món cần đặt vào nhé!",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: FineTheme.typograhpy.body1.copyWith(
-                                    color: FineTheme.palettes.neutral900),
-                              ),
-                            ),
-                            const SizedBox(
-                              height: 24,
-                            ),
-                            Expanded(
-                              child: Container(
-                                child: GridView.count(
-                                    // Create a grid with 2 columns. If you change the scrollDirection to
-                                    // horizontal, this produces 2 rows.
-                                    crossAxisCount: 2,
-                                    // Generate 100 widgets that display their index in the List.
-                                    children: [
-                                      ...model.orderBoxList.map(
-                                        (orderBox) => Center(
-                                          child: Material(
-                                            child: InkWell(
-                                              splashColor:
-                                                  FineTheme.palettes.emerald50,
-                                              onTap: () {
-                                                Get.toNamed(
-                                                  RouteHandler.QRCODE_SCREEN,
-                                                  arguments: orderBox,
-                                                );
-                                              },
-                                              child: Container(
-                                                padding:
-                                                    const EdgeInsets.all(25.0),
-                                                decoration: BoxDecoration(
-                                                    border: Border.all(
-                                                        color: FineTheme
-                                                            .palettes
-                                                            .emerald25)),
-                                                child: Text(
-                                                  '${boxList.firstWhere((box) => box.id == orderBox.boxId).code}',
-                                                  style: FineTheme
-                                                      .typograhpy.body1,
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      )
-                                    ]),
-                              ),
-                            ),
-                          ]
-                        : [
-                            Padding(
-                              padding: const EdgeInsets.fromLTRB(8, 0, 8, 0),
-                              child: Text(
-                                "Hiện chưa có gói hàng nào cần đặt vào tủ!",
-                                maxLines: 2,
-                                overflow: TextOverflow.ellipsis,
-                                style: FineTheme.typograhpy.body1.copyWith(
-                                    color: FineTheme.palettes.neutral900),
-                              ),
-                            ),
-                          ],
-                  ),
-                ),
-              ),
-            );
-          },
-        ));
-  }
-
   Widget _buildBoxProductList() {
-    List<ShipperOrderBoxDTO> orderBoxList = model.orderBoxList;
-    for (ShipperOrderBoxDTO orderBox in orderBoxList) {
-      List<OrderDetail>? orderDetails = orderBox.orderDetails;
-      if (orderDetails != null) {
-        for (OrderDetail detail in orderDetails) {
-          if (totalOrderDetailList.isEmpty) {
-            totalOrderDetailList.add(detail);
-          } else if (totalOrderDetailList.firstWhereOrNull(
-                  (e) => e.productInMenuId == detail.productInMenuId) ==
-              null) {
-            totalOrderDetailList.add(detail);
-          }
-        }
-      }
-    }
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       color: FineTheme.palettes.emerald25,
@@ -366,25 +259,13 @@ class _StationScreenState extends State<StationScreen> {
       width: 600,
       child: Scrollbar(
         child: ListView(children: [
-          ...totalOrderDetailList
-              .map((detail) => _buildProducts(detail, orderBoxList)),
+          ...model.productList.map((package) => _buildProducts(package)),
         ]),
       ),
     );
   }
 
-  Widget _buildProducts(
-      OrderDetail detail, List<ShipperOrderBoxDTO> orderBoxList) {
-    int quantity = 0;
-    for (ShipperOrderBoxDTO orderBox in orderBoxList) {
-      var orderDetails = orderBox.orderDetails;
-      var foundDetail = orderDetails
-          ?.firstWhereOrNull((e) => e.productName == detail.productName);
-      if (foundDetail != null) {
-        quantity = quantity + foundDetail.quantity!;
-      }
-    }
-
+  Widget _buildProducts(PackStationDetailGroupByProducts package) {
     return Container(
       margin: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -407,7 +288,7 @@ class _StationScreenState extends State<StationScreen> {
                       style: FineTheme.typograhpy.body1.copyWith(
                           color: FineTheme.palettes.neutral900,
                           fontWeight: FontWeight.bold)),
-                  Text('${detail.productName}',
+                  Text('${package.productName}',
                       style: FineTheme.typograhpy.body1),
                 ],
               ),
@@ -421,7 +302,8 @@ class _StationScreenState extends State<StationScreen> {
                       style: FineTheme.typograhpy.body1.copyWith(
                           color: FineTheme.palettes.neutral900,
                           fontWeight: FontWeight.bold)),
-                  Text('${quantity}', style: FineTheme.typograhpy.body1),
+                  Text('${package.totalQuantity}',
+                      style: FineTheme.typograhpy.body1),
                 ],
               ),
               const SizedBox(
@@ -442,7 +324,7 @@ class _StationScreenState extends State<StationScreen> {
                       ),
                     ),
                     onPressed: () async {
-                      _onTapToBoxList(detail);
+                      _onTapToBoxList(package);
                     },
                     child: Text(
                       "Xem danh sách tủ",

@@ -64,7 +64,8 @@ class SplitProductDAO extends BaseDAO {
       },
     );
     if (res.data['data'] != null) {
-      return DeliveryPackageDTO.fromJson(res.data['data']);
+      final deliveryPackage = DeliveryPackageDTO.fromJson(res.data['data']);
+      return deliveryPackage;
     }
     return null;
   }

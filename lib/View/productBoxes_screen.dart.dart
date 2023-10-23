@@ -13,9 +13,9 @@ import 'package:get/get.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class ProductBoxesScreen extends StatefulWidget {
-  final OrderDetail detail;
+  final PackStationDetailGroupByProducts product;
 
-  const ProductBoxesScreen({super.key, required this.detail});
+  const ProductBoxesScreen({super.key, required this.product});
 
   @override
   State<ProductBoxesScreen> createState() => _ProductBoxesScreenState();
@@ -25,7 +25,6 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   bool isReporting = false;
   StationViewModel model = Get.put(StationViewModel());
 
-  List<OrderDetail> totalOrderDetailList = [];
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
 
@@ -154,7 +153,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                                       onPressed: () async {
                                         await model.reportMissingProduct(
                                             productName:
-                                                widget.detail.productName);
+                                                widget.product.productName);
                                         setState(() {
                                           isReporting = !isReporting;
                                         });
@@ -181,8 +180,6 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   }
 
   List<Widget> renderHomeSections() {
-    var currentUser = Get.find<AccountViewModel>().currentUser;
-
     return [
       _buildStationSection(),
       _buildBoxProductList(),
@@ -214,7 +211,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
-                      Text('${widget.detail.productName}',
+                      Text('${widget.product.productName}',
                           style: FineTheme.typograhpy.body1),
                     ],
                   ),
@@ -247,21 +244,6 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   }
 
   Widget _buildBoxProductList() {
-    List<ShipperOrderBoxDTO> orderBoxList = model.orderBoxList;
-    for (ShipperOrderBoxDTO orderBox in orderBoxList) {
-      List<OrderDetail>? orderDetails = orderBox.orderDetails;
-      if (orderDetails != null) {
-        for (OrderDetail detail in orderDetails) {
-          if (totalOrderDetailList.isEmpty) {
-            totalOrderDetailList.add(detail);
-          } else if (totalOrderDetailList.firstWhereOrNull(
-                  (e) => e.productInMenuId == detail.productInMenuId) ==
-              null) {
-            totalOrderDetailList.add(detail);
-          }
-        }
-      }
-    }
     return Container(
         padding: const EdgeInsets.all(6),
         color: FineTheme.palettes.neutral600,
@@ -273,27 +255,20 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   }
 
   Widget _buildBoxes(BoxDTO box) {
-    List<ShipperOrderBoxDTO> orderBoxList = model.orderBoxList;
-    OrderDetail? foundDetail;
+    BoxProducts? foundBoxProduct;
     var isStored = false;
     var quantity = 0;
-    int detailIndex = 0;
-    for (ShipperOrderBoxDTO orderBox in orderBoxList) {
-      if (orderBox.boxId == box.id) {
-        List<OrderDetail>? orderDetails = orderBox.orderDetails;
-        foundDetail = orderDetails?.firstWhereOrNull(
-            (detail) => detail.productName == widget.detail.productName);
-        if (foundDetail != null) {
+    int index = 0;
+    List<BoxProducts>? boxProductList = widget.product.boxProducts;
+    if (boxProductList != null && boxProductList.isNotEmpty) {
+      for (BoxProducts boxProduct in boxProductList) {
+        if (boxProduct.boxCode == box.code) {
+          foundBoxProduct = boxProduct;
           isStored = true;
-          quantity = foundDetail.quantity!;
+          quantity = boxProduct.quantity!;
+          index = boxProductList.indexOf(boxProduct);
         }
       }
-    }
-    if (foundDetail != null) {
-      detailIndex = model.orderBoxList
-          .firstWhere((e) => e.boxId == model.selectedBoxId)
-          .orderDetails!
-          .indexOf(foundDetail);
     }
 
     return Stack(
@@ -311,7 +286,8 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
               onTap: isStored && isReporting == true
                   ? () {
                       model.onSelectReportBox(box.id!);
-                      model.onChangeMissing(detailIndex, 1);
+                      model.onChangeMissing(
+                          widget.product.productId!, index, 1);
                       setState(() {});
                     }
                   : null,
@@ -319,7 +295,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                   isStored && isReporting == true && box.isSelected == true
                       ? () {
                           model.selectedBoxId = box.id;
-                          _dialogBuilder(context, foundDetail!);
+                          _dialogBuilder(context, foundBoxProduct!, index);
                         }
                       : null,
               child: Center(
@@ -377,7 +353,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           height: 20,
                           child: Center(
                             child: Text(
-                              '${foundDetail!.missing}',
+                              '${foundBoxProduct!.currentMissing}',
                               style: FineTheme.typograhpy.caption1
                                   .copyWith(color: Colors.white),
                             ),
@@ -393,83 +369,82 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
     );
   }
 
-  Widget _buildReportProducts(OrderDetail detail) {
-    int detailIndex = model.orderBoxList
-        .firstWhere((e) => e.boxId == model.selectedBoxId)
-        .orderDetails!
-        .indexOf(detail);
-    return StatefulBuilder(builder: (context, setState) {
-      return Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-        children: [
-          SizedBox(
-            width: 175,
-            child: Text(
-              '${detail.productName}',
-              overflow: TextOverflow.ellipsis,
-              style: const TextStyle(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w400,
-                  fontStyle: FontStyle.normal),
-            ),
-          ),
-          detail.isChecked == true
-              ? Row(
-                  children: [
-                    IconButton(
-                      splashRadius: 12,
-                      icon: const Icon(Icons.remove),
-                      onPressed: () {
-                        model.onChangeMissing(detailIndex, detail.missing! - 1);
-                        setState(() {});
-                      },
-                      color: FineTheme.palettes.emerald25,
-                    ),
-                    Text(
-                      '${detail.missing}',
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(
-                          fontSize: 14,
-                          fontWeight: FontWeight.w400,
-                          fontStyle: FontStyle.normal),
-                    ),
-                    IconButton(
-                      splashRadius: 12,
-                      icon: const Icon(Icons.add),
-                      onPressed: () {
-                        model.onChangeMissing(detailIndex, detail.missing! + 1);
-                        setState(() {});
-                      },
-                      color: FineTheme.palettes.emerald25,
-                    ),
-                  ],
-                )
-              : TextButton(
-                  style: TextButton.styleFrom(
-                    textStyle: Theme.of(context).textTheme.labelLarge,
-                  ),
-                  child: Text(
-                    'Chọn',
-                    style: FineTheme.typograhpy.body1
-                        .copyWith(color: FineTheme.palettes.emerald25),
-                  ),
-                  onPressed: () {
-                    model.onSelectProductMissing(detailIndex, true);
-                    setState(() {});
-                  },
-                ),
-        ],
-      );
-    });
-  }
+  // Widget _buildReportProducts(OrderDetail detail) {
+  //   int detailIndex = model.orderBoxList
+  //       .firstWhere((e) => e.boxId == model.selectedBoxId)
+  //       .orderDetails!
+  //       .indexOf(detail);
+  //   return StatefulBuilder(builder: (context, setState) {
+  //     return Row(
+  //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  //       children: [
+  //         SizedBox(
+  //           width: 175,
+  //           child: Text(
+  //             '${detail.productName}',
+  //             overflow: TextOverflow.ellipsis,
+  //             style: const TextStyle(
+  //                 fontSize: 14,
+  //                 fontWeight: FontWeight.w400,
+  //                 fontStyle: FontStyle.normal),
+  //           ),
+  //         ),
+  //         detail.isChecked == true
+  //             ? Row(
+  //                 children: [
+  //                   IconButton(
+  //                     splashRadius: 12,
+  //                     icon: const Icon(Icons.remove),
+  //                     onPressed: () {
+  //                       model.onChangeMissing(detailIndex, detail.missing! - 1);
+  //                       setState(() {});
+  //                     },
+  //                     color: FineTheme.palettes.emerald25,
+  //                   ),
+  //                   Text(
+  //                     '${detail.missing}',
+  //                     overflow: TextOverflow.ellipsis,
+  //                     style: const TextStyle(
+  //                         fontSize: 14,
+  //                         fontWeight: FontWeight.w400,
+  //                         fontStyle: FontStyle.normal),
+  //                   ),
+  //                   IconButton(
+  //                     splashRadius: 12,
+  //                     icon: const Icon(Icons.add),
+  //                     onPressed: () {
+  //                       model.onChangeMissing(detailIndex, detail.missing! + 1);
+  //                       setState(() {});
+  //                     },
+  //                     color: FineTheme.palettes.emerald25,
+  //                   ),
+  //                 ],
+  //               )
+  //             : TextButton(
+  //                 style: TextButton.styleFrom(
+  //                   textStyle: Theme.of(context).textTheme.labelLarge,
+  //                 ),
+  //                 child: Text(
+  //                   'Chọn',
+  //                   style: FineTheme.typograhpy.body1
+  //                       .copyWith(color: FineTheme.palettes.emerald25),
+  //                 ),
+  //                 onPressed: () {
+  //                   model.onSelectProductMissing(detailIndex, true);
+  //                   setState(() {});
+  //                 },
+  //               ),
+  //       ],
+  //     );
+  //   });
+  // }
 
-  Future<void> _dialogBuilder(BuildContext context, OrderDetail detail) {
-    int detailIndex = model.orderBoxList
-        .firstWhere((e) => e.boxId == model.selectedBoxId)
-        .orderDetails!
-        .indexOf(detail);
+  Future<void> _dialogBuilder(
+      BuildContext context, BoxProducts boxProduct, int? index) {
+    int currentMissing = 0;
     String? boxCode =
         model.boxList.firstWhere((box) => box.id == model.selectedBoxId).code;
+    currentMissing = boxProduct.currentMissing!;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -518,7 +493,10 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           size: 32,
                         ),
                         onPressed: () {
-                          model.currentMissing--;
+                          if (currentMissing > 1) {
+                            currentMissing--;
+                          }
+
                           setState(() {});
                         },
                         color: FineTheme.palettes.emerald25,
@@ -526,7 +504,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                       Padding(
                         padding: const EdgeInsets.only(left: 16, right: 16),
                         child: Text(
-                          '${model.currentMissing}',
+                          '${currentMissing}',
                           overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                               fontSize: 32,
@@ -538,8 +516,9 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         splashRadius: 24,
                         icon: const Icon(Icons.add, size: 32),
                         onPressed: () {
-                          model.currentMissing++;
-
+                          if (currentMissing < boxProduct.quantity!) {
+                            currentMissing++;
+                          }
                           setState(() {});
                         },
                         color: FineTheme.palettes.emerald25,
@@ -560,7 +539,9 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                     style: FineTheme.typograhpy.body1
                         .copyWith(color: FineTheme.palettes.emerald25)),
                 onPressed: () {
-                  model.onChangeMissing(detailIndex, model.currentMissing);
+                  model.onChangeMissing(
+                      widget.product.productId!, index!, currentMissing);
+                  this.setState(() {});
                   Navigator.of(context).pop();
                 },
               ),
