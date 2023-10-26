@@ -898,10 +898,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
-                        width: 120,
+                        width: Get.width * 0.35,
                         height: 40,
                         child: TextFormField(
-                          initialValue: product.numsToSolve.toString(),
+                          readOnly: product.isRefuse == false ? false : true,
+                          initialValue: product.isRefuse == false
+                              ? product.numsToSolve.toString()
+                              : '',
                           onChanged: (value) {
                             if (value != "") {
                               int? newValue = int.tryParse(value);
@@ -929,20 +932,24 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             label: const Text('Số lượng xử lý'),
                             floatingLabelStyle: TextStyle(
                                 fontWeight: FontWeight.w500,
-                                color: FineTheme.palettes.primary100),
+                                color: product.isRefuse == false
+                                    ? FineTheme.palettes.primary100
+                                    : FineTheme.palettes.neutral700),
                             focusColor: FineTheme.palettes.primary100,
                             fillColor: FineTheme.palettes.primary100,
                             hoverColor: FineTheme.palettes.primary100,
                             focusedBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
                                   color: FineTheme.palettes.primary100,
                                   width: 2),
                             ),
                             enabledBorder: OutlineInputBorder(
-                              borderRadius: BorderRadius.circular(16),
+                              borderRadius: BorderRadius.circular(12),
                               borderSide: BorderSide(
-                                  color: FineTheme.palettes.primary100,
+                                  color: product.isRefuse == false
+                                      ? FineTheme.palettes.primary100
+                                      : FineTheme.palettes.neutral700,
                                   width: 1),
                             ),
                           ),
@@ -964,12 +971,14 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             color: Colors.white,
                             borderRadius: BorderRadius.circular(12),
                             border: Border.all(
-                                color: product.numsToSolve! > 0
+                                color: product.numsToSolve! > 0 &&
+                                        product.isRefuse == false
                                     ? FineTheme.palettes.primary100
                                     : FineTheme.palettes.neutral700),
                             boxShadow: [
                               BoxShadow(
-                                color: product.numsToSolve! > 0
+                                color: product.numsToSolve! > 0 &&
+                                        product.isRefuse == false
                                     ? FineTheme.palettes.primary100
                                     : FineTheme.palettes.neutral700,
                                 offset: const Offset(0, 3),
@@ -980,7 +989,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             child: Text(
                               "Đã xử lý",
                               style: FineTheme.typograhpy.subtitle1.copyWith(
-                                  color: product.numsToSolve! > 0
+                                  color: product.numsToSolve! > 0 &&
+                                          product.isRefuse == false
                                       ? FineTheme.palettes.primary100
                                       : FineTheme.palettes.neutral700),
                             ),
@@ -990,7 +1000,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     ],
                   ),
                   Padding(
-                    padding: const EdgeInsets.only(top: 8),
+                    padding: const EdgeInsets.only(top: 16),
                     child: InkWell(
                       onTap: () async {
                         await model.reportUnsolvedProduct(
@@ -1003,11 +1013,15 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         decoration: BoxDecoration(
                           color: Colors.white,
                           borderRadius: BorderRadius.circular(12),
-                          border:
-                              Border.all(color: FineTheme.palettes.error300),
+                          border: Border.all(
+                              color: product.isRefuse == false
+                                  ? FineTheme.palettes.error300
+                                  : FineTheme.palettes.neutral700),
                           boxShadow: [
                             BoxShadow(
-                              color: FineTheme.palettes.error300,
+                              color: product.isRefuse == false
+                                  ? FineTheme.palettes.error300
+                                  : FineTheme.palettes.neutral700,
                               offset: const Offset(0, 3),
                             ),
                           ],
@@ -1015,8 +1029,10 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         child: Center(
                           child: Text(
                             "Hết món",
-                            style: FineTheme.typograhpy.subtitle1
-                                .copyWith(color: FineTheme.palettes.error300),
+                            style: FineTheme.typograhpy.subtitle1.copyWith(
+                                color: product.isRefuse == false
+                                    ? FineTheme.palettes.error300
+                                    : FineTheme.palettes.neutral700),
                           ),
                         ),
                       ),

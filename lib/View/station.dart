@@ -50,8 +50,8 @@ class _StationScreenState extends State<StationScreen> {
     model.selectedStationId = Get.find<HomeViewModel>().selectedStationId;
     model.selectedStoreId = Get.find<HomeViewModel>().selectedStoreId;
     model.selectedTimeSlotId = Get.find<HomeViewModel>().selectedTimeSlotId;
+    model.productList = [];
     for (PackageStoreShipperResponses package in widget.takenPackageList) {
-      model.productList = [];
       List<PackStationDetailGroupByProducts>? newProductList =
           package.packStationDetailGroupByProducts;
       if (newProductList != null && newProductList.isNotEmpty) {

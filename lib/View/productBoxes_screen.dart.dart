@@ -152,8 +152,9 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                                       ),
                                       onPressed: () async {
                                         await model.reportMissingProduct(
-                                            productId: widget.product.productId,
-                                            statusType: 2);
+                                          productId: widget.product.productId,
+                                          statusType: 2,
+                                        );
                                         setState(() {
                                           isReporting = !isReporting;
                                         });
@@ -291,13 +292,14 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                       setState(() {});
                     }
                   : null,
-              onLongPress:
-                  isStored && isReporting == true && box.isSelected == true
-                      ? () {
-                          model.selectedBoxId = box.id;
-                          _dialogBuilder(context, foundBoxProduct!, index);
-                        }
-                      : null,
+              onLongPress: isStored &&
+                      isReporting == true &&
+                      box.id == model.selectedBoxId
+                  ? () {
+                      model.selectedBoxId = box.id;
+                      _dialogBuilder(context, foundBoxProduct!, index);
+                    }
+                  : null,
               child: Center(
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
@@ -342,12 +344,12 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                 top: 0,
                 right: 0,
                 child: Material(
-                  color: box.isSelected == true
+                  color: box.id == model.selectedBoxId
                       ? Colors.red
                       : const Color.fromARGB(0, 58, 58, 58),
                   shape: const CircleBorder(
                       side: BorderSide(color: Colors.red, width: 2)),
-                  child: box.isSelected == true
+                  child: box.id == model.selectedBoxId
                       ? SizedBox(
                           width: 20,
                           height: 20,

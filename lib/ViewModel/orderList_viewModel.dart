@@ -256,15 +256,13 @@ class OrderListViewModel extends BaseModel {
         // Function eq = const ListEquality().equals;
         // print(eq(data.errorProducts, errorProductList));
         if (data.errorProducts != null && data.errorProducts!.isNotEmpty) {
-          List<ErrorProducts>? newErrorProducts = data.errorProducts!
-              .where((product) => product.isRefuse == false)
-              .toList();
+          List<ErrorProducts>? newErrorProducts = data.errorProducts!;
           if (errorProductList != null && errorProductList!.isNotEmpty) {
             for (ErrorProducts errorProduct in errorProductList!) {
               final updateIndex = errorProductList!
                   .indexWhere((e) => e.productId == errorProduct.productId);
               if (updateIndex > -1) {
-                newErrorProducts![updateIndex].numsToSolve =
+                newErrorProducts[updateIndex].numsToSolve =
                     errorProduct.numsToSolve;
               }
             }

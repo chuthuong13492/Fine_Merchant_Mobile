@@ -170,21 +170,21 @@ class UpdateSplitProductRequestModel {
   int? type;
   List<String>? productsUpdate;
   int? quantity;
-  List<String>? listBox;
+  String? boxId;
 
   UpdateSplitProductRequestModel(
       {this.timeSlotId,
       this.type,
       this.productsUpdate,
       this.quantity,
-      this.listBox});
+      this.boxId});
 
   UpdateSplitProductRequestModel.fromJson(Map<String, dynamic> json) {
     timeSlotId = json['timeSlotId'];
     type = json['type'];
     productsUpdate = json['productsUpdate'].cast<String>();
     quantity = json['quantity'];
-    listBox = json['listBox'];
+    boxId = json['boxId'];
   }
 
   Map<String, dynamic> toJson() {
@@ -193,7 +193,7 @@ class UpdateSplitProductRequestModel {
     data['type'] = type;
     data['productsUpdate'] = productsUpdate;
     data['quantity'] = quantity;
-    data['listBox'] = listBox;
+    data['boxId'] = boxId;
     return data;
   }
 }

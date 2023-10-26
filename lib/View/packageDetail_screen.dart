@@ -67,6 +67,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               return Padding(
                 padding: const EdgeInsets.only(right: 16, left: 16),
                 child: ListView(
+                  physics: const NeverScrollableScrollPhysics(),
                   children: [
                     const SizedBox(height: 16),
                     _buildPackageInfo(stationName, timeSlot),

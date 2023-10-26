@@ -41,11 +41,12 @@ class StationViewModel extends BaseModel {
   }
 
   void onSelectReportBox(String boxId) {
-    BoxDTO? foundBox = boxList.firstWhereOrNull((box) => box.id == boxId);
-    if (foundBox != null) {
-      bool? isSelected = foundBox.isSelected;
-      foundBox.isSelected = !isSelected!;
-    }
+    // BoxDTO? foundBox = boxList.firstWhereOrNull((box) => box.id == boxId);
+    // if (foundBox != null) {
+    //   bool? isSelected = foundBox.isSelected;
+    //   foundBox.isSelected = !isSelected!;
+    // }
+    selectedBoxId = boxId;
     notifyListeners();
   }
 
@@ -112,7 +113,6 @@ class StationViewModel extends BaseModel {
       {String? productId, int? statusType}) async {
     try {
       List<String> updatedProducts = [];
-      List<String> updatedBoxes = [];
       int missingQuantity = 0;
       UpdateSplitProductRequestModel? requestModel;
       int option = await showOptionDialog("Xác nhận gửi báo cáo?");
@@ -128,7 +128,6 @@ class StationViewModel extends BaseModel {
           if (productBoxList != null) {
             for (final productBox in productBoxList) {
               if (productBox.isChecked == true) {
-                updatedBoxes.add(productBox.boxId!);
                 missingQuantity = productBox.currentMissing!;
               }
             }
@@ -137,7 +136,7 @@ class StationViewModel extends BaseModel {
                 type: statusType,
                 timeSlotId: selectedTimeSlotId,
                 productsUpdate: updatedProducts,
-                listBox: updatedBoxes,
+                boxId: selectedBoxId,
                 quantity: missingQuantity);
           }
           if (requestModel != null) {
