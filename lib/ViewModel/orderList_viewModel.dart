@@ -484,6 +484,42 @@ class OrderListViewModel extends BaseModel {
     }
   }
 
+  Future<void> reportUnsolvedProduct(
+      {required String productId, required int memType}) async {
+    try {
+      int option = await showOptionDialog("Không thể xử lý món này?");
+
+      if (option == 1) {
+        showLoadingDialog();
+
+        final statusCode = await _splitProductDAO?.reportUnsolvedProduct(
+            productId: productId,
+            timeSlotId: selectedTimeSlotId,
+            memType: memType);
+        if (statusCode == 200) {
+          notifyListeners();
+          await showStatusDialog(
+              "assets/images/icon-success.png", "Báo cáo thành công", "");
+          Get.back();
+        } else {
+          await showStatusDialog(
+            "assets/images/error.png",
+            "Thất bại",
+            "",
+          );
+        }
+      }
+    } catch (e) {
+      await showStatusDialog(
+        "assets/images/error.png",
+        "Thất bại",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+      );
+    } finally {
+      await getSplitOrders();
+    }
+  }
+
   void clearNewOrder(int orderId) {
     newTodayOrders = null;
     notifyListeners();

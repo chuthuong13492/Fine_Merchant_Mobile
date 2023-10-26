@@ -39,7 +39,7 @@ class HomeViewModel extends BaseModel {
   ScrollController? scrollController;
   bool isDelivering = false;
   String selectedStationId = '';
-  String selectedTimeSlotId = 'e8d529d4-6a51-4fdb-b9db-e29f54c0486e';
+  String selectedTimeSlotId = '';
   String selectedStoreId = '';
   final ValueNotifier<int> notifierPending = ValueNotifier(0);
   final ValueNotifier<int> notifierTaken = ValueNotifier(0);

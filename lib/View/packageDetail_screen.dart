@@ -329,7 +329,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               '${storeName}',
               style: TextStyle(
                   color: FineTheme.palettes.emerald25,
-                  fontSize: 16,
+                  fontSize: 18,
                   fontWeight: FontWeight.bold,
                   fontStyle: FontStyle.normal),
             ),
@@ -345,33 +345,35 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   }
 
   Widget _buildPackageProducts(PackStationDetailGroupByProducts product) {
-    // var campus = Get.find<RootViewModel>().currentStore;
-    return Row(
-      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        SizedBox(
-          width: Get.width * 0.4,
-          child: Text(
-            '${product.productName}',
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.normal),
+    return Padding(
+      padding: const EdgeInsets.all(4.0),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          SizedBox(
+            width: Get.width * 0.4,
+            child: Text(
+              '${product.productName}',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal),
+            ),
           ),
-        ),
-        SizedBox(
-          width: Get.width * 0.1,
-          child: Text(
-            'x ${product.totalQuantity}',
-            overflow: TextOverflow.ellipsis,
-            style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w400,
-                fontStyle: FontStyle.normal),
+          SizedBox(
+            width: Get.width * 0.1,
+            child: Text(
+              'x ${product.totalQuantity}',
+              overflow: TextOverflow.ellipsis,
+              style: TextStyle(
+                  fontSize: 16,
+                  fontWeight: FontWeight.w400,
+                  fontStyle: FontStyle.normal),
+            ),
           ),
-        ),
-      ],
+        ],
+      ),
     );
   }
 

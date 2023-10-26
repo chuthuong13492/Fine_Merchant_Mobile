@@ -29,13 +29,14 @@ class StationViewModel extends BaseModel {
   // Data Object Model
   StationDAO? _stationDAO;
   dynamic error;
-  OrderDTO? orderDTO;
+  SplitProductDAO? _splitProductDAO;
   // Widget
   ScrollController? scrollController;
   int numsOfChecked = 0;
   int currentMissing = 0;
   StationViewModel() {
     _stationDAO = StationDAO();
+    _splitProductDAO = SplitProductDAO();
     scrollController = ScrollController();
   }
 
@@ -61,11 +62,14 @@ class StationViewModel extends BaseModel {
 
   void onChangeMissing(String productId, int index, int newValue) {
     if (index >= 0) {
-      PackStationDetailGroupByProducts foundProduct =
-          productList.firstWhere((e) => e.productId == productId);
-      BoxProducts? foundBoxProduct = foundProduct.boxProducts![index];
-      if (newValue > 0 && (foundBoxProduct.quantity! - newValue >= 0)) {
-        foundBoxProduct.currentMissing = newValue;
+      PackStationDetailGroupByProducts? foundProduct =
+          productList.firstWhereOrNull((e) => e.productId == productId);
+      if (foundProduct != null) {
+        BoxProducts? foundBoxProduct = foundProduct.boxProducts![index];
+        if (newValue > 0 && (foundBoxProduct.quantity! - newValue >= 0)) {
+          foundBoxProduct.isChecked = true;
+          foundBoxProduct.currentMissing = newValue;
+        }
       }
     }
 
@@ -104,49 +108,64 @@ class StationViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> reportMissingProduct({String? productName}) async {
+  Future<void> reportMissingProduct(
+      {String? productId, int? statusType}) async {
     try {
+      List<String> updatedProducts = [];
+      List<String> updatedBoxes = [];
+      int missingQuantity = 0;
+      UpdateSplitProductRequestModel? requestModel;
       int option = await showOptionDialog("Xác nhận gửi báo cáo?");
+
       if (option == 1) {
         showLoadingDialog();
-        // List<ListBoxAndQuantity> listBoxAndQuantity = [];
-        // for (BoxDTO box in boxList) {
-        //   if (box.isSelected == true) {
-        //     listBoxAndQuantity
-        //         .add(ListBoxAndQuantity(boxId: box.id, quantity: 0));
-        //   }
-        // }
+        PackStationDetailGroupByProducts? foundProduct =
+            productList.firstWhereOrNull((e) => e.productId == productId);
 
-        // for (ListBoxAndQuantity reportBox in listBoxAndQuantity) {
-        //   ShipperOrderBoxDTO? foundOrderBox = orderBoxList.firstWhereOrNull(
-        //       (orderBox) => orderBox.boxId == reportBox.boxId);
-        //   if (foundOrderBox != null) {
-        //     var foundDetail = foundOrderBox.orderDetails?.firstWhereOrNull(
-        //         (detail) => detail.productName == productName);
-        //     if (foundDetail != null) {
-        //       reportBox.quantity = foundDetail.quantity;
-        //     }
-        //   }
-        // }
+        if (foundProduct != null) {
+          updatedProducts.add(foundProduct.productId!);
+          List<BoxProducts>? productBoxList = foundProduct.boxProducts;
+          if (productBoxList != null) {
+            for (final productBox in productBoxList) {
+              if (productBox.isChecked == true) {
+                updatedBoxes.add(productBox.boxId!);
+                missingQuantity = productBox.currentMissing!;
+              }
+            }
 
-        // var requestModel = MissingProductReportRequestModel(
-        //     stationId: selectedStationId,
-        //     timeSlotId: selectedTimeSlotId,
-        //     productName: productName,
-        //     listBoxAndQuantity: listBoxAndQuantity);
-
-        // final status =
-        //     await _stationDAO?.reportMissingProduct(requestData: requestModel);
-        // if (status == 200) {
-        //   await showStatusDialog(
-        //       "assets/images/icon-success.png", "Báo cáo thành công", "");
-        // }
-        setState(ViewStatus.Completed);
-        notifyListeners();
+            requestModel = UpdateSplitProductRequestModel(
+                type: statusType,
+                timeSlotId: selectedTimeSlotId,
+                productsUpdate: updatedProducts,
+                listBox: updatedBoxes,
+                quantity: missingQuantity);
+          }
+          if (requestModel != null) {
+            final statusCode = await _splitProductDAO?.confirmSplitProduct(
+                requestModel: requestModel);
+            if (statusCode == 200) {
+              notifyListeners();
+              await showStatusDialog(
+                  "assets/images/icon-success.png", "Báo cáo thành công", "");
+              Get.back();
+            } else {
+              await showStatusDialog(
+                "assets/images/error.png",
+                "Thất bại",
+                "",
+              );
+            }
+          }
+        } else {
+          Get.back();
+        }
       }
     } catch (e) {
-      print(e);
-      await showErrorDialog();
+      await showStatusDialog(
+        "assets/images/error.png",
+        "Thất bại",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+      );
     } finally {}
   }
 }

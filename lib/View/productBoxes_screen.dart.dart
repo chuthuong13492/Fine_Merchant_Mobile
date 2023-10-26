@@ -152,8 +152,8 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                                       ),
                                       onPressed: () async {
                                         await model.reportMissingProduct(
-                                            productName:
-                                                widget.product.productName);
+                                            productId: widget.product.productId,
+                                            statusType: 2);
                                         setState(() {
                                           isReporting = !isReporting;
                                         });

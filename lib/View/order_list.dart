@@ -989,6 +989,39 @@ class _OrderListScreenState extends State<OrderListScreen> {
                       ),
                     ],
                   ),
+                  Padding(
+                    padding: const EdgeInsets.only(top: 8),
+                    child: InkWell(
+                      onTap: () async {
+                        await model.reportUnsolvedProduct(
+                            productId: product.productId!,
+                            memType: product.reportMemType!);
+                      },
+                      child: Container(
+                        width: 150,
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border:
+                              Border.all(color: FineTheme.palettes.error300),
+                          boxShadow: [
+                            BoxShadow(
+                              color: FineTheme.palettes.error300,
+                              offset: const Offset(0, 3),
+                            ),
+                          ],
+                        ),
+                        child: Center(
+                          child: Text(
+                            "Hết món",
+                            style: FineTheme.typograhpy.subtitle1
+                                .copyWith(color: FineTheme.palettes.error300),
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
                 ],
               ),
             ),

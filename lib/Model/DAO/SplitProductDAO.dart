@@ -28,6 +28,20 @@ class SplitProductDAO extends BaseDAO {
     return res.statusCode;
   }
 
+  Future<int?> reportUnsolvedProduct(
+      {required String timeSlotId,
+      required String productId,
+      required int memType}) async {
+    final res = await request.put('staff/package/reportProductCannotRepair',
+        queryParameters: {
+          "timeSlotId": timeSlotId,
+          "productId": productId,
+          "memType": memType
+        });
+
+    return res.statusCode;
+  }
+
   Future<int?> confirmDeliveryProduct(
       {required String timeSlotId, required String stationId}) async {
     final res = await request.put('staff/package/cofirmDelivery',
