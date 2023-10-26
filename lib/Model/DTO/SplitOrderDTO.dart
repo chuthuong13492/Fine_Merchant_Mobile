@@ -140,16 +140,17 @@ class ErrorProducts {
   String? stationId;
   int? reportMemType;
   int? numsToSolve;
+  bool? isRefuse;
 
-  ErrorProducts() {
-    this.productId;
-    this.productInMenuId;
-    this.productName;
-    this.quantity;
-    this.stationId;
-    this.reportMemType;
-    this.numsToSolve;
-  }
+  ErrorProducts(
+      {this.productId,
+      this.productInMenuId,
+      this.productName,
+      this.quantity,
+      this.stationId,
+      this.reportMemType,
+      this.numsToSolve,
+      this.isRefuse});
 
   ErrorProducts.fromJson(Map<String, dynamic> json) {
     productId = json['productId'];
@@ -159,6 +160,7 @@ class ErrorProducts {
     reConfirmQuantity = json['reConfirmQuantity'];
     stationId = json['stationId'];
     reportMemType = json['reportMemType'];
+    isRefuse = json['isRefuse'];
     numsToSolve = quantity! - reConfirmQuantity!;
   }
 }

@@ -369,9 +369,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
     return RichText(
         text: TextSpan(
             text: title,
-            style:
-                FineTheme.typograhpy.subtitle2.copyWith(color: Colors.black) ??
-                    TextStyle(color: color),
+            style: FineTheme.typograhpy.subtitle2
+                .copyWith(color: color ?? Colors.black),
             children: list ?? []));
   }
 

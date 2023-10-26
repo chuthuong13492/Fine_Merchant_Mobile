@@ -256,7 +256,9 @@ class OrderListViewModel extends BaseModel {
         // Function eq = const ListEquality().equals;
         // print(eq(data.errorProducts, errorProductList));
         if (data.errorProducts != null && data.errorProducts!.isNotEmpty) {
-          List<ErrorProducts>? newErrorProducts = data.errorProducts;
+          List<ErrorProducts>? newErrorProducts = data.errorProducts!
+              .where((product) => product.isRefuse == false)
+              .toList();
           if (errorProductList != null && errorProductList!.isNotEmpty) {
             for (ErrorProducts errorProduct in errorProductList!) {
               final updateIndex = errorProductList!

@@ -730,7 +730,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   onChanged: (bool? value) {
                     int index = splitProductList!.indexOf(product);
                     model.onCheck(index, value!);
-                    int numsOfPendingProducts = splitProductList!
+                    int numsOfPendingProducts = splitProductList
                         .where((e) => e.pendingQuantity! > 0)
                         .length;
                     if (model.numsOfCheck == numsOfPendingProducts) {
