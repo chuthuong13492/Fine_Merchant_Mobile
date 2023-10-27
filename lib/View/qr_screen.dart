@@ -29,7 +29,6 @@ class _QRCodeScreenState extends State<QRCodeScreen> {
     super.initState();
     model.boxList = Get.find<StationViewModel>().boxList;
     orderBoxDetails = widget.orderBox.orderDetails!;
-    model.getBoxQrCode();
   }
 
   @override

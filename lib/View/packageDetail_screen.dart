@@ -27,7 +27,6 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   @override
   void initState() {
     super.initState();
-    model.imageBytes = Get.find<HomeViewModel>().imageBytes;
     periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       refreshFetchData();
     });
@@ -41,7 +40,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
 
   Future<void> refreshFetchData() async {
     await model.getDeliveryPackageListForDriver();
-
+    await model.getBoxQrCode();
     if (mounted) {
       setState(() {});
     }
@@ -270,12 +269,12 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                       ],
                     ),
                   ),
-                  model.imageBytes != null
+                  model.boxQrCode != null
                       ? Container(
                           height: 300,
                           width: 300,
                           child: Image.memory(
-                            model.imageBytes!,
+                            model.boxQrCode!,
                             fit: BoxFit.contain,
                           ),
                         )

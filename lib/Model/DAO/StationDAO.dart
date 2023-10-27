@@ -62,10 +62,10 @@ class StationDAO extends BaseDAO {
     return res.statusCode;
   }
 
-  Future<Uint8List?> getQrCodeForShipper(
-      {required List<dynamic> requestData}) async {
-    final response = await request.post('/admin/staff/qrCode',
-        data: requestData, options: Options(responseType: ResponseType.bytes));
+  Future<Uint8List?> getQrCodeForShipper({required String timeSlotId}) async {
+    final response = await request.get('/user-box/qrCodeShipper',
+        queryParameters: {"timeSlotId": timeSlotId},
+        options: Options(responseType: ResponseType.bytes));
     if (response.statusCode == 200) {
       Uint8List imageBytes = Uint8List.fromList(response.data);
       return imageBytes;

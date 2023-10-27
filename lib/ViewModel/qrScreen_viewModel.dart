@@ -28,37 +28,4 @@ class QrScreenViewModel extends BaseModel {
   QrScreenViewModel() {
     _stationDAO = StationDAO();
   }
-
-  Future<void> getBoxQrCode() async {
-    try {
-      setState(ViewStatus.Loading);
-      imageBytes = null;
-
-      List<StationQrCodeRequestModel> requestData = [];
-      for (ShipperOrderBoxDTO orderBox in orderBoxList) {
-        List<OrderDetail>? orderDetails = orderBox.orderDetails;
-        if (orderDetails!.isNotEmpty) {
-          requestData.add(StationQrCodeRequestModel(
-              boxId: orderBox.boxId, orderId: orderDetails.first.orderId));
-        }
-      }
-      print(requestData);
-      final qrCode =
-          await _stationDAO!.getQrCodeForShipper(requestData: requestData);
-      if (qrCode != null) {
-        imageBytes = qrCode;
-      }
-
-      await Future.delayed(const Duration(milliseconds: 200));
-      notifyListeners();
-      setState(ViewStatus.Completed);
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getBoxQrCode();
-      } else {
-        setState(ViewStatus.Error);
-      }
-    } finally {}
-  }
 }

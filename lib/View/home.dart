@@ -791,7 +791,6 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _onTapDetail() async {
-    await model.getShipperOrderBoxes();
     await model.getBoxQrCode();
     if (model.orderBoxList.isNotEmpty) {
       await Get.toNamed(RouteHandler.PACKAGE_DETAIL);

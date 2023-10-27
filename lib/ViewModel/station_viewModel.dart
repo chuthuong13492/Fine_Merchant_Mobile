@@ -26,6 +26,7 @@ class StationViewModel extends BaseModel {
   String? selectedStoreId = '';
   String? selectedTimeSlotId = '';
   String? selectedBoxId = '';
+  Uint8List? imageBytes;
   // Data Object Model
   StationDAO? _stationDAO;
   dynamic error;
@@ -110,7 +111,7 @@ class StationViewModel extends BaseModel {
   }
 
   Future<void> reportMissingProduct(
-      {String? productId, int? statusType}) async {
+      {String? productId, int? statusType, String? storeId}) async {
     try {
       List<String> updatedProducts = [];
       int missingQuantity = 0;
@@ -135,6 +136,7 @@ class StationViewModel extends BaseModel {
             requestModel = UpdateSplitProductRequestModel(
                 type: statusType,
                 timeSlotId: selectedTimeSlotId,
+                storeId: storeId,
                 productsUpdate: updatedProducts,
                 boxId: selectedBoxId,
                 quantity: missingQuantity);

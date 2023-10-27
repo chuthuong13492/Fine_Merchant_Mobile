@@ -56,6 +56,7 @@ class _StationScreenState extends State<StationScreen> {
           package.packStationDetailGroupByProducts;
       if (newProductList != null && newProductList.isNotEmpty) {
         for (PackStationDetailGroupByProducts product in newProductList) {
+          product.storeId = package.storeId;
           model.productList.add(product);
         }
       }

@@ -182,15 +182,21 @@ class PackStationDetailGroupByProducts {
   String? productId;
   String? productName;
   int? totalQuantity;
+  String? storeId;
   List<BoxProducts>? boxProducts;
 
   PackStationDetailGroupByProducts(
-      {this.productId, this.productName, this.totalQuantity, this.boxProducts});
+      {this.productId,
+      this.productName,
+      this.totalQuantity,
+      this.boxProducts,
+      this.storeId});
 
   PackStationDetailGroupByProducts.fromJson(Map<String, dynamic> json) {
     productId = json['productId'];
     productName = json['productName'];
     totalQuantity = json['totalQuantity'];
+    storeId = '';
     if (json['boxProducts'] != null) {
       boxProducts = <BoxProducts>[];
       json['boxProducts'].forEach((v) {

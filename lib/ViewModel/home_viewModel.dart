@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 
+import 'package:collection/equality.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
@@ -34,7 +35,7 @@ class HomeViewModel extends BaseModel {
   SplitProductDAO? _splitProductDAO;
   dynamic error;
   OrderDTO? orderDTO;
-  Uint8List? imageBytes;
+  Uint8List? boxQrCode;
   // Widget
   ScrollController? scrollController;
   bool isDelivering = false;
@@ -207,29 +208,28 @@ class HomeViewModel extends BaseModel {
     } finally {}
   }
 
-  Future<void> getShipperOrderBoxes() async {
+  Future<void> getBoxQrCode() async {
     try {
-      setState(ViewStatus.Loading);
-      imageBytes = null;
-      var currentUser = Get.find<AccountViewModel>().currentUser;
-      if (currentUser != null) {
-        final data = await _orderDAO?.getShipperOrderBox(
-          stationId: selectedStationId,
-          timeSlotId: selectedTimeSlotId,
-        );
-        if (data != null) {
-          orderBoxList = data;
-        }
+      // setState(ViewStatus.Loading);
+      Function arrayEquals = const ListEquality().equals;
+      final qrCode = await _stationDAO!
+          .getQrCodeForShipper(timeSlotId: selectedTimeSlotId);
+
+      if (qrCode != null && !arrayEquals(qrCode, boxQrCode)) {
+        boxQrCode = qrCode;
+        notifyListeners();
       }
-      setState(ViewStatus.Completed);
-      notifyListeners();
+
+      // await Future.delayed(const Duration(milliseconds: 200));
+
+      // setState(ViewStatus.Completed);
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getShipperOrderBoxes();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getBoxQrCode();
+      // } else {
+      //   setState(ViewStatus.Error);
+      // }
     } finally {}
   }
 
@@ -297,40 +297,5 @@ class HomeViewModel extends BaseModel {
         await getDeliveryPackageListForDriver();
       }
     }
-  }
-
-  Future<void> getBoxQrCode() async {
-    try {
-      setState(ViewStatus.Loading);
-
-      if (orderBoxList.isNotEmpty) {
-        var requestData = [];
-        for (ShipperOrderBoxDTO orderBox in orderBoxList) {
-          List<OrderDetail>? orderDetails = orderBox.orderDetails;
-          if (orderDetails!.isNotEmpty) {
-            requestData.add(StationQrCodeRequestModel(
-                    boxId: orderBox.boxId?.toUpperCase(),
-                    orderId: orderDetails.first.orderId?.toUpperCase())
-                .toJson());
-          }
-        }
-        final qrCode =
-            await _stationDAO!.getQrCodeForShipper(requestData: requestData);
-        if (qrCode != null) {
-          imageBytes = qrCode;
-        }
-      }
-
-      await Future.delayed(const Duration(milliseconds: 200));
-      notifyListeners();
-      setState(ViewStatus.Completed);
-    } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getBoxQrCode();
-      } else {
-        setState(ViewStatus.Error);
-      }
-    } finally {}
   }
 }
