@@ -216,7 +216,9 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         model: Get.find<HomeViewModel>(),
         child: ScopedModelDescendant<HomeViewModel>(
           builder: (context, child, model) {
-            if (model.status == ViewStatus.Loading || model.boxQrCode == null) {
+            if (model.status == ViewStatus.Loading ||
+                model.boxQrCode == null ||
+                model.takenPackageList.isEmpty) {
               return Container(
                 padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
                 width: Get.width,

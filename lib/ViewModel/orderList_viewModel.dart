@@ -262,7 +262,7 @@ class OrderListViewModel extends BaseModel {
           List<ErrorProducts>? newErrorProducts = data.errorProducts!;
           if (errorProductList != null && errorProductList!.isNotEmpty) {
             for (ErrorProducts errorProduct in errorProductList!) {
-              final updateIndex = errorProductList!
+              final updateIndex = newErrorProducts
                   .indexWhere((e) => e.productId == errorProduct.productId);
               if (updateIndex > -1) {
                 newErrorProducts[updateIndex].numsToSolve =
