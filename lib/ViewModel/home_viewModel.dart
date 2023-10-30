@@ -215,7 +215,8 @@ class HomeViewModel extends BaseModel {
       final qrCode = await _stationDAO!
           .getQrCodeForShipper(timeSlotId: selectedTimeSlotId);
 
-      if (qrCode != null && !arrayEquals(qrCode, boxQrCode)) {
+      if ((qrCode != null && !arrayEquals(qrCode, boxQrCode)) ||
+          boxQrCode == null) {
         boxQrCode = qrCode;
         notifyListeners();
       }

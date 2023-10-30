@@ -141,6 +141,7 @@ class ErrorProducts {
   int? reportMemType;
   int? numsToSolve;
   bool? isRefuse;
+  List<String>? listBox;
 
   ErrorProducts(
       {this.productId,
@@ -150,7 +151,8 @@ class ErrorProducts {
       this.stationId,
       this.reportMemType,
       this.numsToSolve,
-      this.isRefuse});
+      this.isRefuse,
+      this.listBox});
 
   ErrorProducts.fromJson(Map<String, dynamic> json) {
     productId = json['productId'];
@@ -162,6 +164,11 @@ class ErrorProducts {
     reportMemType = json['reportMemType'];
     isRefuse = json['isRefuse'];
     numsToSolve = quantity! - reConfirmQuantity!;
+    if (json['listBox'] != null) {
+      listBox = json['listBox'].cast<String>();
+    } else {
+      listBox = [];
+    }
   }
 }
 
@@ -170,7 +177,6 @@ class UpdateSplitProductRequestModel {
   int? type;
   List<String>? productsUpdate;
   int? quantity;
-  String? boxId;
   String? storeId;
 
   UpdateSplitProductRequestModel(
@@ -178,10 +184,44 @@ class UpdateSplitProductRequestModel {
       this.type,
       this.productsUpdate,
       this.quantity,
-      this.boxId,
       this.storeId});
 
   UpdateSplitProductRequestModel.fromJson(Map<String, dynamic> json) {
+    timeSlotId = json['timeSlotId'];
+    type = json['type'];
+    productsUpdate = json['productsUpdate'].cast<String>();
+    quantity = json['quantity'];
+    storeId = json['storeId'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = <String, dynamic>{};
+    data['timeSlotId'] = timeSlotId;
+    data['type'] = type;
+    data['productsUpdate'] = productsUpdate;
+    data['quantity'] = quantity;
+    data['storeId'] = storeId;
+    return data;
+  }
+}
+
+class ReportBoxRequestModel {
+  String? timeSlotId;
+  int? type;
+  List<String>? productsUpdate;
+  int? quantity;
+  String? boxId;
+  String? storeId;
+
+  ReportBoxRequestModel(
+      {this.timeSlotId,
+      this.type,
+      this.productsUpdate,
+      this.quantity,
+      this.boxId,
+      this.storeId});
+
+  ReportBoxRequestModel.fromJson(Map<String, dynamic> json) {
     timeSlotId = json['timeSlotId'];
     type = json['type'];
     productsUpdate = json['productsUpdate'].cast<String>();
@@ -196,6 +236,7 @@ class UpdateSplitProductRequestModel {
     data['type'] = type;
     data['productsUpdate'] = productsUpdate;
     data['quantity'] = quantity;
+    data['storeId'] = storeId;
     data['boxId'] = boxId;
     return data;
   }

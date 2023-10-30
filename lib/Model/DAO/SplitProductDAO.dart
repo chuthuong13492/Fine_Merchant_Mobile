@@ -28,6 +28,13 @@ class SplitProductDAO extends BaseDAO {
     return res.statusCode;
   }
 
+  Future<int?> reportBoxSplitProduct(
+      {required ReportBoxRequestModel requestModel}) async {
+    final res = await request.put('staff/package', data: requestModel.toJson());
+
+    return res.statusCode;
+  }
+
   Future<int?> reportUnsolvedProduct(
       {required String timeSlotId,
       required String productId,

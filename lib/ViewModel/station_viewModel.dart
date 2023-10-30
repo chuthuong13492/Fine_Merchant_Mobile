@@ -115,7 +115,7 @@ class StationViewModel extends BaseModel {
     try {
       List<String> updatedProducts = [];
       int missingQuantity = 0;
-      UpdateSplitProductRequestModel? requestModel;
+      ReportBoxRequestModel? requestModel;
       int option = await showOptionDialog("Xác nhận gửi báo cáo?");
 
       if (option == 1) {
@@ -133,7 +133,7 @@ class StationViewModel extends BaseModel {
               }
             }
 
-            requestModel = UpdateSplitProductRequestModel(
+            requestModel = ReportBoxRequestModel(
                 type: statusType,
                 timeSlotId: selectedTimeSlotId,
                 storeId: storeId,
@@ -142,13 +142,14 @@ class StationViewModel extends BaseModel {
                 quantity: missingQuantity);
           }
           if (requestModel != null) {
-            final statusCode = await _splitProductDAO?.confirmSplitProduct(
+            final statusCode = await _splitProductDAO?.reportBoxSplitProduct(
                 requestModel: requestModel);
             if (statusCode == 200) {
               notifyListeners();
               await showStatusDialog(
                   "assets/images/icon-success.png", "Báo cáo thành công", "");
               Get.back();
+              Future.delayed(const Duration(milliseconds: 2000));
             } else {
               await showStatusDialog(
                 "assets/images/error.png",

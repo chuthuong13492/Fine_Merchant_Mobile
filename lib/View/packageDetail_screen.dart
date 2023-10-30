@@ -27,7 +27,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
   @override
   void initState() {
     super.initState();
-    periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
+    periodicTimer = Timer.periodic(const Duration(seconds: 3), (Timer timer) {
       refreshFetchData();
     });
   }
@@ -194,6 +194,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               ),
               onPressed: model.takenPackageList.isNotEmpty
                   ? () {
+                      // periodicTimer.cancel();
                       _onTapToProductBoxes(model.takenPackageList);
                     }
                   : null,
@@ -215,8 +216,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
         model: Get.find<HomeViewModel>(),
         child: ScopedModelDescendant<HomeViewModel>(
           builder: (context, child, model) {
-            if (model.status == ViewStatus.Loading ||
-                model.takenPackageList.isEmpty) {
+            if (model.status == ViewStatus.Loading || model.boxQrCode == null) {
               return Container(
                 padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
                 width: Get.width,

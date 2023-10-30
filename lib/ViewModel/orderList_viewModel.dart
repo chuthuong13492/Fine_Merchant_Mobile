@@ -222,10 +222,13 @@ class OrderListViewModel extends BaseModel {
 
   Future<void> getStoreList() async {
     try {
+      var currentUser = Get.find<AccountViewModel>().currentUser;
+      selectedStoreId = currentUser!.storeId!;
       final data = await _storeDAO?.getStores();
       if (data != null) {
         storeList = data;
-        selectedStoreId = data.first.id!;
+
+        // selectedStoreId = data.first.id!;
       }
 
       notifyListeners();
@@ -397,6 +400,7 @@ class OrderListViewModel extends BaseModel {
               UpdateSplitProductRequestModel(
                   type: statusType,
                   timeSlotId: selectedTimeSlotId,
+                  storeId: selectedStoreId,
                   productsUpdate: updatedProducts,
                   quantity: 0);
 
@@ -448,12 +452,69 @@ class OrderListViewModel extends BaseModel {
           updatedProducts.add(productId);
           UpdateSplitProductRequestModel requestModel =
               UpdateSplitProductRequestModel(
-                  type: type,
-                  timeSlotId: selectedTimeSlotId,
-                  productsUpdate: updatedProducts,
-                  quantity: quantity);
+            type: type,
+            timeSlotId: selectedTimeSlotId,
+            storeId: selectedStoreId,
+            productsUpdate: updatedProducts,
+            quantity: quantity,
+          );
 
           final statusCode = await _splitProductDAO?.confirmSplitProduct(
+              requestModel: requestModel);
+          if (statusCode == 200) {
+            numsOfCheck = 0;
+            isAllChecked = false;
+            notifyListeners();
+            await showStatusDialog(
+                "assets/images/icon-success.png", "Báo cáo thành công", "");
+            Get.back();
+          } else {
+            await showStatusDialog(
+              "assets/images/error.png",
+              "Thất bại",
+              "",
+            );
+          }
+        } else {
+          Get.back();
+        }
+      }
+    } catch (e) {
+      await showStatusDialog(
+        "assets/images/error.png",
+        "Thất bại",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+      );
+    } finally {
+      await getSplitOrders();
+    }
+  }
+
+  Future<void> updateReportProductWithBox(
+      {required String productId,
+      required int quantity,
+      required int type,
+      required String boxId}) async {
+    try {
+      List<String> updatedProducts = [];
+      int option = await showOptionDialog(
+          type == 2 ? "Báo cáo thiếu món này?" : "Đã xử lý món này?");
+
+      if (option == 1) {
+        showLoadingDialog();
+        List<ProductTotalDetail>? currentSplitProductList =
+            splitOrder!.productTotalDetailList;
+        if (currentSplitProductList!.isNotEmpty) {
+          updatedProducts.add(productId);
+          ReportBoxRequestModel requestModel = ReportBoxRequestModel(
+              type: type,
+              timeSlotId: selectedTimeSlotId,
+              storeId: selectedStoreId,
+              productsUpdate: updatedProducts,
+              quantity: quantity,
+              boxId: boxId);
+
+          final statusCode = await _splitProductDAO?.reportBoxSplitProduct(
               requestModel: requestModel);
           if (statusCode == 200) {
             numsOfCheck = 0;

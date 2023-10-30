@@ -65,7 +65,7 @@ class RootViewModel extends BaseModel {
       await Get.find<HomeViewModel>().getStoreList();
       await Get.find<HomeViewModel>().getDeliveryPackageListForDriver();
       await Get.find<StationViewModel>().getBoxListByStation();
-      // await Get.find<StationViewModel>().getShipperOrderBoxes();
+      await Get.find<HomeViewModel>().getBoxQrCode();
     }
   }
 }

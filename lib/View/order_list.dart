@@ -48,6 +48,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void dispose() {
     periodicTimer.cancel();
+
     super.dispose();
   }
 
@@ -898,7 +899,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       SizedBox(
-                        width: Get.width * 0.35,
+                        width: Get.width * 0.37,
                         height: 40,
                         child: TextFormField(
                           readOnly: product.isRefuse == false ? false : true,
@@ -956,16 +957,27 @@ class _OrderListScreenState extends State<OrderListScreen> {
                         ),
                       ),
                       InkWell(
-                        onTap: product.numsToSolve! > 0
+                        onTap: product.numsToSolve! > 0 &&
+                                product.isRefuse == false
                             ? () async {
-                                await model.updateReportProduct(
-                                    productId: product.productId!,
-                                    quantity: product.numsToSolve!,
-                                    type: UpdateSplitProductTypeEnum.RECONFIRM);
+                                if (product.listBox!.isNotEmpty) {
+                                  await model.updateReportProductWithBox(
+                                      productId: product.productId!,
+                                      quantity: product.numsToSolve!,
+                                      type:
+                                          UpdateSplitProductTypeEnum.RECONFIRM,
+                                      boxId: product.listBox!.first);
+                                } else {
+                                  await model.updateReportProduct(
+                                      productId: product.productId!,
+                                      quantity: product.numsToSolve!,
+                                      type:
+                                          UpdateSplitProductTypeEnum.RECONFIRM);
+                                }
                               }
                             : null,
                         child: Container(
-                          width: 150,
+                          width: Get.width * 0.37,
                           padding: const EdgeInsets.all(8),
                           decoration: BoxDecoration(
                             color: Colors.white,
@@ -1002,11 +1014,13 @@ class _OrderListScreenState extends State<OrderListScreen> {
                   Padding(
                     padding: const EdgeInsets.only(top: 16),
                     child: InkWell(
-                      onTap: () async {
-                        await model.reportUnsolvedProduct(
-                            productId: product.productId!,
-                            memType: product.reportMemType!);
-                      },
+                      onTap: product.isRefuse == false
+                          ? () async {
+                              await model.reportUnsolvedProduct(
+                                  productId: product.productId!,
+                                  memType: product.reportMemType!);
+                            }
+                          : null,
                       child: Container(
                         width: 150,
                         padding: const EdgeInsets.all(8),
@@ -1156,8 +1170,6 @@ class _OrderListScreenState extends State<OrderListScreen> {
                     style: FineTheme.typograhpy.body1
                         .copyWith(color: FineTheme.palettes.emerald25)),
                 onPressed: () async {
-                  // model.onChangeMissing(
-                  //     splitProductIndex, model.currentMissing);
                   await model.updateReportProduct(
                       productId: product.productId!,
                       quantity: model.currentMissing,
