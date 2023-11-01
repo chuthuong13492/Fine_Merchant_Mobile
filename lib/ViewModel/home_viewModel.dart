@@ -81,7 +81,7 @@ class HomeViewModel extends BaseModel {
           destinationId: selectedDestinationId);
       if (data != null) {
         timeSlotList = data
-            .where((slot) => (int.parse(slot.arriveTime!.substring(0, 2)) -
+            .where((slot) => (int.parse(slot.checkoutTime!.substring(0, 2)) -
                     DateTime.now().hour >=
                 1))
             .toList();
@@ -180,7 +180,7 @@ class HomeViewModel extends BaseModel {
               data.packageStoreShipperResponses;
           if (storePackageList != null) {
             for (PackageStoreShipperResponses package in storePackageList) {
-              if (package.isTaken == true) {
+              if (package.isTaken == true && package.isInBox == false) {
                 newTakenPackages.add(package);
               } else {
                 newPendingPackages.add(package);

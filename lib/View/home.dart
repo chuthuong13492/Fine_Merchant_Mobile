@@ -224,6 +224,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
                               child: Text("Hàng đang chờ",
+                                  textAlign: TextAlign.center,
                                   style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.emerald25,
                                   )),
@@ -264,6 +265,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
                               child: Text("Hàng đã lấy",
+                                  textAlign: TextAlign.center,
                                   style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.emerald25,
                                   )),

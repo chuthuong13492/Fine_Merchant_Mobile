@@ -346,6 +346,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
                               child: Text("Đang xử lý",
+                                  textAlign: TextAlign.center,
                                   style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.emerald25,
                                   )),
@@ -386,6 +387,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               padding: const EdgeInsets.only(
                                   top: 18, bottom: 12, right: 18),
                               child: Text("Đã xử lý",
+                                  textAlign: TextAlign.center,
                                   style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.emerald25,
                                   )),
@@ -413,6 +415,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               padding: const EdgeInsets.only(
                                   top: 12, bottom: 12, right: 12),
                               child: Text("Báo cáo",
+                                  textAlign: TextAlign.center,
                                   style: FineTheme.typograhpy.body1.copyWith(
                                     color: FineTheme.palettes.emerald25,
                                   )),

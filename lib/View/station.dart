@@ -238,7 +238,7 @@ class _StationScreenState extends State<StationScreen> {
                     crossAxisAlignment: CrossAxisAlignment.center,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text('Vào lúc: ',
+                      Text('Giờ giao: ',
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),

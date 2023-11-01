@@ -134,7 +134,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Text(
-                  'Vào lúc:',
+                  'Giờ giao:',
                   style: TextStyle(
                       fontWeight: FontWeight.w600,
                       fontSize: 16,

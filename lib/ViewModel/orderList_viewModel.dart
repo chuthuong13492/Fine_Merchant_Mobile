@@ -174,7 +174,7 @@ class OrderListViewModel extends BaseModel {
           destinationId: selectedDestinationId);
       if (data != null) {
         timeSlotList = data
-            .where((slot) => (int.parse(slot.arriveTime!.substring(0, 2)) -
+            .where((slot) => (int.parse(slot.checkoutTime!.substring(0, 2)) -
                     DateTime.now().hour >=
                 1))
             .toList();
