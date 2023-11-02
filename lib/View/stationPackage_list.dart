@@ -220,8 +220,9 @@ class _StationPackagesScreenState extends State<StationPackagesScreen> {
                 crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   ...model.splitProductsByStation
-                      .map((stationPackage) =>
-                          _buildStationPackage(stationPackage))
+                      .map((stationPackage) => stationPackage.totalQuantity! > 0
+                          ? _buildStationPackage(stationPackage)
+                          : const SizedBox.shrink())
                       .toList(),
                   loadMoreIcon(),
                   const SizedBox(
