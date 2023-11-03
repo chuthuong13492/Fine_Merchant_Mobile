@@ -334,8 +334,6 @@ class OrderListViewModel extends BaseModel {
 
         pendingProductList = newPendingProductList;
         confirmedProductList = newConfirmedProductList;
-
-        notifyListeners();
       } else {
         splitOrder = data;
         notifierPending.value = splitOrder!.totalProductPending!;

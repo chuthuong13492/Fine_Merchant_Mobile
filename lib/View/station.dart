@@ -311,6 +311,26 @@ class _StationScreenState extends State<StationScreen> {
               const SizedBox(
                 height: 8,
               ),
+              package.errorQuantity != null && package.errorQuantity! > 0
+                  ? Row(
+                      children: [
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text('Số món thiếu:',
+                                style: FineTheme.typograhpy.body1.copyWith(
+                                    color: FineTheme.palettes.neutral900,
+                                    fontWeight: FontWeight.bold)),
+                            Text('${package.errorQuantity}',
+                                style: FineTheme.typograhpy.body1),
+                          ],
+                        ),
+                        const SizedBox(
+                          height: 8,
+                        ),
+                      ],
+                    )
+                  : const SizedBox.shrink(),
               Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [

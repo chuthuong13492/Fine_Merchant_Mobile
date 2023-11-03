@@ -182,7 +182,8 @@ class HomeViewModel extends BaseModel {
             for (PackageStoreShipperResponses package in storePackageList) {
               if (package.isTaken == true && package.isInBox == false) {
                 newTakenPackages.add(package);
-              } else {
+              }
+              if (package.isTaken == false) {
                 newPendingPackages.add(package);
               }
             }

@@ -182,6 +182,7 @@ class PackStationDetailGroupByProducts {
   String? productId;
   String? productName;
   int? totalQuantity;
+  int? errorQuantity;
   String? storeId;
   List<BoxProducts>? boxProducts;
 
@@ -189,6 +190,7 @@ class PackStationDetailGroupByProducts {
       {this.productId,
       this.productName,
       this.totalQuantity,
+      this.errorQuantity,
       this.boxProducts,
       this.storeId});
 
@@ -196,6 +198,7 @@ class PackStationDetailGroupByProducts {
     productId = json['productId'];
     productName = json['productName'];
     totalQuantity = json['totalQuantity'];
+    errorQuantity = json['errorQuantity'];
     storeId = '';
     if (json['boxProducts'] != null) {
       boxProducts = <BoxProducts>[];
