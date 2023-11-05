@@ -272,6 +272,12 @@ class OrderListViewModel extends BaseModel {
           }
 
           errorProductList = newErrorProducts;
+          errorProductList!.sort((a, b) {
+            if (a.isRefuse == true) {
+              return 1;
+            }
+            return -1;
+          });
         } else {
           errorProductList = [];
         }

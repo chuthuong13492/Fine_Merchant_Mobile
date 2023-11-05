@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
@@ -105,6 +106,12 @@ class StationPackageViewModel extends BaseModel {
       );
       if (data != null) {
         splitProductsByStation = data;
+        splitProductsByStation.sort((a, b) {
+          if (a.isShipperAssign == true) {
+            return 1;
+          }
+          return -1;
+        });
       } else {
         splitProductsByStation = [];
       }

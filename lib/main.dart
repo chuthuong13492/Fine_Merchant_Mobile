@@ -7,6 +7,7 @@ import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 import 'package:fine_merchant_mobile/Model/DTO/index.dart';
 import 'package:fine_merchant_mobile/Utils/pageNavigation.dart';
 import 'package:fine_merchant_mobile/Utils/request.dart';
+import 'package:fine_merchant_mobile/View/home.dart';
 import 'package:fine_merchant_mobile/View/productBoxes_screen.dart.dart';
 import 'package:fine_merchant_mobile/View/stationPackage_list.dart';
 import 'package:fine_merchant_mobile/View/nav_screen.dart';
@@ -77,6 +78,9 @@ class MyApp extends StatelessWidget {
             return CupertinoPageRoute(
                 builder: (context) => const ProfileScreen(),
                 settings: settings);
+          case RouteHandler.HOME:
+            return CupertinoPageRoute(
+                builder: (context) => const HomeScreen(), settings: settings);
           case RouteHandler.ORDER_LIST:
             return CupertinoPageRoute(
                 builder: (context) => const OrderListScreen(),
