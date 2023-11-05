@@ -299,7 +299,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         onPressed: () async {
                           await model.confirmAllBoxStored();
                           setState(() {});
-                          Get.toNamed(RouteHandler.HOME);
+                          Get.offAndToNamed(RouteHandler.NAV);
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(top: 8, bottom: 8),
