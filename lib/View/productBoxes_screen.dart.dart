@@ -13,9 +13,8 @@ import 'package:get/get.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class ProductBoxesScreen extends StatefulWidget {
-  final PackStationDetailGroupByProducts product;
-
-  const ProductBoxesScreen({super.key, required this.product});
+  final ProductBoxViewModelDTO productBoxViewModel;
+  const ProductBoxesScreen({super.key, required this.productBoxViewModel});
 
   @override
   State<ProductBoxesScreen> createState() => _ProductBoxesScreenState();
@@ -23,18 +22,23 @@ class ProductBoxesScreen extends StatefulWidget {
 
 class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   bool isReporting = false;
+  List<ProductBoxesDTO>? productBoxes;
+  PackStationDetailGroupByProducts? productPackage;
   StationViewModel model = Get.put(StationViewModel());
 
   final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey =
       new GlobalKey<RefreshIndicatorState>();
 
   final double HEIGHT = 32;
+
   final ValueNotifier<double> notifier = ValueNotifier(0);
   final PageController controller = PageController();
 
   @override
   void initState() {
     super.initState();
+    productBoxes = widget.productBoxViewModel.productBoxes;
+    productPackage = widget.productBoxViewModel.product;
   }
 
   Future<void> _refresh() async {
@@ -152,9 +156,10 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                                       ),
                                       onPressed: () async {
                                         await model.reportMissingProduct(
-                                            productId: widget.product.productId,
+                                            productId:
+                                                productPackage!.productId,
                                             statusType: 2,
-                                            storeId: widget.product.storeId);
+                                            storeId: productPackage!.storeId);
                                         setState(() {
                                           isReporting = !isReporting;
                                         });
@@ -212,7 +217,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
-                      Text('${widget.product.productName}',
+                      Text('${productPackage!.productName}',
                           style: FineTheme.typograhpy.body1),
                     ],
                   ),
@@ -256,18 +261,17 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   }
 
   Widget _buildBoxes(BoxDTO box) {
-    BoxProducts? foundBoxProduct;
+    ProductBoxesDTO? foundBoxProduct;
     var isStored = false;
     var quantity = 0;
     int index = 0;
-    List<BoxProducts>? boxProductList = widget.product.boxProducts;
-    if (boxProductList != null && boxProductList.isNotEmpty) {
-      for (BoxProducts boxProduct in boxProductList) {
-        if (boxProduct.boxCode == box.code) {
-          foundBoxProduct = boxProduct;
+    if (productBoxes != null && productBoxes!.isNotEmpty) {
+      for (ProductBoxesDTO productBox in productBoxes!) {
+        if (productBox.boxCode == box.code) {
+          foundBoxProduct = productBox;
           isStored = true;
-          quantity = boxProduct.quantity!;
-          index = boxProductList.indexOf(boxProduct);
+          quantity = productBox.listProduct![0].quantity!;
+          index = productBoxes!.indexOf(productBox);
         }
       }
     }
@@ -288,7 +292,9 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                   ? () {
                       model.onSelectReportBox(box.id!);
                       model.onChangeMissing(
-                          widget.product.productId!, index, 1);
+                          foundBoxProduct!.listProduct![0].productId!,
+                          index,
+                          1);
                       setState(() {});
                     }
                   : null,
@@ -442,11 +448,11 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
   // }
 
   Future<void> _dialogBuilder(
-      BuildContext context, BoxProducts boxProduct, int? index) {
-    int currentMissing = 0;
+      BuildContext context, ProductBoxesDTO productBox, int? index) {
+    int currentMissing = 1;
     String? boxCode =
         model.boxList.firstWhere((box) => box.id == model.selectedBoxId).code;
-    currentMissing = boxProduct.currentMissing!;
+    currentMissing = productBox.currentMissing!;
     return showDialog<void>(
       context: context,
       builder: (BuildContext context) {
@@ -518,7 +524,8 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         splashRadius: 24,
                         icon: const Icon(Icons.add, size: 32),
                         onPressed: () {
-                          if (currentMissing < boxProduct.quantity!) {
+                          if (currentMissing <
+                              productBox.listProduct![0].quantity!) {
                             currentMissing++;
                           }
                           setState(() {});
@@ -542,7 +549,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         .copyWith(color: FineTheme.palettes.emerald25)),
                 onPressed: () {
                   model.onChangeMissing(
-                      widget.product.productId!, index!, currentMissing);
+                      productBox.boxId!, index!, currentMissing);
                   this.setState(() {});
                   Navigator.of(context).pop();
                 },

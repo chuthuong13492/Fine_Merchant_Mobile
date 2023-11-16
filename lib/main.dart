@@ -107,8 +107,9 @@ class MyApp extends StatelessWidget {
           case RouteHandler.PRODUCT_BOXES_SCREEN:
             return CupertinoPageRoute<bool>(
                 builder: (context) => ProductBoxesScreen(
-                    product:
-                        settings.arguments as PackStationDetailGroupByProducts),
+                      productBoxViewModel:
+                          settings.arguments as ProductBoxViewModelDTO,
+                    ),
                 settings: settings);
           case RouteHandler.STATION_PACKAGE_DETAIL:
             return CupertinoPageRoute<bool>(

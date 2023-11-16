@@ -69,9 +69,13 @@ class _StationScreenState extends State<StationScreen> {
   }
 
   void _onTapToBoxList(PackStationDetailGroupByProducts product) async {
-    // await Get.find<StationViewModel>().getBoxListByStation();
-    // await Future.delayed(const Duration(milliseconds: 300));
-    await Get.toNamed(RouteHandler.PRODUCT_BOXES_SCREEN, arguments: product);
+    await Get.find<StationViewModel>()
+        .getBoxListByProduct(productId: product.productId);
+    await Future.delayed(const Duration(milliseconds: 200));
+    final productBoxViewModelDTO = ProductBoxViewModelDTO(
+        product: product, productBoxes: model.productBoxes);
+    await Get.toNamed(RouteHandler.PRODUCT_BOXES_SCREEN,
+        arguments: productBoxViewModelDTO);
   }
 
   @override
@@ -242,8 +246,9 @@ class _StationScreenState extends State<StationScreen> {
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
-                      Text('${timeSlot.checkoutTime?.substring(0, 5)}',
-                          style: FineTheme.typograhpy.body1),
+                      // Text('${timeSlot.checkoutTime?.substring(0, 5)}',
+                      //     style: FineTheme.typograhpy.body1),
+                      Text('09:00', style: FineTheme.typograhpy.body1),
                     ],
                   ),
                 ],

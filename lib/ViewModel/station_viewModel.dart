@@ -19,6 +19,7 @@ class StationViewModel extends BaseModel {
 
   // local properties
   List<PackStationDetailGroupByProducts> productList = [];
+  List<ProductBoxesDTO> productBoxes = [];
   List<StationDTO> stationList = [];
   List<BoxDTO> boxList = [];
   List<TimeSlotDTO> timeSlotList = [];
@@ -62,15 +63,16 @@ class StationViewModel extends BaseModel {
     notifyListeners();
   }
 
-  void onChangeMissing(String productId, int index, int newValue) {
+  void onChangeMissing(String boxId, int index, int newValue) {
     if (index >= 0) {
-      PackStationDetailGroupByProducts? foundProduct =
-          productList.firstWhereOrNull((e) => e.productId == productId);
+      ProductBoxesDTO? foundProduct =
+          productBoxes.firstWhereOrNull((e) => e.boxId == boxId);
       if (foundProduct != null) {
-        BoxProducts? foundBoxProduct = foundProduct.boxProducts![index];
-        if (newValue > 0 && (foundBoxProduct.quantity! - newValue >= 0)) {
-          foundBoxProduct.isChecked = true;
-          foundBoxProduct.currentMissing = newValue;
+        // BoxProducts? foundBoxProduct = foundProduct.boxProducts![index];
+        if (newValue > 0 &&
+            (foundProduct.listProduct![0].quantity! - newValue >= 0)) {
+          foundProduct.isChecked = true;
+          foundProduct.currentMissing = newValue;
         }
       }
     }
@@ -110,6 +112,28 @@ class StationViewModel extends BaseModel {
     } finally {}
   }
 
+  Future<void> getBoxListByProduct({String? productId}) async {
+    try {
+      setState(ViewStatus.Loading);
+      selectedStationId = Get.find<HomeViewModel>().selectedStationId;
+      final data = await _stationDAO?.getProductBoxesByProduct(
+          timeSlotId: selectedTimeSlotId, productId: productId);
+      if (data != null) {
+        productBoxes = data;
+      }
+      setState(ViewStatus.Completed);
+      notifyListeners();
+    } catch (e) {
+      // bool result = await showErrorDialog();
+      // if (result) {
+
+      // } else {
+      //   setState(ViewStatus.Error);
+      // }
+      print(e);
+    } finally {}
+  }
+
   Future<void> reportMissingProduct(
       {String? productId, int? statusType, String? storeId}) async {
     try {
@@ -120,27 +144,27 @@ class StationViewModel extends BaseModel {
 
       if (option == 1) {
         showLoadingDialog();
-        PackStationDetailGroupByProducts? foundProduct =
-            productList.firstWhereOrNull((e) => e.productId == productId);
+        ProductBoxesDTO? foundProduct = productBoxes
+            .firstWhereOrNull((e) => e.listProduct![0].productId == productId);
 
         if (foundProduct != null) {
-          updatedProducts.add(foundProduct.productId!);
-          List<BoxProducts>? productBoxList = foundProduct.boxProducts;
-          if (productBoxList != null) {
-            for (final productBox in productBoxList) {
-              if (productBox.isChecked == true) {
-                missingQuantity = productBox.currentMissing!;
-              }
-            }
+          updatedProducts.add(foundProduct.listProduct![0].productId!);
+          // List<BoxProducts>? productBoxList = foundProduct.boxProducts;
 
-            requestModel = ReportBoxRequestModel(
-                type: statusType,
-                timeSlotId: selectedTimeSlotId,
-                storeId: storeId,
-                productsUpdate: updatedProducts,
-                boxId: selectedBoxId,
-                quantity: missingQuantity);
+          for (final productBox in productBoxes) {
+            if (productBox.isChecked == true) {
+              missingQuantity = productBox.currentMissing!;
+            }
           }
+
+          requestModel = ReportBoxRequestModel(
+              type: statusType,
+              timeSlotId: selectedTimeSlotId,
+              storeId: storeId,
+              productsUpdate: updatedProducts,
+              boxId: selectedBoxId,
+              quantity: missingQuantity);
+
           if (requestModel != null) {
             final statusCode = await _splitProductDAO?.reportBoxSplitProduct(
                 requestModel: requestModel);

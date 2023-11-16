@@ -40,6 +40,21 @@ class StationDAO extends BaseDAO {
     return null;
   }
 
+  Future<List<ProductBoxesDTO>?> getProductBoxesByProduct(
+      {String? timeSlotId, String? productId}) async {
+    final res = await request.get(
+      '/staff/package/listBox',
+      queryParameters: {"timeSlotId": timeSlotId, "productId": productId},
+    );
+    if (res.data['data'] != null) {
+      var listJson = res.data['data'] as List;
+      // metaDataDTO = MetaDataDTO.fromJson(res.data["metadata"]);
+      // orderSummaryList = OrderDTO.fromList(res.data['data']);
+      return listJson.map((e) => ProductBoxesDTO.fromJson(e)).toList();
+    }
+    return null;
+  }
+
   Future<List<MissingProductReportDTO>?> getMissingProductReport(
       {String? storeId, String? timeSlotId}) async {
     final res = await request.get(
