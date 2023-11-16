@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:collection/equality.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
+import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
 import 'package:fine_merchant_mobile/Utils/constrant.dart';
 import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
@@ -281,7 +282,8 @@ class HomeViewModel extends BaseModel {
           notifyListeners();
           await showStatusDialog(
               "assets/images/icon-success.png", "Giao thành công", "");
-          Get.back();
+          Get.offAndToNamed(RouteHandler.NAV);
+          // Get.back();
         } else {
           await showStatusDialog(
             "assets/images/error.png",

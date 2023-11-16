@@ -91,121 +91,115 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
           Radius.circular(15),
         ),
       ),
-      child: Column(
+      child: ListView(
         children: [
-          Center(
-            child: Text(
-              'Thông tin:',
-              style: TextStyle(
-                  fontWeight: FontWeight.w600,
-                  fontSize: 16,
-                  fontStyle: FontStyle.normal,
-                  color: FineTheme.palettes.shades200),
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Trạm:',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      fontStyle: FontStyle.normal,
-                      color: FineTheme.palettes.shades200),
-                ),
-                Text(
-                  '$stationName',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal),
-                  overflow: TextOverflow.ellipsis,
-                  textAlign: TextAlign.right,
-                ),
-              ],
-            ),
-          ),
-          Padding(
-            padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Giờ giao:',
-                  style: TextStyle(
-                      fontWeight: FontWeight.w600,
-                      fontSize: 16,
-                      fontStyle: FontStyle.normal,
-                      color: FineTheme.palettes.shades200),
-                ),
-                Text(
-                  '${timeSlot?.checkoutTime!.substring(0, 5)}',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ],
-            ),
-          ),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          Column(
             children: [
-              Text(
-                'Số gói hàng:',
-                style: TextStyle(
-                    fontWeight: FontWeight.w600,
-                    fontSize: 16,
-                    fontStyle: FontStyle.normal,
-                    color: FineTheme.palettes.shades200),
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Trạm:',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontStyle: FontStyle.normal,
+                          color: FineTheme.palettes.shades200),
+                    ),
+                    Text(
+                      '$stationName',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          fontStyle: FontStyle.normal),
+                      overflow: TextOverflow.ellipsis,
+                      textAlign: TextAlign.right,
+                    ),
+                  ],
+                ),
               ),
-              OutlinedButton(
-                onPressed: model.takenPackageList.isNotEmpty
-                    ? () => _dialogBuilder(context)
-                    : null,
-                child: Text(
-                  model.takenPackageList.isNotEmpty
-                      ? 'Xem chi tiết (${model.takenPackageList.length})'
-                      : 'Chưa lấy gói hàng nào',
-                  style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w400,
-                      fontStyle: FontStyle.normal,
+              Padding(
+                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'Giờ giao:',
+                      style: TextStyle(
+                          fontWeight: FontWeight.w600,
+                          fontSize: 16,
+                          fontStyle: FontStyle.normal,
+                          color: FineTheme.palettes.shades200),
+                    ),
+                    Text(
+                      '${timeSlot?.checkoutTime!.substring(0, 5)}',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          fontStyle: FontStyle.normal),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ],
+                ),
+              ),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Số gói hàng:',
+                    style: TextStyle(
+                        fontWeight: FontWeight.w600,
+                        fontSize: 16,
+                        fontStyle: FontStyle.normal,
+                        color: FineTheme.palettes.shades200),
+                  ),
+                  OutlinedButton(
+                    onPressed: model.takenPackageList.isNotEmpty
+                        ? () => _dialogBuilder(context)
+                        : null,
+                    child: Text(
+                      model.takenPackageList.isNotEmpty
+                          ? 'Xem chi tiết (${model.takenPackageList.length})'
+                          : 'Chưa lấy gói hàng nào',
+                      style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.w400,
+                          fontStyle: FontStyle.normal,
+                          color: model.takenPackageList.isNotEmpty
+                              ? FineTheme.palettes.emerald25
+                              : FineTheme.palettes.neutral700),
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(
+                height: 16,
+              ),
+              ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.white,
+                    shape: const RoundedRectangleBorder(
+                        borderRadius: BorderRadius.all(Radius.circular(8))),
+                  ),
+                  onPressed: model.takenPackageList.isNotEmpty
+                      ? () {
+                          // periodicTimer.cancel();
+                          _onTapToProductBoxes(model.takenPackageList);
+                        }
+                      : null,
+                  child: Text(
+                    'Xem danh sách tủ theo món',
+                    style: FineTheme.typograhpy.body1.copyWith(
                       color: model.takenPackageList.isNotEmpty
                           ? FineTheme.palettes.emerald25
-                          : FineTheme.palettes.neutral700),
-                  overflow: TextOverflow.ellipsis,
-                ),
-              ),
+                          : FineTheme.palettes.neutral700,
+                    ),
+                  )),
             ],
           ),
-          const SizedBox(
-            height: 16,
-          ),
-          ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.white,
-                shape: const RoundedRectangleBorder(
-                    borderRadius: BorderRadius.all(Radius.circular(8))),
-              ),
-              onPressed: model.takenPackageList.isNotEmpty
-                  ? () {
-                      // periodicTimer.cancel();
-                      _onTapToProductBoxes(model.takenPackageList);
-                    }
-                  : null,
-              child: Text(
-                'Xem danh sách tủ theo món',
-                style: FineTheme.typograhpy.body1.copyWith(
-                  color: model.takenPackageList.isNotEmpty
-                      ? FineTheme.palettes.emerald25
-                      : FineTheme.palettes.neutral700,
-                ),
-              )),
         ],
       ),
     );
@@ -299,7 +293,6 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         onPressed: () async {
                           await model.confirmAllBoxStored();
                           setState(() {});
-                          Get.offAndToNamed(RouteHandler.NAV);
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(top: 8, bottom: 8),
