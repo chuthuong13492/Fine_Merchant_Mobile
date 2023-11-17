@@ -288,8 +288,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                             return DropdownMenuItem<String>(
                               value: timeSlot.id,
                               child: Text(
-                                  // '${timeSlot.arriveTime?.substring(0, 5)} - ${timeSlot.checkoutTime?.substring(0, 5)}',
-                                  '07:00 - 09:00',
+                                  '${timeSlot.arriveTime?.substring(0, 5)} - ${timeSlot.checkoutTime?.substring(0, 5)}',
                                   style: FineTheme.typograhpy.body1),
                             );
                           }).toList(),
