@@ -84,7 +84,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       width: Get.width,
-      height: Get.height * 0.275,
+      height: Get.height * 0.25,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(
