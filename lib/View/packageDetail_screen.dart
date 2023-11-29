@@ -84,7 +84,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       width: Get.width,
-      height: Get.height * 0.25,
+      height: Get.height * 0.23,
       decoration: const BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.all(
@@ -175,8 +175,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                   ),
                 ],
               ),
-              const SizedBox(
-                height: 16,
+              SizedBox(
+                height: Get.height * 0.0275,
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -216,7 +216,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               return Container(
                 padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
                 width: Get.width,
-                height: Get.height * 0.6,
+                height: Get.height * 0.625,
                 decoration: const BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.all(
