@@ -39,6 +39,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
     super.initState();
     productBoxes = widget.productBoxViewModel.productBoxes;
     productPackage = widget.productBoxViewModel.product;
+    _refresh();
   }
 
   Future<void> _refresh() async {
@@ -77,14 +78,14 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
               children: [
                 Column(
                   children: [
-                    const SizedBox(
-                      height: 16,
+                    SizedBox(
+                      height: Get.height * 0.02,
                     ),
                     Column(
                       children: [
                         ...renderHomeSections().toList(),
-                        const SizedBox(
-                          height: 16,
+                        SizedBox(
+                          height: Get.height * 0.015,
                         ),
                         isReporting == false
                             ? Center(
@@ -207,7 +208,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
               return const SizedBox.shrink();
             }
             return SizedBox(
-              height: 60,
+              height: Get.height * 0.1,
               child: Column(
                 children: [
                   Row(
@@ -221,8 +222,8 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           style: FineTheme.typograhpy.body1),
                     ],
                   ),
-                  const SizedBox(
-                    height: 16,
+                  SizedBox(
+                    height: Get.height * 0.02,
                   ),
                   Row(
                     crossAxisAlignment: CrossAxisAlignment.center,
@@ -251,9 +252,9 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
 
   Widget _buildBoxProductList() {
     return Container(
-        padding: const EdgeInsets.all(6),
+        padding: EdgeInsets.all(Get.height * 0.01),
         color: FineTheme.palettes.neutral600,
-        height: 600,
+        height: Get.height * 0.675,
         child: GridView.count(
           crossAxisCount: 5,
           children: [...model.boxList.map((box) => _buildBoxes(box))],

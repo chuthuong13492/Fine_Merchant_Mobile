@@ -5,6 +5,7 @@ class AccountDTO {
   String? username;
   int? roleType;
   String? storeId;
+  String? stationId;
   bool? isActive;
   DateTime? createAt;
   DateTime? updateAt;
@@ -18,6 +19,7 @@ class AccountDTO {
       this.isActive,
       // this.universityId,
       // this.uniInfoId,
+      this.stationId,
       this.createAt,
       this.updateAt});
 
@@ -27,6 +29,7 @@ class AccountDTO {
     username = json["username"];
     roleType = json["roleType"];
     storeId = json["storeId"] ?? null;
+    stationId = json["stationId"];
     isActive = json["isActive"];
     createAt =
         json['createAt'] != null ? DateTime.parse(json['createAt']) : null;
@@ -45,6 +48,7 @@ class AccountDTO {
     _data["username"] = username;
     _data["roleType"] = roleType;
     _data["storeId"] = storeId;
+    _data["stationId"] = stationId;
     _data["isActive"] = isActive;
     _data["createAt"] = createAt;
     _data["updateAt"] = updateAt;

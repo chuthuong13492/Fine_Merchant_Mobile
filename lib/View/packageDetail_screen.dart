@@ -58,10 +58,12 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
             builder: (context, child, model) {
               TimeSlotDTO? timeSlot = model.timeSlotList.firstWhere(
                   (timeSlot) => timeSlot.id == model.selectedTimeSlotId);
-              String? stationName = model.stationList
-                  .firstWhere(
-                      (station) => station.id == model.selectedStationId)
-                  .name;
+              String? stationName = '';
+              var foundStation = model.stationList.firstWhereOrNull(
+                  (station) => station.id == model.selectedStationId);
+              if (foundStation != null) {
+                stationName = foundStation.name;
+              }
 
               return Padding(
                 padding: const EdgeInsets.only(right: 16, left: 16),
@@ -82,7 +84,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
 
   Widget _buildPackageInfo(String? stationName, TimeSlotDTO? timeSlot) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: EdgeInsets.all(Get.height * 0.01),
       width: Get.width,
       height: Get.height * 0.23,
       decoration: const BoxDecoration(
@@ -96,7 +98,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
           Column(
             children: [
               Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                padding: EdgeInsets.fromLTRB(
+                    0, Get.height * 0.01, 0, Get.height * 0.01),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -121,7 +124,8 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 ),
               ),
               Padding(
-                padding: const EdgeInsets.fromLTRB(0, 8, 0, 8),
+                padding: EdgeInsets.fromLTRB(
+                    0, Get.height * 0.01, 0, Get.height * 0.01),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -176,7 +180,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 ],
               ),
               SizedBox(
-                height: Get.height * 0.0275,
+                height: Get.height * 0.01,
               ),
               ElevatedButton(
                   style: ElevatedButton.styleFrom(
@@ -214,7 +218,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 model.boxQrCode == null ||
                 model.takenPackageList.isEmpty) {
               return Container(
-                padding: const EdgeInsets.fromLTRB(24, 40, 24, 40),
+                padding: EdgeInsets.fromLTRB(24, Get.height * 0.1, 24, 0),
                 width: Get.width,
                 height: Get.height * 0.625,
                 decoration: const BoxDecoration(
@@ -226,7 +230,6 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 child: Column(
                   children: [
                     SizedBox(
-                      // padding: const EdgeInsets.all(16),
                       child: Column(
                         mainAxisAlignment: MainAxisAlignment.center,
                         children: [
@@ -242,9 +245,9 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               );
             }
             return Container(
-              padding: const EdgeInsets.fromLTRB(12, 16, 12, 16),
+              padding: EdgeInsets.fromLTRB(12, Get.height * 0.075, 12, 0),
               width: Get.width,
-              height: Get.height * 0.6,
+              height: Get.height * 0.65,
               decoration: const BoxDecoration(
                 color: Colors.white,
                 borderRadius: BorderRadius.all(

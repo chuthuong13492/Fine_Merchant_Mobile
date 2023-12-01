@@ -102,16 +102,27 @@ class StationViewModel extends BaseModel {
           await _stationDAO?.getAllBoxByStation(stationId: selectedStationId);
       if (data != null) {
         boxList = data;
+
+        boxList.sort((a, b) {
+          if (int.parse(a.code!.split('-')[1]) <
+              int.parse(b.code!.split('-')[1])) {
+            return 1;
+          }
+          return -1;
+        });
       }
       setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getBoxListByStation();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getBoxListByStation();
+      // } else {
+      //   setState(ViewStatus.Error);
+      // }
     } finally {}
   }
 
@@ -127,6 +138,9 @@ class StationViewModel extends BaseModel {
       setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
       // bool result = await showErrorDialog();
       // if (result) {
 

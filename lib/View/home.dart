@@ -405,10 +405,10 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildPendingPackageList() {
     String? stationName = '';
-    if (model.stationList.isNotEmpty && model.selectedStationId != "") {
-      stationName = model.stationList
-          .firstWhereOrNull((station) => station.id == model.selectedStationId)!
-          .name;
+    var foundStation = model.stationList
+        .firstWhereOrNull((station) => station.id == model.selectedStationId);
+    if (foundStation != null) {
+      stationName = foundStation.name;
     }
     return ScopedModelDescendant<HomeViewModel>(
         builder: (context, child, model) {
@@ -559,10 +559,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Widget _buildReadyPackageList() {
     String? stationName = '';
-    if (model.stationList.isNotEmpty && model.selectedStationId != "") {
-      stationName = model.stationList
-          .firstWhere((station) => station.id == model.selectedStationId)
-          .name;
+
+    var foundStation = model.stationList
+        .firstWhereOrNull((station) => station.id == model.selectedStationId);
+    if (foundStation != null) {
+      stationName = foundStation.name;
     }
 
     return ScopedModelDescendant<HomeViewModel>(

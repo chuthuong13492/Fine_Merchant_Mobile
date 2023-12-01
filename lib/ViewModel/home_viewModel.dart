@@ -118,25 +118,25 @@ class HomeViewModel extends BaseModel {
           destinationId: selectedDestinationId);
       if (data != null) {
         stationList = data;
-        String? selectedStationCodeByName =
-            currentUser?.username!.replaceFirst("shipper", '');
-        String? findNumber =
-            selectedStationCodeByName?.replaceAll(RegExp(r'[^0-9]'), '');
-        selectedStationCodeByName =
-            selectedStationCodeByName?.replaceFirst(RegExp(r'\d'), '');
+        // String? selectedStationCodeByName =
+        //     currentUser?.username!.replaceFirst("shipper", '');
+        // String? findNumber =
+        //     selectedStationCodeByName?.replaceAll(RegExp(r'[^0-9]'), '');
+        // selectedStationCodeByName =
+        //     selectedStationCodeByName?.replaceFirst(RegExp(r'\d'), '');
 
-        selectedStationCodeByName =
-            ("${selectedStationCodeByName!}L${findNumber!}").toUpperCase();
+        // selectedStationCodeByName =
+        //     ("${selectedStationCodeByName!}L${findNumber!}").toUpperCase();
 
-        StationDTO? foundStation = stationList.firstWhereOrNull(
-            (station) => station.code == selectedStationCodeByName);
-        if (foundStation != null) {
-          selectedStationId = foundStation.id!;
-        } else {
-          selectedStationId = "";
-        }
+        // StationDTO? foundStation = stationList.firstWhereOrNull(
+        //     (station) => station.code == selectedStationCodeByName);
+        // if (foundStation != null) {
+        //   selectedStationId = foundStation.id!;
+        // } else {
+        //   selectedStationId = "";
+        // }
 
-        // selectedStationId = data.first.id!;
+        selectedStationId = currentUser!.stationId!;
       }
 
       notifyListeners();

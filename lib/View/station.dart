@@ -247,7 +247,7 @@ class _StationScreenState extends State<StationScreen> {
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
                       Text('${timeSlot.checkoutTime?.substring(0, 5)}',
-                          style: FineTheme.typograhpy.body1),                     
+                          style: FineTheme.typograhpy.body1),
                     ],
                   ),
                 ],
@@ -261,8 +261,8 @@ class _StationScreenState extends State<StationScreen> {
     return Container(
       padding: const EdgeInsets.only(top: 8, bottom: 8),
       color: FineTheme.palettes.emerald25,
-      height: 700,
-      width: 600,
+      height: Get.height * 0.725,
+      width: Get.width,
       child: Scrollbar(
         child: ListView(children: [
           ...model.productList.map((package) => _buildProducts(package)),
@@ -273,7 +273,7 @@ class _StationScreenState extends State<StationScreen> {
 
   Widget _buildProducts(PackStationDetailGroupByProducts package) {
     return Container(
-      margin: const EdgeInsets.all(16),
+      margin: EdgeInsets.all(Get.height * 0.01),
       decoration: BoxDecoration(
         borderRadius: BorderRadius.circular(8),
         color: Colors.white,
