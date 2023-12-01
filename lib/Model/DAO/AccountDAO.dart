@@ -34,21 +34,18 @@ class AccountDAO extends BaseDAO {
   }
 
   Future<String?> loginByAccount(String userName, String password) async {
-    try {
-      Response response = await request.post("staff/login",
-          data: {"userName": userName, "password": password});
-      final user = response.data['data'];
-      if (user != null) {
-        // set access token
+    Response response = await request.post("staff/login",
+        data: {"userName": userName, "password": password});
+    final user = response.data['data'];
+    if (user != null) {
+      // set access token
 
-        final accessToken = user["accessToken"] as String;
-        requestObj.setToken = accessToken;
-        setToken(accessToken);
-        return accessToken;
-      }
-    } catch (e) {
-      rethrow;
+      final accessToken = user["accessToken"] as String;
+      requestObj.setToken = accessToken;
+      setToken(accessToken);
+      return accessToken;
     }
+
     return null;
   }
 

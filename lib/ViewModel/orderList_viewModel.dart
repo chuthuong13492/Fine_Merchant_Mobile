@@ -1,3 +1,5 @@
+import 'dart:developer';
+
 import 'package:collection/collection.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
@@ -41,6 +43,7 @@ class OrderListViewModel extends BaseModel {
   TimeSlotDAO? _timeSlotDAO;
   dynamic error;
   OrderDTO? orderDTO;
+  UtilsDAO? _utilsDAO;
   // Widget
   ScrollController? scrollController;
   var numsOfCheck = 0;
@@ -60,6 +63,7 @@ class OrderListViewModel extends BaseModel {
   OrderListViewModel() {
     _splitProductDAO = SplitProductDAO();
     _orderDAO = OrderDAO();
+    _utilsDAO = UtilsDAO();
     _stationDAO = StationDAO();
     _storeDAO = StoreDAO();
     _timeSlotDAO = TimeSlotDAO();
@@ -272,12 +276,8 @@ class OrderListViewModel extends BaseModel {
           }
 
           errorProductList = newErrorProducts;
-          errorProductList!.sort((a, b) {
-            if (a.isRefuse == true) {
-              return 1;
-            }
-            return -1;
-          });
+          errorProductList!.sort(
+              (a, b) => a.isRefuse.toString().compareTo(b.isRefuse.toString()));
         } else {
           errorProductList = [];
         }
@@ -429,6 +429,9 @@ class OrderListViewModel extends BaseModel {
         }
       }
     } catch (e) {
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
@@ -484,6 +487,9 @@ class OrderListViewModel extends BaseModel {
         }
       }
     } catch (e) {
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
@@ -539,6 +545,8 @@ class OrderListViewModel extends BaseModel {
         }
       }
     } catch (e) {
+      log('error: ${e.toString()}');
+      await _utilsDAO?.logError(messageBody: e.toString());
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
@@ -575,6 +583,9 @@ class OrderListViewModel extends BaseModel {
         }
       }
     } catch (e) {
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",

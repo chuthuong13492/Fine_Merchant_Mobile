@@ -5,7 +5,7 @@ import 'dart:developer';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
-import 'package:fine_merchant_mobile/Model/DAO/AccountDAO.dart';
+import 'package:fine_merchant_mobile/Model/DAO/index.dart';
 import 'package:fine_merchant_mobile/Model/DTO/AccountDTO.dart';
 import 'package:fine_merchant_mobile/Service/analytic_service.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
@@ -18,12 +18,14 @@ import 'package:google_sign_in/google_sign_in.dart';
 
 class LoginViewModel extends BaseModel {
   AccountDAO? _dao;
+  UtilsDAO? _utilsDAO;
   late String verificationId;
   late AnalyticsService _analyticsService;
   // final FirebaseAuth _auth = FirebaseAuth.instance;
 
   LoginViewModel() {
     _dao = AccountDAO();
+    _utilsDAO = UtilsDAO();
     _analyticsService = AnalyticsService.getInstance()!;
   }
 
@@ -72,35 +74,43 @@ class LoginViewModel extends BaseModel {
   }
 
   Future<void> signInWithAccount(String userName, String password) async {
-    setState(ViewStatus.Loading);
+    try {
+      setState(ViewStatus.Loading);
 
-    if (userName != '' && password != '') {
-      showLoadingDialog();
-      var accessToken = await _dao?.loginByAccount(userName, password);
-      if (accessToken == null) {
-        await showStatusDialog("assets/images/error.png", '⚠️',
-            'Sai tài khoản hoặc mật khẩu, bạn vui lòng kiểm tra lại!');
+      if (userName != '' && password != '') {
+        showLoadingDialog();
+        var accessToken = await _dao?.loginByAccount(userName, password);
+        if (accessToken == null) {
+          await showStatusDialog("assets/images/error.png", '⚠️',
+              'Sai tài khoản hoặc mật khẩu, bạn vui lòng kiểm tra lại!');
+        } else {
+          Get.rawSnackbar(
+              message: "Đăng nhập thành công!!",
+              duration: Duration(seconds: 2),
+              snackPosition: SnackPosition.BOTTOM,
+              margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
+              borderRadius: 8);
+          await Get.find<RootViewModel>().startUp();
+          await Get.offAllNamed(RouteHandler.NAV);
+        }
       } else {
         Get.rawSnackbar(
-            message: "Đăng nhập thành công!!",
+            message: "Vui lòng nhập tài khoản và mật khẩu!!",
             duration: Duration(seconds: 2),
             snackPosition: SnackPosition.BOTTOM,
             margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
             borderRadius: 8);
-        await Get.find<RootViewModel>().startUp();
-        await Get.offAllNamed(RouteHandler.NAV);
       }
+    } catch (e) {
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
+      await showStatusDialog("assets/images/error.png", '⚠️',
+          'Có lỗi xảy ra, vui lòng thử lại sau!');
+    } finally {
       hideDialog();
-    } else {
-      Get.rawSnackbar(
-          message: "Vui lòng nhập tài khoản và mật khẩu!!",
-          duration: Duration(seconds: 2),
-          snackPosition: SnackPosition.BOTTOM,
-          margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
-          borderRadius: 8);
+      setState(ViewStatus.Completed);
     }
-
-    setState(ViewStatus.Completed);
   }
 
   Future<void> signOut() async {

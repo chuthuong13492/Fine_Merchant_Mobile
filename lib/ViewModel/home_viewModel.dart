@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:collection/equality.dart';
@@ -30,6 +31,7 @@ class HomeViewModel extends BaseModel {
   List<TimeSlotDTO> timeSlotList = [];
   // Data Object Model
   OrderDAO? _orderDAO;
+  UtilsDAO? _utilsDAO;
   StationDAO? _stationDAO;
   StoreDAO? _storeDAO;
   TimeSlotDAO? _timeSlotDAO;
@@ -48,6 +50,7 @@ class HomeViewModel extends BaseModel {
 
   HomeViewModel() {
     _orderDAO = OrderDAO();
+    _utilsDAO = UtilsDAO();
     _stationDAO = StationDAO();
     _storeDAO = StoreDAO();
     _timeSlotDAO = TimeSlotDAO();
@@ -233,6 +236,9 @@ class HomeViewModel extends BaseModel {
       // } else {
       //   setState(ViewStatus.Error);
       // }
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
     } finally {}
   }
 
@@ -259,6 +265,9 @@ class HomeViewModel extends BaseModel {
         }
       }
     } catch (e) {
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
@@ -292,6 +301,9 @@ class HomeViewModel extends BaseModel {
           );
         }
       } catch (e) {
+        log('error: ${e.toString()}');
+        print(e);
+        await _utilsDAO?.logError(messageBody: e.toString());
         await showStatusDialog(
           "assets/images/error.png",
           "Thất bại",

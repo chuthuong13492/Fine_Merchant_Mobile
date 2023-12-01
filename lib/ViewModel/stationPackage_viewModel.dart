@@ -1,4 +1,6 @@
 import 'package:collection/collection.dart';
+import 'dart:developer';
+
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
@@ -29,6 +31,7 @@ class StationPackageViewModel extends BaseModel {
   String? selectedStationId = '';
   // Data Object Model
   OrderDAO? _orderDAO;
+  UtilsDAO? _utilsDAO;
   StationDAO? _stationDAO;
   SplitProductDAO? _splitProductDAO;
   dynamic error;
@@ -43,6 +46,7 @@ class StationPackageViewModel extends BaseModel {
   StationPackageViewModel() {
     _stationDAO = StationDAO();
     _orderDAO = OrderDAO();
+    _utilsDAO = UtilsDAO();
     _splitProductDAO = SplitProductDAO();
     scrollController = ScrollController();
   }
@@ -85,6 +89,8 @@ class StationPackageViewModel extends BaseModel {
         }
       }
     } catch (e) {
+      log('error: ${e.toString()}');
+      await _utilsDAO?.logError(messageBody: e.toString());
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
@@ -106,12 +112,9 @@ class StationPackageViewModel extends BaseModel {
       );
       if (data != null) {
         splitProductsByStation = data;
-        splitProductsByStation.sort((a, b) {
-          if (a.isShipperAssign == true) {
-            return 1;
-          }
-          return -1;
-        });
+        splitProductsByStation.sort((a, b) => a.isShipperAssign
+            .toString()
+            .compareTo(b.isShipperAssign.toString()));
       } else {
         splitProductsByStation = [];
       }
@@ -119,13 +122,15 @@ class StationPackageViewModel extends BaseModel {
       notifyListeners();
       setState(ViewStatus.Completed);
     } catch (e) {
+      log('error: ${e.toString()}');
       print(e);
-      bool result = await showErrorDialog();
-      if (result) {
-        await getSplitOrdersByStation();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      await _utilsDAO?.logError(messageBody: e.toString());
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getSplitOrdersByStation();
+      // } else {
+      //   setState(ViewStatus.Error);
+      // }
     } finally {}
   }
 
@@ -139,12 +144,15 @@ class StationPackageViewModel extends BaseModel {
       setState(ViewStatus.Completed);
       notifyListeners();
     } catch (e) {
-      bool result = await showErrorDialog();
-      if (result) {
-        await getBoxListByStation();
-      } else {
-        setState(ViewStatus.Error);
-      }
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
+      // bool result = await showErrorDialog();
+      // if (result) {
+      //   await getBoxListByStation();
+      // } else {
+      //   setState(ViewStatus.Error);
+      // }
     } finally {}
   }
 }

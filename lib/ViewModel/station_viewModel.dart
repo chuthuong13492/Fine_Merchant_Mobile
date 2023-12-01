@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:collection/collection.dart';
@@ -29,6 +30,7 @@ class StationViewModel extends BaseModel {
   String? selectedBoxId = '';
   Uint8List? imageBytes;
   // Data Object Model
+  UtilsDAO? _utilsDAO;
   StationDAO? _stationDAO;
   dynamic error;
   SplitProductDAO? _splitProductDAO;
@@ -38,6 +40,7 @@ class StationViewModel extends BaseModel {
   int currentMissing = 0;
   StationViewModel() {
     _stationDAO = StationDAO();
+    _utilsDAO = UtilsDAO();
     _splitProductDAO = SplitProductDAO();
     scrollController = ScrollController();
   }
@@ -187,6 +190,9 @@ class StationViewModel extends BaseModel {
         }
       }
     } catch (e) {
+      log('error: ${e.toString()}');
+      print(e);
+      await _utilsDAO?.logError(messageBody: e.toString());
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",

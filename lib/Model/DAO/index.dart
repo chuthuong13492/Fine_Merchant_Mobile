@@ -5,3 +5,4 @@ export 'OrderDAO.dart';
 export 'StationDAO.dart';
 export 'TimeSlotDAO.dart';
 export 'SplitProductDAO.dart';
+export 'UtilsDAO.dart';
