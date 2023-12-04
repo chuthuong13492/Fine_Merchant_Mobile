@@ -432,11 +432,13 @@ class OrderListViewModel extends BaseModel {
       }
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
-      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+      if (e.response != null && e.response?.statusCode != null) {
         String messageBody =
             "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
-        await _utilsDAO?.logError(messageBody: messageBody);
+        print(messageBody);
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
       }
       await showStatusDialog(
         "assets/images/error.png",
@@ -494,11 +496,13 @@ class OrderListViewModel extends BaseModel {
       }
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
-      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+      if (e.response != null && e.response?.statusCode != null) {
         String messageBody =
             "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
-        await _utilsDAO?.logError(messageBody: messageBody);
+        print(messageBody);
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
       }
       await showStatusDialog(
         "assets/images/error.png",
@@ -556,10 +560,13 @@ class OrderListViewModel extends BaseModel {
       }
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+      if (e.response != null && e.response?.statusCode != null) {
         String messageBody =
             "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
-        await _utilsDAO?.logError(messageBody: messageBody);
+        print(messageBody);
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
       }
       await showStatusDialog(
         "assets/images/error.png",
@@ -598,11 +605,13 @@ class OrderListViewModel extends BaseModel {
       }
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
-      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+      if (e.response != null && e.response?.statusCode != null) {
         String messageBody =
             "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
-        await _utilsDAO?.logError(messageBody: messageBody);
+        print(messageBody);
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
       }
       await showStatusDialog(
         "assets/images/error.png",

@@ -118,10 +118,12 @@ class StationViewModel extends BaseModel {
     } on DioException catch (e) {
       log('error: ${e.toString()}');
       print(e);
-      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-        String messageBody =
-            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
-        await _utilsDAO?.logError(messageBody: messageBody);
+      if (e.response != null && e.response?.statusCode != null) {
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          String messageBody =
+              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
       }
       // bool result = await showErrorDialog();
       // if (result) {
@@ -146,10 +148,12 @@ class StationViewModel extends BaseModel {
     } on DioException catch (e) {
       log('error: ${e.toString()}');
       print(e);
-      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-        String messageBody =
-            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
-        await _utilsDAO?.logError(messageBody: messageBody);
+      if (e.response != null && e.response?.statusCode != null) {
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          String messageBody =
+              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
       }
       // bool result = await showErrorDialog();
       // if (result) {
@@ -216,10 +220,12 @@ class StationViewModel extends BaseModel {
     } on DioException catch (e) {
       log('error: ${e.toString()}');
       print(e);
-      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-        String messageBody =
-            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
-        await _utilsDAO?.logError(messageBody: messageBody);
+      if (e.response != null && e.response?.statusCode != null) {
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          String messageBody =
+              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
       }
       await showStatusDialog(
         "assets/images/error.png",
