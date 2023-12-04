@@ -93,10 +93,8 @@ class StationPackageViewModel extends BaseModel {
     } on DioException catch (e) {
       log('error: ${e.toString()}');
       if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-        String messageBody = new DateFormat.yMd().add_jm().toString() +
-            "| " +
-            e.toString() +
-            e.response!.data.toString();
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
         await _utilsDAO?.logError(messageBody: messageBody);
       }
       await showStatusDialog(
@@ -133,10 +131,8 @@ class StationPackageViewModel extends BaseModel {
       log('error: ${e.toString()}');
       print(e);
       if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-        String messageBody = new DateFormat.yMd().add_jm().toString() +
-            "| " +
-            e.toString() +
-            e.response!.data.toString();
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
         await _utilsDAO?.logError(messageBody: messageBody);
       }
       // bool result = await showErrorDialog();
@@ -161,10 +157,8 @@ class StationPackageViewModel extends BaseModel {
       log('error: ${e.toString()}');
       print(e);
       if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-        String messageBody = new DateFormat.yMd().add_jm().toString() +
-            "| " +
-            e.toString() +
-            e.response!.data.toString();
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
         await _utilsDAO?.logError(messageBody: messageBody);
       }
       // bool result = await showErrorDialog();

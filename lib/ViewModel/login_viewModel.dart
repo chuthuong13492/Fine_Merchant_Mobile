@@ -105,12 +105,10 @@ class LoginViewModel extends BaseModel {
       }
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e.response!.data.toString());
+      String messageBody =
+          "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+      print(messageBody);
       if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-        String messageBody = new DateFormat.yMd().add_jm().toString() +
-            "| " +
-            e.toString() +
-            e.response!.data.toString();
         await _utilsDAO?.logError(messageBody: messageBody);
       }
       await showStatusDialog("assets/images/error.png", '⚠️',
