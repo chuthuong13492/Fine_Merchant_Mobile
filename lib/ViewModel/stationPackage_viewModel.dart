@@ -1,4 +1,5 @@
 import 'package:collection/collection.dart';
+import 'package:dio/dio.dart';
 import 'dart:developer';
 
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
@@ -12,6 +13,7 @@ import 'package:fine_merchant_mobile/ViewModel/orderList_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/station_viewModel.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../Model/DAO/index.dart';
 import '../Model/DTO/index.dart';
@@ -88,9 +90,15 @@ class StationPackageViewModel extends BaseModel {
           );
         }
       }
-    } catch (e) {
+    } on DioException catch (e) {
       log('error: ${e.toString()}');
-      await _utilsDAO?.logError(messageBody: e.toString());
+      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+        String messageBody = new DateFormat.yMd().add_jm().toString() +
+            "| " +
+            e.toString() +
+            e.response!.data.toString();
+        await _utilsDAO?.logError(messageBody: messageBody);
+      }
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
@@ -121,10 +129,16 @@ class StationPackageViewModel extends BaseModel {
 
       notifyListeners();
       setState(ViewStatus.Completed);
-    } catch (e) {
+    } on DioException catch (e) {
       log('error: ${e.toString()}');
       print(e);
-      await _utilsDAO?.logError(messageBody: e.toString());
+      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+        String messageBody = new DateFormat.yMd().add_jm().toString() +
+            "| " +
+            e.toString() +
+            e.response!.data.toString();
+        await _utilsDAO?.logError(messageBody: messageBody);
+      }
       // bool result = await showErrorDialog();
       // if (result) {
       //   await getSplitOrdersByStation();
@@ -143,10 +157,16 @@ class StationPackageViewModel extends BaseModel {
       }
       setState(ViewStatus.Completed);
       notifyListeners();
-    } catch (e) {
+    } on DioException catch (e) {
       log('error: ${e.toString()}');
       print(e);
-      await _utilsDAO?.logError(messageBody: e.toString());
+      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+        String messageBody = new DateFormat.yMd().add_jm().toString() +
+            "| " +
+            e.toString() +
+            e.response!.data.toString();
+        await _utilsDAO?.logError(messageBody: messageBody);
+      }
       // bool result = await showErrorDialog();
       // if (result) {
       //   await getBoxListByStation();

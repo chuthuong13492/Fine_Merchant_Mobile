@@ -2,6 +2,7 @@
 
 import 'dart:developer';
 
+import 'package:dio/dio.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
@@ -15,6 +16,7 @@ import 'package:firebase_messaging/firebase_messaging.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
 import 'package:google_sign_in/google_sign_in.dart';
+import 'package:intl/intl.dart';
 
 class LoginViewModel extends BaseModel {
   AccountDAO? _dao;
@@ -101,10 +103,16 @@ class LoginViewModel extends BaseModel {
             margin: EdgeInsets.only(left: 8, right: 8, bottom: 32),
             borderRadius: 8);
       }
-    } catch (e) {
+    } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
-      await _utilsDAO?.logError(messageBody: e.toString());
+      print(e.response!.data.toString());
+      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+        String messageBody = new DateFormat.yMd().add_jm().toString() +
+            "| " +
+            e.toString() +
+            e.response!.data.toString();
+        await _utilsDAO?.logError(messageBody: messageBody);
+      }
       await showStatusDialog("assets/images/error.png", '⚠️',
           'Có lỗi xảy ra, vui lòng thử lại sau!');
     } finally {

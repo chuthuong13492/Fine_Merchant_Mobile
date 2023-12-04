@@ -2,6 +2,7 @@ import 'dart:developer';
 import 'dart:typed_data';
 
 import 'package:collection/equality.dart';
+import 'package:dio/dio.dart';
 import 'package:fine_merchant_mobile/Accessories/dialog.dart';
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/route_constraint.dart';
@@ -11,6 +12,7 @@ import 'package:fine_merchant_mobile/ViewModel/account_viewModel.dart';
 import 'package:fine_merchant_mobile/ViewModel/base_model.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 
 import '../Model/DAO/index.dart';
 import '../Model/DTO/index.dart';
@@ -236,9 +238,7 @@ class HomeViewModel extends BaseModel {
       // } else {
       //   setState(ViewStatus.Error);
       // }
-      log('error: ${e.toString()}');
       print(e);
-      await _utilsDAO?.logError(messageBody: e.toString());
     } finally {}
   }
 
@@ -264,10 +264,16 @@ class HomeViewModel extends BaseModel {
           );
         }
       }
-    } catch (e) {
+    } on DioException catch (e) {
       log('error: ${e.toString()}');
       print(e);
-      await _utilsDAO?.logError(messageBody: e.toString());
+      if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+        String messageBody = new DateFormat.yMd().add_jm().toString() +
+            "| " +
+            e.toString() +
+            e.response!.data.toString();
+        await _utilsDAO?.logError(messageBody: messageBody);
+      }
       await showStatusDialog(
         "assets/images/error.png",
         "Thất bại",
@@ -300,10 +306,16 @@ class HomeViewModel extends BaseModel {
             "",
           );
         }
-      } catch (e) {
+      } on DioException catch (e) {
         log('error: ${e.toString()}');
         print(e);
-        await _utilsDAO?.logError(messageBody: e.toString());
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          String messageBody = new DateFormat.yMd().add_jm().toString() +
+              "| " +
+              e.toString() +
+              e.response!.data.toString();
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
         await showStatusDialog(
           "assets/images/error.png",
           "Thất bại",
