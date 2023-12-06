@@ -93,9 +93,10 @@ class StationPackageViewModel extends BaseModel {
     } on DioException catch (e) {
       log('error: ${e.toString()}');
       if (e.response != null && e.response?.statusCode != null) {
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+        print(messageBody);
         if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-          String messageBody =
-              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
           await _utilsDAO?.logError(messageBody: messageBody);
         }
       }
@@ -133,9 +134,10 @@ class StationPackageViewModel extends BaseModel {
       log('error: ${e.toString()}');
       print(e);
       if (e.response != null && e.response?.statusCode != null) {
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+        print(messageBody);
         if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-          String messageBody =
-              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
           await _utilsDAO?.logError(messageBody: messageBody);
         }
       }
@@ -159,11 +161,11 @@ class StationPackageViewModel extends BaseModel {
       notifyListeners();
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
       if (e.response != null && e.response?.statusCode != null) {
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+        print(messageBody);
         if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-          String messageBody =
-              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
           await _utilsDAO?.logError(messageBody: messageBody);
         }
       }

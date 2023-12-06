@@ -117,11 +117,11 @@ class StationViewModel extends BaseModel {
       notifyListeners();
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
       if (e.response != null && e.response?.statusCode != null) {
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+        print(messageBody);
         if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-          String messageBody =
-              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
           await _utilsDAO?.logError(messageBody: messageBody);
         }
       }
@@ -147,11 +147,11 @@ class StationViewModel extends BaseModel {
       notifyListeners();
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
       if (e.response != null && e.response?.statusCode != null) {
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+        print(messageBody);
         if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-          String messageBody =
-              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
           await _utilsDAO?.logError(messageBody: messageBody);
         }
       }
@@ -183,7 +183,7 @@ class StationViewModel extends BaseModel {
           // List<BoxProducts>? productBoxList = foundProduct.boxProducts;
 
           for (final productBox in productBoxes) {
-            if (productBox.isChecked == true) {
+            if (productBox.boxId == selectedBoxId) {
               missingQuantity = productBox.currentMissing!;
             }
           }
@@ -219,11 +219,11 @@ class StationViewModel extends BaseModel {
       }
     } on DioException catch (e) {
       log('error: ${e.toString()}');
-      print(e);
       if (e.response != null && e.response?.statusCode != null) {
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+        print(messageBody);
         if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
-          String messageBody =
-              "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
           await _utilsDAO?.logError(messageBody: messageBody);
         }
       }
