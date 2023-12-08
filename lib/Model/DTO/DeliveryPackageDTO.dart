@@ -175,34 +175,45 @@ class PackStationDetailGroupByProducts {
 }
 
 class ProductBoxesDTO {
-  String? boxId;
-  String? boxCode;
   bool? isChecked;
   int? currentMissing;
-  List<ListProduct>? listProduct;
+  KeyObject? key;
+  int? value;
 
-  ProductBoxesDTO({this.boxId, this.boxCode, this.listProduct});
+  ProductBoxesDTO({this.key, this.value});
 
   ProductBoxesDTO.fromJson(Map<String, dynamic> json) {
-    boxId = json['boxId'];
-    boxCode = json['boxCode'];
+    key = json['key'] != null ? new KeyObject.fromJson(json['key']) : null;
+    value = json['value'];
     isChecked = false;
     currentMissing = 1;
-    if (json['listProduct'] != null) {
-      listProduct = <ListProduct>[];
-      json['listProduct'].forEach((v) {
-        listProduct!.add(ListProduct.fromJson(v));
-      });
-    }
   }
 
   Map<String, dynamic> toJson() {
-    final Map<String, dynamic> data = <String, dynamic>{};
-    data['boxId'] = boxId;
-    data['boxCode'] = boxCode;
-    if (listProduct != null) {
-      data['listProduct'] = listProduct!.map((v) => v.toJson()).toList();
+    final Map<String, dynamic> data = Map<String, dynamic>();
+    if (key != null) {
+      data['key'] = key!.toJson();
     }
+    data['value'] = value;
+    return data;
+  }
+}
+
+class KeyObject {
+  String? key;
+  String? value;
+
+  KeyObject({this.key, this.value});
+
+  KeyObject.fromJson(Map<String, dynamic> json) {
+    key = json['key'];
+    value = json['value'];
+  }
+
+  Map<String, dynamic> toJson() {
+    final Map<String, dynamic> data = Map<String, dynamic>();
+    data['key'] = key;
+    data['value'] = value;
     return data;
   }
 }

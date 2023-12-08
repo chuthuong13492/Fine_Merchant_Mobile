@@ -295,7 +295,6 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                         ),
                         onPressed: () async {
                           await model.confirmAllBoxStored();
-                          setState(() {});
                         },
                         child: Padding(
                           padding: const EdgeInsets.only(top: 8, bottom: 8),

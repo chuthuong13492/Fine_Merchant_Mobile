@@ -71,14 +71,10 @@ class StationViewModel extends BaseModel {
   void onChangeMissing(String boxId, int index, int newValue) {
     if (index >= 0) {
       ProductBoxesDTO? foundProduct =
-          productBoxes.firstWhereOrNull((e) => e.boxId == boxId);
+          productBoxes.firstWhereOrNull((e) => e.key!.key == boxId);
       if (foundProduct != null) {
-        // BoxProducts? foundBoxProduct = foundProduct.boxProducts![index];
-        if (newValue > 0 &&
-            (foundProduct.listProduct![0].quantity! - newValue >= 0)) {
-          foundProduct.isChecked = true;
-          foundProduct.currentMissing = newValue;
-        }
+        foundProduct.isChecked = true;
+        foundProduct.currentMissing = newValue;
       }
     }
 
@@ -175,15 +171,13 @@ class StationViewModel extends BaseModel {
 
       if (option == 1) {
         showLoadingDialog();
-        ProductBoxesDTO? foundProduct = productBoxes
-            .firstWhereOrNull((e) => e.listProduct![0].productId == productId);
 
-        if (foundProduct != null) {
-          updatedProducts.add(foundProduct.listProduct![0].productId!);
+        if (productId != null) {
+          updatedProducts.add(productId);
           // List<BoxProducts>? productBoxList = foundProduct.boxProducts;
 
           for (final productBox in productBoxes) {
-            if (productBox.boxId == selectedBoxId) {
+            if (productBox.key!.key == selectedBoxId) {
               missingQuantity = productBox.currentMissing!;
             }
           }

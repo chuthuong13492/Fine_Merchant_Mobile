@@ -268,10 +268,10 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
     int index = 0;
     if (productBoxes != null && productBoxes!.isNotEmpty) {
       for (ProductBoxesDTO productBox in productBoxes!) {
-        if (productBox.boxCode == box.code) {
+        if (productBox.key!.value! == box.code) {
           foundBoxProduct = productBox;
           isStored = true;
-          quantity = productBox.listProduct![0].quantity!;
+          quantity = productBox.value!;
           index = productBoxes!.indexOf(productBox);
         }
       }
@@ -293,7 +293,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                   ? () {
                       model.onSelectReportBox(box.id!);
                       model.onChangeMissing(
-                          foundBoxProduct!.listProduct![0].productId!,
+                          widget.productBoxViewModel.product!.productId!,
                           index,
                           1);
                       setState(() {});
@@ -525,8 +525,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         splashRadius: 24,
                         icon: const Icon(Icons.add, size: 32),
                         onPressed: () {
-                          if (currentMissing <
-                              productBox.listProduct![0].quantity!) {
+                          if (currentMissing < productBox.value!) {
                             currentMissing++;
                           }
                           setState(() {});
@@ -550,7 +549,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                         .copyWith(color: FineTheme.palettes.emerald25)),
                 onPressed: () {
                   model.onChangeMissing(
-                      productBox.boxId!, index!, currentMissing);
+                      productBox.key!.key!, index!, currentMissing);
                   this.setState(() {});
                   Navigator.of(context).pop();
                 },
