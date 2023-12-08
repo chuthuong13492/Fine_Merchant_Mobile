@@ -218,7 +218,10 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
-                      Text('${productPackage!.productName}',
+                      Text(
+                          productPackage != null
+                              ? '${productPackage!.productName}'
+                              : "",
                           style: FineTheme.typograhpy.body1),
                     ],
                   ),

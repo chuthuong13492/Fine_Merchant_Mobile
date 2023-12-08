@@ -94,7 +94,7 @@ class StationViewModel extends BaseModel {
 
   Future<void> getBoxListByStation() async {
     try {
-      setState(ViewStatus.Loading);
+      // setState(ViewStatus.Loading);
       selectedStationId = Get.find<HomeViewModel>().selectedStationId;
       final data =
           await _stationDAO?.getAllBoxByStation(stationId: selectedStationId);
@@ -109,7 +109,7 @@ class StationViewModel extends BaseModel {
           return -1;
         });
       }
-      setState(ViewStatus.Completed);
+      // setState(ViewStatus.Completed);
       notifyListeners();
     } on DioException catch (e) {
       log('error: ${e.toString()}');
@@ -132,14 +132,14 @@ class StationViewModel extends BaseModel {
 
   Future<void> getBoxListByProduct({String? productId}) async {
     try {
-      setState(ViewStatus.Loading);
+      // setState(ViewStatus.Loading);
       selectedStationId = Get.find<HomeViewModel>().selectedStationId;
       final data = await _stationDAO?.getProductBoxesByProduct(
           timeSlotId: selectedTimeSlotId, productId: productId);
       if (data != null) {
         productBoxes = data;
       }
-      setState(ViewStatus.Completed);
+      // setState(ViewStatus.Completed);
       notifyListeners();
     } on DioException catch (e) {
       log('error: ${e.toString()}');
