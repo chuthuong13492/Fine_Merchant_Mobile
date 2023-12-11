@@ -837,7 +837,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             content: SizedBox(
                 height: 300,
-                width: 300,
+                width: Get.width * 0.65,
                 child: Scrollbar(
                   child: ListView(
                     children: [

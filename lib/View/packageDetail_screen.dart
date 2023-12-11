@@ -218,7 +218,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                 model.boxQrCode == null ||
                 model.takenPackageList.isEmpty) {
               return Container(
-                padding: EdgeInsets.fromLTRB(24, Get.height * 0.1, 24, 0),
+                padding: EdgeInsets.fromLTRB(24, Get.height * 0.05, 24, 0),
                 width: Get.width,
                 height: Get.height * 0.625,
                 decoration: const BoxDecoration(
@@ -245,7 +245,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
               );
             }
             return Container(
-              padding: EdgeInsets.fromLTRB(12, Get.height * 0.075, 12, 0),
+              padding: EdgeInsets.fromLTRB(12, Get.height * 0.05, 12, 0),
               width: Get.width,
               height: Get.height * 0.65,
               decoration: const BoxDecoration(
@@ -270,7 +270,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                   ),
                   model.boxQrCode != null
                       ? Container(
-                          height: 300,
+                          height: Get.height * 0.325,
                           width: 300,
                           child: Image.memory(
                             model.boxQrCode!,
@@ -414,7 +414,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
             ),
             content: SizedBox(
                 height: 300,
-                width: 300,
+                width: Get.width * 0.65,
                 child: Scrollbar(
                   child: ListView(
                     children: [
