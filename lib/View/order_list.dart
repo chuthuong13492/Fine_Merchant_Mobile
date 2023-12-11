@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:developer';
 
 import 'package:fine_merchant_mobile/Constant/enum.dart';
 import 'package:fine_merchant_mobile/Constant/view_status.dart';
@@ -42,6 +43,30 @@ class _OrderListScreenState extends State<OrderListScreen> {
     super.initState();
     periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       refreshFetchOrder();
+      var currentTimeSlot = model.timeSlotList
+          .firstWhereOrNull((e) => e.id == model.selectedTimeSlotId);
+      if (currentTimeSlot != null) {
+        var currentTime = DateTime.now();
+        var removeTime = currentTime.add(const Duration(minutes: 20));
+        var removeHour = removeTime.hour;
+        var removeMins = removeTime.minute;
+        var timeSlotHour =
+            int.parse(currentTimeSlot.arriveTime!.substring(0, 2));
+        var timeSlotMins =
+            int.parse(currentTimeSlot.arriveTime!.substring(3, 5));
+        log("removeHour ${removeHour}");
+        log("removeMins ${removeMins}");
+        log("timeSlotHour ${timeSlotHour}");
+        if (model.pendingProductList != null &&
+            model.pendingProductList!.isNotEmpty) {
+          if (removeHour > timeSlotHour) {
+            model.reportTimeOutRepair();
+          } else if ((removeHour == timeSlotHour) &&
+              (timeSlotMins - removeMins <= 20)) {
+            model.reportTimeOutRepair();
+          }
+        }
+      }
     });
   }
 

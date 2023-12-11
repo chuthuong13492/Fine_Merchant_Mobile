@@ -48,7 +48,7 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   Future<void> refreshFetchData() async {
-    await model.getStationList();
+    // await model.getStationList();
     await model.getTimeSlotList();
     await model.getDeliveryPackageListForDriver();
 

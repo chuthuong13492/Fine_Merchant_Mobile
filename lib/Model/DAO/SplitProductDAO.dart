@@ -105,4 +105,12 @@ class SplitProductDAO extends BaseDAO {
 
     return res.statusCode;
   }
+
+  Future<int?> reportTimeOutPrepare(
+      {required String timeSlotId, required List<String> productList}) async {
+    final res = await request.put('staff/package/reportTimeOutRepair',
+        queryParameters: {"timeSlotId": timeSlotId}, data: productList);
+
+    return res.statusCode;
+  }
 }

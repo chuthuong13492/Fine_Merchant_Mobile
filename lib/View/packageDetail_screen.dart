@@ -138,7 +138,7 @@ class _PackageDetailScreenState extends State<PackageDetailScreen> {
                           color: FineTheme.palettes.shades200),
                     ),
                     Text(
-                      '${timeSlot?.checkoutTime!.substring(0, 5)}',
+                      '${timeSlot?.arriveTime!.substring(0, 5)}',
                       style: TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.w400,

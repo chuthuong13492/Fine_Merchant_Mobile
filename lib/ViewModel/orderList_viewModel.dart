@@ -578,6 +578,42 @@ class OrderListViewModel extends BaseModel {
     }
   }
 
+  Future<void> reportTimeOutRepair() async {
+    try {
+      List<String> updatedProducts = [];
+      if (pendingProductList != null && pendingProductList!.isNotEmpty) {
+        for (final product in pendingProductList!) {
+          updatedProducts.add(product.productId!);
+        }
+        await _splitProductDAO?.reportTimeOutPrepare(
+            timeSlotId: selectedTimeSlotId, productList: updatedProducts);
+      }
+
+      await showStatusDialog(
+        "assets/images/logo.png",
+        "Đã hết giờ",
+        "Thời gian chuẩn bị món cho khung giờ này đã qua !😓",
+      );
+    } on DioException catch (e) {
+      log('error: ${e.toString()}');
+      if (e.response != null && e.response?.statusCode != null) {
+        String messageBody =
+            "${DateFormat.yMd().add_jm().format(DateTime.now())} | $e${e.response!.data}";
+        print(messageBody);
+        if (e.response!.statusCode! < 400 || e.response!.statusCode! > 405) {
+          await _utilsDAO?.logError(messageBody: messageBody);
+        }
+      }
+      await showStatusDialog(
+        "assets/images/error.png",
+        "Thất bại",
+        "Có lỗi xảy ra, vui lòng thử lại sau 😓",
+      );
+    } finally {
+      await getSplitOrders();
+    }
+  }
+
   Future<void> reportUnsolvedProduct(
       {required String productId, required int memType}) async {
     try {

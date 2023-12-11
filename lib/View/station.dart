@@ -246,7 +246,7 @@ class _StationScreenState extends State<StationScreen> {
                           style: FineTheme.typograhpy.body1.copyWith(
                               color: FineTheme.palettes.neutral900,
                               fontWeight: FontWeight.bold)),
-                      Text('${timeSlot.checkoutTime?.substring(0, 5)}',
+                      Text('${timeSlot.arriveTime?.substring(0, 5)}',
                           style: FineTheme.typograhpy.body1),
                     ],
                   ),
