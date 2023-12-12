@@ -48,6 +48,7 @@ class OrderListViewModel extends BaseModel {
   UtilsDAO? _utilsDAO;
   // Widget
   ScrollController? scrollController;
+  final ValueNotifier<DateTime> now = ValueNotifier(DateTime(0));
   var isTimeout = false;
   var numsOfCheck = 0;
   int currentMissing = 1;

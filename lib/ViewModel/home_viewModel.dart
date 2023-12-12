@@ -23,6 +23,7 @@ class HomeViewModel extends BaseModel {
   // local properties
   static String selectedDestinationId = '70248C0D-C39F-468F-9A92-4A5A7F1FF6BB';
   DeliveryPackageDTO? shipperPackages;
+  final ValueNotifier<DateTime> now = ValueNotifier(DateTime(0));
   List<PackageStoreShipperResponses> pendingPackageList = [];
   List<PackageStoreShipperResponses> takenPackageList = [];
   List<ShipperOrderBoxDTO> orderBoxList = [];

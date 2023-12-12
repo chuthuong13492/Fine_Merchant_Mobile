@@ -11,6 +11,7 @@ import 'package:fine_merchant_mobile/theme/FineTheme/index.dart';
 import 'package:fine_merchant_mobile/widgets/skeleton_list.dart';
 import 'package:flutter/material.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -39,6 +40,8 @@ class _HomeScreenState extends State<HomeScreen> {
     periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       refreshFetchData();
     });
+    Timer.periodic(const Duration(seconds: 1),
+        (timer) => model.now.value = DateTime.now());
   }
 
   @override
@@ -90,7 +93,7 @@ class _HomeScreenState extends State<HomeScreen> {
             children: [
               filterSection(),
               SizedBox(
-                height: Get.height * 0.675,
+                height: Get.height * 0.6,
                 child: TabBarView(
                   children: [
                     Column(
@@ -170,6 +173,50 @@ class _HomeScreenState extends State<HomeScreen> {
                                   style: FineTheme.typograhpy.body1),
                             );
                           }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ValueListenableBuilder<DateTime>(
+                          valueListenable: model.now,
+                          builder: (context, value, child) {
+                            return Text(
+                              value != null
+                                  ? DateFormat('dd-MM HH:mm:ss').format(value)
+                                  : 'Loading...',
+                              style: FineTheme.typograhpy.buttonLg.copyWith(
+                                  fontSize: 20,
+                                  color: FineTheme.palettes.primary100),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ValueListenableBuilder<DateTime>(
+                          valueListenable: model.now,
+                          builder: (context, value, child) {
+                            var currentTimeSlot = model.timeSlotList
+                                .firstWhereOrNull(
+                                    (e) => e.id == model.selectedTimeSlotId);
+                            return Text(
+                              'Hệ thống sẽ xóa hàng \n vào 5 phút trước ${currentTimeSlot?.arriveTime?.substring(0, 5)}',
+                              textAlign: TextAlign.end,
+                              style: FineTheme.typograhpy.buttonLg.copyWith(
+                                  fontSize: 14,
+                                  color: FineTheme.palettes.error300),
+                            );
+                          },
                         ),
                       ],
                     ),

@@ -14,6 +14,7 @@ import 'package:flutter/services.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_neumorphic/flutter_neumorphic.dart';
 import 'package:get/get.dart';
+import 'package:intl/intl.dart';
 import 'package:scoped_model/scoped_model.dart';
 import 'package:flutter/material.dart';
 import '../Accessories/index.dart';
@@ -45,6 +46,8 @@ class _OrderListScreenState extends State<OrderListScreen> {
     periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       refreshFetchOrder();
     });
+    Timer.periodic(const Duration(seconds: 1),
+        (timer) => model.now.value = DateTime.now());
   }
 
   @override
@@ -321,6 +324,50 @@ class _OrderListScreenState extends State<OrderListScreen> {
                                   style: FineTheme.typograhpy.body1),
                             );
                           }).toList(),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ValueListenableBuilder<DateTime>(
+                          valueListenable: model.now,
+                          builder: (context, value, child) {
+                            return Text(
+                              value != null
+                                  ? DateFormat('dd-MM HH:mm:ss').format(value)
+                                  : 'Loading...',
+                              style: FineTheme.typograhpy.buttonLg.copyWith(
+                                  fontSize: 20,
+                                  color: FineTheme.palettes.primary100),
+                            );
+                          },
+                        ),
+                      ],
+                    ),
+                  ),
+                  Padding(
+                    padding: const EdgeInsets.fromLTRB(32, 0, 32, 0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.end,
+                      children: [
+                        ValueListenableBuilder<DateTime>(
+                          valueListenable: model.now,
+                          builder: (context, value, child) {
+                            var currentTimeSlot = model.timeSlotList
+                                .firstWhereOrNull(
+                                    (e) => e.id == model.selectedTimeSlotId);
+                            return Text(
+                              'Hệ thống sẽ đóng cổng xác nhận \n vào 20 phút trước ${currentTimeSlot?.arriveTime?.substring(0, 5)}',
+                              textAlign: TextAlign.end,
+                              style: FineTheme.typograhpy.buttonLg.copyWith(
+                                  fontSize: 14,
+                                  color: FineTheme.palettes.error300),
+                            );
+                          },
                         ),
                       ],
                     ),
