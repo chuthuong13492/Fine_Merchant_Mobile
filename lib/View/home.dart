@@ -187,7 +187,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           builder: (context, value, child) {
                             return Text(
                               value != null
-                                  ? DateFormat('dd-MM HH:mm:ss').format(value)
+                                  ? DateFormat('HH:mm:ss').format(value)
                                   : 'Loading...',
                               style: FineTheme.typograhpy.buttonLg.copyWith(
                                   fontSize: 20,
@@ -210,7 +210,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 .firstWhereOrNull(
                                     (e) => e.id == model.selectedTimeSlotId);
                             return Text(
-                              'Hệ thống sẽ xóa hàng \n vào 5 phút trước ${currentTimeSlot?.arriveTime?.substring(0, 5)}',
+                              'Hệ thống sẽ xóa danh sách hàng \n vào 5 phút trước ${currentTimeSlot?.arriveTime?.substring(0, 5)}',
                               textAlign: TextAlign.end,
                               style: FineTheme.typograhpy.buttonLg.copyWith(
                                   fontSize: 14,

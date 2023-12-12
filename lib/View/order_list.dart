@@ -338,7 +338,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                           builder: (context, value, child) {
                             return Text(
                               value != null
-                                  ? DateFormat('dd-MM HH:mm:ss').format(value)
+                                  ? DateFormat('HH:mm:ss').format(value)
                                   : 'Loading...',
                               style: FineTheme.typograhpy.buttonLg.copyWith(
                                   fontSize: 20,
