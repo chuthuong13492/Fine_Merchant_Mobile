@@ -41,32 +41,9 @@ class _OrderListScreenState extends State<OrderListScreen> {
   @override
   void initState() {
     super.initState();
+    checkTimeOutPrepare();
     periodicTimer = Timer.periodic(const Duration(seconds: 2), (Timer timer) {
       refreshFetchOrder();
-      var currentTimeSlot = model.timeSlotList
-          .firstWhereOrNull((e) => e.id == model.selectedTimeSlotId);
-      if (currentTimeSlot != null) {
-        var currentTime = DateTime.now();
-        var removeTime = currentTime.add(const Duration(minutes: 20));
-        var removeHour = removeTime.hour;
-        var removeMins = removeTime.minute;
-        var timeSlotHour =
-            int.parse(currentTimeSlot.arriveTime!.substring(0, 2));
-        var timeSlotMins =
-            int.parse(currentTimeSlot.arriveTime!.substring(3, 5));
-        log("removeHour ${removeHour}");
-        log("removeMins ${removeMins}");
-        log("timeSlotHour ${timeSlotHour}");
-        if (model.pendingProductList != null &&
-            model.pendingProductList!.isNotEmpty) {
-          if (removeHour > timeSlotHour) {
-            model.reportTimeOutRepair();
-          } else if ((removeHour == timeSlotHour) &&
-              (timeSlotMins - removeMins <= 20)) {
-            model.reportTimeOutRepair();
-          }
-        }
-      }
     });
   }
 
@@ -80,9 +57,36 @@ class _OrderListScreenState extends State<OrderListScreen> {
   Future<void> refreshFetchOrder() async {
     await model.getTimeSlotList();
     await model.getSplitOrders();
-
+    await checkTimeOutPrepare();
     if (mounted) {
       setState(() {});
+    }
+  }
+
+  Future<void> checkTimeOutPrepare() async {
+    var currentTimeSlot = model.timeSlotList
+        .firstWhereOrNull((e) => e.id == model.selectedTimeSlotId);
+    if (currentTimeSlot != null && model.isTimeout == false) {
+      var currentTime = DateTime.now();
+      var removeTime = currentTime.add(const Duration(minutes: 20));
+      var removeHour = removeTime.hour;
+      var removeMins = removeTime.minute;
+      var timeSlotHour = int.parse(currentTimeSlot.arriveTime!.substring(0, 2));
+      var timeSlotMins = int.parse(currentTimeSlot.arriveTime!.substring(3, 5));
+      log("removeHour ${removeHour}");
+      log("removeMins ${removeMins}");
+      log("timeSlotHour ${timeSlotHour}");
+      if (model.pendingProductList != null &&
+          model.pendingProductList!.isNotEmpty) {
+        if (removeHour > timeSlotHour) {
+          await model.reportTimeOutRepair();
+          model.isTimeout = true;
+        } else if ((removeHour == timeSlotHour) &&
+            (timeSlotMins - removeMins <= 20)) {
+          await model.reportTimeOutRepair();
+          model.isTimeout = true;
+        }
+      }
     }
   }
 
@@ -197,7 +201,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
                               ),
                             ),
                           ),
-                          const SizedBox(height: 50),
+                          SizedBox(height: Get.height * 0.135),
                         ],
                       ),
                       Column(

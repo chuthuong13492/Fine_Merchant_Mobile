@@ -48,6 +48,7 @@ class OrderListViewModel extends BaseModel {
   UtilsDAO? _utilsDAO;
   // Widget
   ScrollController? scrollController;
+  var isTimeout = false;
   var numsOfCheck = 0;
   int currentMissing = 1;
   var isAllChecked = false;
@@ -147,7 +148,7 @@ class OrderListViewModel extends BaseModel {
 
   Future<void> onChangeTimeSlot(String value) async {
     selectedTimeSlotId = value;
-
+    isTimeout = false;
     await getSplitOrders();
     notifyListeners();
   }
