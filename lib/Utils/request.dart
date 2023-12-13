@@ -78,7 +78,7 @@ class CustomInterceptors extends Interceptor {
 
 class MyRequest {
   static BaseOptions options = BaseOptions(
-      baseUrl: 'https://dev.fine-api.smjle.vn/api/',
+      baseUrl: 'https://dev.fine-api.smjle.xyz/api/',
       // baseUrl: 'https://localhost:7058/api/',
       headers: {
         Headers.contentTypeHeader: "application/json",
