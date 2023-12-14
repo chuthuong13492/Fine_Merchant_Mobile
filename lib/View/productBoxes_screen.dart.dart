@@ -259,7 +259,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
         color: FineTheme.palettes.neutral600,
         height: Get.height * 0.675,
         child: GridView.count(
-          crossAxisCount: 5,
+          crossAxisCount: model.boxList.length > 4 ? 5 : 2,
           children: [...model.boxList.map((box) => _buildBoxes(box))],
         ));
   }
