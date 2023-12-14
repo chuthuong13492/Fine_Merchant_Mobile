@@ -79,7 +79,7 @@ class _ProductBoxesScreenState extends State<ProductBoxesScreen> {
                 Column(
                   children: [
                     SizedBox(
-                      height: Get.height * 0.02,
+                      height: Get.height * 0.025,
                     ),
                     Column(
                       children: [
