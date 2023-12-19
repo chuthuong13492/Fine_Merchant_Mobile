@@ -58,7 +58,7 @@ class _OrderListScreenState extends State<OrderListScreen> {
   }
 
   Future<void> refreshFetchOrder() async {
-    await model.getTimeSlotList();
+    // await model.getTimeSlotList();
     await model.getSplitOrders();
     await checkTimeOutPrepare();
     if (mounted) {
